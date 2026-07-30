@@ -38,7 +38,7 @@ npm run build
 ### 서버 1회 준비 (수동 작업)
 
 #### 1. Oracle Cloud Always Free 인스턴스 생성
-- **1순위 — Ampere A1(ARM, 최대 4 OCPU/24GB)**: 용량 부족("Out of host capacity")으로 콘솔에서는
+- **1순위 — Ampere A1(ARM, 무료 최대 2 OCPU/12GB — 2026-06-15부터 반감)**: 용량 부족("Out of host capacity")으로 콘솔에서는
   생성이 자주 실패한다. 자동 재시도 스크립트를 사용:
   ```bash
   cp deploy/oci-a1.env.example deploy/oci-a1.env   # OCID·SSH 키 채우기 (커밋 금지)

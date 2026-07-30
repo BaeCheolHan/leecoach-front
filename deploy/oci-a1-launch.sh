@@ -15,7 +15,8 @@
 #   TRY_INTERVAL=120 ./deploy/oci-a1-launch.sh   # 재시도 간격 조정(초)
 #
 # 주의:
-#   - 무료 한도: A1은 계정 전체 합산 4 OCPU / 24GB. 기존 A1 인스턴스가 있으면 그만큼 빼야 한다.
+#   - 무료 한도: A1은 계정 전체 합산 2 OCPU / 12GB (2026-06-15부터 반감, 이전 4/24).
+#     기존 A1 인스턴스가 있으면 그만큼 빼야 한다.
 #   - 간격을 60초 미만으로 줄이지 말 것 — 429(TooManyRequests)로 오히려 느려진다.
 set -euo pipefail
 
@@ -31,8 +32,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ── 선택 설정(기본값) ─────────────────────────────────────────────────────────
 DISPLAY_NAME="${DISPLAY_NAME:-gift-annuity-a1}"
-OCPUS="${OCPUS:-4}"                 # 무료 최대 4
-MEMORY_GB="${MEMORY_GB:-24}"        # 무료 최대 24
+OCPUS="${OCPUS:-2}"                 # 무료 최대 2 (2026-06-15 정책 변경으로 반감)
+MEMORY_GB="${MEMORY_GB:-12}"        # 무료 최대 12 (2026-06-15 정책 변경으로 반감)
 BOOT_VOLUME_GB="${BOOT_VOLUME_GB:-50}"
 TRY_INTERVAL="${TRY_INTERVAL:-90}"  # 재시도 간격(초)
 MAX_TRIES="${MAX_TRIES:-0}"         # 0 = 무제한
