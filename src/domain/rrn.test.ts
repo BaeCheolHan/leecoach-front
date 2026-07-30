@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRrn } from './rrn';
+import { formatRrnInput, parseRrn } from './rrn';
 
 describe('parseRrn', () => {
   it('유효한 1900년대 남성 주민번호를 파싱한다', () => {
@@ -22,5 +22,26 @@ describe('parseRrn', () => {
   });
   it('체크섬 오류를 거부한다 (2020-10-05 이전 출생)', () => {
     expect(parseRrn('800101-1000001')).toBeNull();
+  });
+});
+
+describe('formatRrnInput', () => {
+  it('6자리까지는 하이픈 없이 그대로 둔다', () => {
+    expect(formatRrnInput('')).toBe('');
+    expect(formatRrnInput('80010')).toBe('80010');
+    expect(formatRrnInput('800101')).toBe('800101');
+  });
+  it('7자리째부터 하이픈을 자동 삽입한다', () => {
+    expect(formatRrnInput('8001011')).toBe('800101-1');
+    expect(formatRrnInput('8001011000008')).toBe('800101-1000008');
+  });
+  it('이미 하이픈이 있는 입력(붙여넣기)도 정규화한다', () => {
+    expect(formatRrnInput('800101-1000008')).toBe('800101-1000008');
+  });
+  it('숫자 외 문자는 제거한다', () => {
+    expect(formatRrnInput('80 0101 100000ab8')).toBe('800101-1000008');
+  });
+  it('13자리를 넘는 숫자는 잘라낸다', () => {
+    expect(formatRrnInput('80010110000081234')).toBe('800101-1000008');
   });
 });

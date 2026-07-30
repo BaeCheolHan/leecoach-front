@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import type { FormValues } from '../schema';
-import { parseRrn } from '../../domain/rrn';
+import { formatRrnInput, parseRrn } from '../../domain/rrn';
 import { isMinor } from '../../domain/age';
 
 const RELATIONS = ['부', '모', '자', '손', '조부', '조모', '배우자', '기타'] as const;
@@ -38,6 +38,19 @@ export function Step1Parties() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doneeMinor]);
 
+  // 숫자만 눌러도 하이픈이 자동 삽입되도록 주민등록번호 입력을 정규화
+  const rrnField = (name: 'donor.rrn' | 'donee.rrn') => ({
+    ...register(name, {
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+        setValue(name, formatRrnInput(e.target.value)),
+    }),
+    inputMode: 'numeric' as const,
+    placeholder: '000000-0000000',
+    maxLength: 14,
+    autoComplete: 'off',
+    spellCheck: false,
+  });
+
   return (
     <>
       <section className="card">
@@ -47,7 +60,7 @@ export function Step1Parties() {
         {errors.donor?.name && <p role="alert">{errors.donor.name.message}</p>}
 
         <label htmlFor="donor-rrn">증여자 주민등록번호</label>
-        <input id="donor-rrn" autoComplete="off" spellCheck={false} {...register('donor.rrn')} />
+        <input id="donor-rrn" {...rrnField('donor.rrn')} />
         {errors.donor?.rrn && <p role="alert">{errors.donor.rrn.message}</p>}
 
         <label htmlFor="donor-address">증여자 주소</label>
@@ -76,7 +89,7 @@ export function Step1Parties() {
         {errors.donee?.name && <p role="alert">{errors.donee.name.message}</p>}
 
         <label htmlFor="donee-rrn">수증자 주민등록번호</label>
-        <input id="donee-rrn" autoComplete="off" spellCheck={false} {...register('donee.rrn')} />
+        <input id="donee-rrn" {...rrnField('donee.rrn')} />
         {errors.donee?.rrn && <p role="alert">{errors.donee.rrn.message}</p>}
 
         <label htmlFor="donee-address">수증자 주소</label>

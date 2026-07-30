@@ -19,6 +19,12 @@ function checksumOk(digits: string): boolean {
   return (11 - (sum % 11)) % 10 === Number(digits[12]);
 }
 
+/** 입력 중인 주민등록번호를 000000-0000000 꼴로 정규화 (숫자만 추출, 하이픈 자동 삽입) */
+export function formatRrnInput(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 13);
+  return digits.length > 6 ? `${digits.slice(0, 6)}-${digits.slice(6)}` : digits;
+}
+
 export function parseRrn(rrn: string): RrnInfo | null {
   if (!/^\d{6}-\d{7}$/.test(rrn)) return null;
   const digits = rrn.replace('-', '');

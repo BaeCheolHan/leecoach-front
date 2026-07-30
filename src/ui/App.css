@@ -146,6 +146,15 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin: 0 0 4px;
+  /* 스크롤 힌트: 잘린 쪽 가장자리에만 그림자 표시, 끝까지 스크롤하면 사라짐 */
+  background:
+    linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to left, #fff 30%, rgba(255, 255, 255, 0)) right,
+    radial-gradient(farthest-side at 0 50%, rgba(25, 31, 40, 0.14), rgba(25, 31, 40, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(25, 31, 40, 0.14), rgba(25, 31, 40, 0)) right;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 12px 100%, 12px 100%;
+  background-attachment: local, local, scroll, scroll;
 }
 
 .card table {
@@ -292,5 +301,21 @@ button {
 @media (max-width: 479px) {
   .card {
     padding: 16px;
+  }
+
+  /* 평가 표: 좁은 화면에서 금액 열이 최대한 들어오도록 축소 */
+  .card table {
+    min-width: 440px;
+    font-size: 12px;
+  }
+
+  .card thead th {
+    font-size: 11px;
+    padding: 8px 5px;
+  }
+
+  .card tbody td,
+  .card tbody th {
+    padding: 8px 5px;
   }
 }
