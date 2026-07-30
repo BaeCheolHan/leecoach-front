@@ -16,6 +16,7 @@ const won = (n: number) => `₩${n.toLocaleString('ko-KR')}`;
 
 export function Step3Result({ values, onBack }: { values: FormValues; onBack: () => void }) {
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
   const result = useMemo(() => evaluateAnnuity(values.terms), [values.terms]);
   const doneeInfo = parseRrn(values.donee.rrn);
   const doneeBirth = doneeInfo?.birthDate ?? '';
@@ -37,12 +38,16 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
   );
 
   const withErrorHandling = (fn: () => Promise<void>) => async () => {
+    if (busy) return;
     setError('');
+    setBusy(true);
     try {
       registerFonts();
       await fn();
     } catch {
       setError('PDF 생성에 실패했습니다. 네트워크 연결을 확인하고 다시 시도해 주세요.');
+    } finally {
+      setBusy(false);
     }
   };
   const dlContract = withErrorHandling(() =>
@@ -86,14 +91,20 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
             {judgement.within ? '한도 이내입니다. 예상 증여세는 0원입니다.' : `한도를 ${won(judgement.excess)} 초과합니다. 세무사 검토가 필요합니다.`}
           </p>
           <p className="warn">10년 내 동일인으로부터 받은 기증여가 있으면 합산됩니다.</p>
+          {values.donee.relation === '기타' && (
+            <p className="warn">
+              ※ 6촌 이내 혈족·4촌 이내 인척이 아닌 타인 간 증여는 증여재산공제가 적용되지 않습니다.
+            </p>
+          )}
         </div>
       </section>
 
       {error && <p role="alert" className="error">{error}</p>}
+      {busy && <p className="status">PDF 생성 중…</p>}
       <div className="downloads">
-        <button type="button" className="btn-primary" onClick={dlContract}>증여계약서 PDF</button>
-        <button type="button" className="btn-primary" onClick={dlSchedule}>평가명세서 PDF</button>
-        <button type="button" className="btn-primary" onClick={dlBoth}>모두 다운로드</button>
+        <button type="button" className="btn-primary" disabled={busy} onClick={dlContract}>증여계약서 PDF</button>
+        <button type="button" className="btn-primary" disabled={busy} onClick={dlSchedule}>평가명세서 PDF</button>
+        <button type="button" className="btn-primary" disabled={busy} onClick={dlBoth}>모두 다운로드</button>
       </div>
       <nav className="step-nav step-nav--even">
         <button type="button" className="btn-secondary" onClick={onBack}>이전</button>

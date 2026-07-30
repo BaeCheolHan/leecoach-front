@@ -217,6 +217,12 @@ button {
   background: #1b64da;
 }
 
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
   background: #f2f4f6;
   color: #4e5968;
@@ -227,6 +233,13 @@ button {
 }
 
 /* 다운로드 버튼 그룹 ---------------------------------------------------- */
+
+.status {
+  text-align: center;
+  color: #4e5968;
+  font-size: 13px;
+  margin: 0 0 8px;
+}
 
 .downloads {
   display: flex;

@@ -26,4 +26,21 @@ describe('Step3Result', () => {
     expect(screen.getByRole('button', { name: '평가명세서 PDF' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '모두 다운로드' })).toBeTruthy();
   });
+  it('다운로드 버튼은 초기 상태에서 비활성화되지 않는다', () => {
+    render(<Step3Result values={values} onBack={() => {}} />);
+    expect((screen.getByRole('button', { name: '증여계약서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole('button', { name: '평가명세서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByRole('button', { name: '모두 다운로드' }) as HTMLButtonElement).disabled).toBe(false);
+  });
+  it('관계가 기타이면 증여재산공제 미적용 경고를 표시한다', () => {
+    const etcValues: FormValues = { ...values, donee: { ...values.donee, relation: '기타' } };
+    render(<Step3Result values={etcValues} onBack={() => {}} />);
+    expect(
+      screen.getByText(/6촌 이내 혈족·4촌 이내 인척이 아닌 타인 간 증여는 증여재산공제가 적용되지 않습니다/),
+    ).toBeTruthy();
+  });
+  it('관계가 기타가 아니면 증여재산공제 미적용 경고를 표시하지 않는다', () => {
+    render(<Step3Result values={values} onBack={() => {}} />);
+    expect(screen.queryByText(/증여재산공제가 적용되지 않습니다/)).toBeNull();
+  });
 });

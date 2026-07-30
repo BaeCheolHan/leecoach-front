@@ -5,6 +5,16 @@ import { parseRrn } from '../../domain/rrn';
 import { isMinor } from '../../domain/age';
 
 const RELATIONS = ['부', '모', '자', '손', '조부', '조모', '배우자', '기타'] as const;
+const RELATION_LABELS: Record<(typeof RELATIONS)[number], string> = {
+  부: '부',
+  모: '모',
+  자: '자',
+  손: '손',
+  조부: '조부',
+  조모: '조모',
+  배우자: '배우자',
+  기타: '기타친족(6촌 이내 혈족·4촌 이내 인척)',
+};
 
 export function Step1Parties() {
   const {
@@ -37,15 +47,15 @@ export function Step1Parties() {
         {errors.donor?.name && <p role="alert">{errors.donor.name.message}</p>}
 
         <label htmlFor="donor-rrn">증여자 주민등록번호</label>
-        <input id="donor-rrn" {...register('donor.rrn')} />
+        <input id="donor-rrn" autoComplete="off" spellCheck={false} {...register('donor.rrn')} />
         {errors.donor?.rrn && <p role="alert">{errors.donor.rrn.message}</p>}
 
         <label htmlFor="donor-address">증여자 주소</label>
-        <input id="donor-address" {...register('donor.address')} />
+        <input id="donor-address" autoComplete="off" spellCheck={false} {...register('donor.address')} />
         {errors.donor?.address && <p role="alert">{errors.donor.address.message}</p>}
 
         <label htmlFor="donor-phone">증여자 연락처</label>
-        <input id="donor-phone" {...register('donor.phone')} />
+        <input id="donor-phone" autoComplete="off" spellCheck={false} {...register('donor.phone')} />
       </section>
 
       <section className="card">
@@ -55,7 +65,7 @@ export function Step1Parties() {
           <option value="">선택하세요</option>
           {RELATIONS.map((r) => (
             <option key={r} value={r}>
-              {r}
+              {RELATION_LABELS[r]}
             </option>
           ))}
         </select>
@@ -66,15 +76,15 @@ export function Step1Parties() {
         {errors.donee?.name && <p role="alert">{errors.donee.name.message}</p>}
 
         <label htmlFor="donee-rrn">수증자 주민등록번호</label>
-        <input id="donee-rrn" {...register('donee.rrn')} />
+        <input id="donee-rrn" autoComplete="off" spellCheck={false} {...register('donee.rrn')} />
         {errors.donee?.rrn && <p role="alert">{errors.donee.rrn.message}</p>}
 
         <label htmlFor="donee-address">수증자 주소</label>
-        <input id="donee-address" {...register('donee.address')} />
+        <input id="donee-address" autoComplete="off" spellCheck={false} {...register('donee.address')} />
         {errors.donee?.address && <p role="alert">{errors.donee.address.message}</p>}
 
         <label htmlFor="donee-phone">수증자 연락처</label>
-        <input id="donee-phone" {...register('donee.phone')} />
+        <input id="donee-phone" autoComplete="off" spellCheck={false} {...register('donee.phone')} />
 
         {doneeMinor && (
           <>

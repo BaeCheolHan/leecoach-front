@@ -34,6 +34,7 @@ export function Step2Terms() {
       <h2>3. 증여내용</h2>
       <label htmlFor="start">증여시작일</label>
       <input id="start" type="date" {...register('terms.startDate')} />
+      {errors.terms?.startDate && <p role="alert">{errors.terms.startDate.message}</p>}
       <label htmlFor="end">증여종료일</label>
       <input id="end" type="date" {...register('terms.endDate')} />
       {errors.terms?.endDate && <p role="alert">{errors.terms.endDate.message}</p>}
@@ -74,8 +75,10 @@ export function Step2Terms() {
       {errors.terms?.monthlyAmount && <p role="alert">{errors.terms.monthlyAmount.message}</p>}
       <label htmlFor="bank">은행/증권사</label>
       <input id="bank" {...register('terms.bank')} />
+      {errors.terms?.bank && <p role="alert">{errors.terms.bank.message}</p>}
       <label htmlFor="account">계좌번호</label>
       <input id="account" {...register('terms.account')} />
+      {errors.terms?.account && <p role="alert">{errors.terms.account.message}</p>}
     </section>
   );
 }
