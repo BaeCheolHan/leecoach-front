@@ -39,8 +39,12 @@ MAX_TRIES="${MAX_TRIES:-0}"         # 0 = 무제한
 
 SSH_KEY_CONTENT="$(cat "${SSH_PUB_KEY_FILE/#\~/$HOME}")"
 
-# 리전의 모든 AD 목록 확보 (보통 무료 리전은 1개, 서울(ap-seoul-1)은 1개)
-mapfile -t ADS < <(oci iam availability-domain list \
+# 리전의 모든 AD 목록 확보 (보통 무료 리전은 1개)
+# mapfile은 bash 4+ 전용이라 macOS 기본 bash 3.2 호환을 위해 while read 사용
+ADS=()
+while IFS= read -r _ad; do
+  [ -n "${_ad}" ] && ADS+=("${_ad}")
+done < <(oci iam availability-domain list \
   --compartment-id "${COMPARTMENT_OCID}" \
   --query 'data[].name' --raw-output | python3 -c 'import sys,json; print("\n".join(json.load(sys.stdin)))')
 
