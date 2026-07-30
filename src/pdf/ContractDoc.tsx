@@ -49,9 +49,9 @@ export function ContractDoc({ values, result, donorSeal, doneeSeal, isDoneeMinor
         <View style={s.article}>
           <Text style={s.articleTitle}>제2조 (증여의 내용)</Text>
           <Text>
-            ① 갑은 {kdate(terms.startDate)}부터 {kdate(terms.endDate)}까지 매월 {terms.paymentDay}일에
+            1. 갑은 {kdate(terms.startDate)}부터 {kdate(terms.endDate)}까지 매월 {terms.paymentDay}일에
             금 {won(terms.monthlyAmount)}원을 을에게 지급한다.{'\n'}
-            ② 제1항에 따른 지급 총액은 금 {won(result.totalPrincipal)}원이며, 상속세 및 증여세법 시행령
+            2. 제1항에 따른 지급 총액은 금 {won(result.totalPrincipal)}원이며, 상속세 및 증여세법 시행령
             제62조 제1호에 따라 평가한 유기정기금 평가액은 금 {won(result.totalDiscounted)}원이다.
           </Text>
         </View>
