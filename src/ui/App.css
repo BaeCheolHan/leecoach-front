@@ -1,0 +1,60 @@
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem 1rem 5rem;
+  box-sizing: border-box;
+}
+
+.container section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.container label {
+  display: block;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.container input,
+.container select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.container [role='alert'] {
+  color: #b00020;
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+}
+
+.warn {
+  background: #fff3cd;
+  border: 1px solid #ffe08a;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.step-nav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  background: var(--bg, #fff);
+  margin-top: 1rem;
+}
+
+.step-nav button {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+}

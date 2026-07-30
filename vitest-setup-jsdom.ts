@@ -46,3 +46,13 @@ if (typeof window !== 'undefined' && typeof globalThis.localStorage?.clear !== '
     configurable: true,
   });
 }
+
+// React Testing Library does not auto-register cleanup under Vitest (that hook only
+// fires under Jest's global afterEach). Without it, DOM from one test's render() leaks
+// into the next test in the same file, causing "multiple elements found" failures.
+// Only register in jsdom-environment files (document exists there, not under 'node').
+if (typeof document !== 'undefined') {
+  const { afterEach } = await import('vitest');
+  const { cleanup } = await import('@testing-library/react');
+  afterEach(cleanup);
+}
