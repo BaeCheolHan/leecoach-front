@@ -6,12 +6,14 @@
 }
 
 .container > h1 {
-  font-size: 24px;
+  /* 좁은 화면에서 타이틀이 두 줄로 밀리지 않도록 뷰포트 비례 축소 (320px대까지 한 줄 유지) */
+  font-size: clamp(16px, 6vw - 2px, 24px);
   line-height: 1.4;
   font-weight: 700;
   text-align: left;
   color: #191f28;
   margin: 8px 0 4px;
+  word-break: keep-all;
 }
 
 .step-indicator {
