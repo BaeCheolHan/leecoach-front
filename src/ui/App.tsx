@@ -25,11 +25,15 @@ export default function App() {
 
   // debounce 자동 저장 (주민번호는 draft.ts가 제거)
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const sub = form.watch((v) => {
-      const t = setTimeout(() => saveDraft(v as FormValues), 500);
-      return () => clearTimeout(t);
+      clearTimeout(timer);
+      timer = setTimeout(() => saveDraft(v as FormValues), 500);
     });
-    return () => sub.unsubscribe();
+    return () => {
+      clearTimeout(timer);
+      sub.unsubscribe();
+    };
   }, [form]);
 
   const next = async () => {
