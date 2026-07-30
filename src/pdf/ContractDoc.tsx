@@ -1,7 +1,6 @@
 import { Document, Page, Text, View, Image, StyleSheet } from '@react-pdf/renderer';
 import type { FormValues } from '../ui/schema';
 import type { AnnuityResult } from '../domain/annuity';
-import { DISCLAIMER } from '../config';
 
 const won = (n: number) => n.toLocaleString('ko-KR');
 const kdate = (d: string) => `${d.slice(0, 4)}년 ${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
@@ -19,7 +18,6 @@ const s = StyleSheet.create({
   partyLabel: { width: 110, fontWeight: 'bold' },
   seal: { width: 44, height: 44, marginLeft: 8 },
   sealPlaceholder: { marginLeft: 8, color: '#888' },
-  disclaimer: { position: 'absolute', bottom: 28, left: 52, right: 52, fontSize: 7.5, color: '#666' },
 });
 
 export interface ContractProps {
@@ -91,7 +89,6 @@ export function ContractDoc({ values, result, donorSeal, doneeSeal, isDoneeMinor
             </View>
           )}
         </View>
-        <Text style={s.disclaimer}>{DISCLAIMER}</Text>
       </Page>
     </Document>
   );
