@@ -39,14 +39,25 @@ MAX_TRIES="${MAX_TRIES:-0}"         # 0 = 무제한
 
 SSH_KEY_CONTENT="$(cat "${SSH_PUB_KEY_FILE/#\~/$HOME}")"
 
-# 리전의 모든 AD 목록 확보 (보통 무료 리전은 1개)
-# mapfile은 bash 4+ 전용이라 macOS 기본 bash 3.2 호환을 위해 while read 사용
+# AD 목록: AVAILABILITY_DOMAINS 환경변수(공백 구분)로 직접 지정 가능.
+# 미지정 시 API 조회 — API 키 등록 직후 간헐 401이 있으므로 최대 10회 재시도.
 ADS=()
-while IFS= read -r _ad; do
-  [ -n "${_ad}" ] && ADS+=("${_ad}")
-done < <(oci iam availability-domain list \
-  --compartment-id "${COMPARTMENT_OCID}" \
-  --query 'data[].name' --raw-output | python3 -c 'import sys,json; print("\n".join(json.load(sys.stdin)))')
+if [ -n "${AVAILABILITY_DOMAINS:-}" ]; then
+  # shellcheck disable=SC2206
+  ADS=(${AVAILABILITY_DOMAINS})
+else
+  for _i in 1 2 3 4 5 6 7 8 9 10; do
+    while IFS= read -r _ad; do
+      [ -n "${_ad}" ] && ADS+=("${_ad}")
+    done < <(oci iam availability-domain list \
+      --compartment-id "${COMPARTMENT_OCID}" \
+      --query 'data[].name' --raw-output 2>/dev/null \
+      | python3 -c 'import sys,json; print("\n".join(json.load(sys.stdin)))' 2>/dev/null)
+    [ "${#ADS[@]}" -gt 0 ] && break
+    echo "AD 조회 실패 (${_i}/10) — 15초 후 재시도"
+    sleep 15
+  done
+fi
 
 if [ "${#ADS[@]}" -eq 0 ]; then
   echo "가용 도메인을 찾지 못했습니다. OCI CLI 인증을 확인하세요." >&2
@@ -95,6 +106,7 @@ while :; do
 
     # 실패 사유 분류
     if grep -qi "Out of host capacity" <<< "$OUT"; then
+      auth_fails=0
       echo "        용량 부족 (Out of host capacity) — 재시도 예정"
     elif grep -qi "TooManyRequests\|429" <<< "$OUT"; then
       echo "        API 레이트리밋(429) — 간격 2배로 대기"
@@ -103,9 +115,14 @@ while :; do
       echo "== 무료 한도 초과 (LimitExceeded) — 재시도해도 소용없음. 기존 A1 자원을 확인하세요. ==" >&2
       exit 1
     elif grep -qi "NotAuthenticated\|NotAuthorized" <<< "$OUT"; then
-      echo "== 인증/권한 오류 — oci setup config 및 OCID를 확인하세요. ==" >&2
-      printf '%s\n' "$OUT" >&2
-      exit 1
+      # API 키 등록 직후에는 간헐적 401이 발생하므로 연속 5회까지는 재시도
+      auth_fails=$(( ${auth_fails:-0} + 1 ))
+      if [ "${auth_fails}" -ge 5 ]; then
+        echo "== 인증/권한 오류 연속 ${auth_fails}회 — oci 설정과 OCID를 확인하세요. ==" >&2
+        printf '%s\n' "$OUT" >&2
+        exit 1
+      fi
+      echo "        인증 오류(전파 지연 가능, ${auth_fails}/5) — 재시도 예정"
     else
       echo "        기타 오류 — 전문:"
       printf '%s\n' "$OUT" | head -5
