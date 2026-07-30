@@ -36,9 +36,16 @@ npm run build
 ### 서버 1회 준비 (수동 작업)
 
 #### 1. Oracle Cloud Always Free 인스턴스 생성
-- **인스턴스**: VM.Standard.E2.1.Micro (x86, 1GB RAM)
-  - **이유**: Ampere A1(ARM, 24GB)은 현재 용량 부족으로 생성 불가. 정적 서빙만 하므로 저사양 x86으로 충분(nginx 상주 10~20MB).
-- **이미지**: Ubuntu 22.04 LTS (또는 최신)
+- **1순위 — Ampere A1(ARM, 최대 4 OCPU/24GB)**: 용량 부족("Out of host capacity")으로 콘솔에서는
+  생성이 자주 실패한다. 자동 재시도 스크립트를 사용:
+  ```bash
+  cp deploy/oci-a1.env.example deploy/oci-a1.env   # OCID·SSH 키 채우기 (커밋 금지)
+  ./deploy/oci-a1-launch.sh                        # 성공할 때까지 90초 간격 재시도
+  ```
+  OCI CLI 설치·인증(`oci setup config`)이 선행되어야 하며, 이미지에는 **aarch64** 빌드를 지정한다.
+- **대안 — VM.Standard.E2.1.Micro (x86, 1GB RAM)**: A1이 계속 안 잡힐 때. 정적 서빙만 하므로
+  저사양으로도 충분(nginx 상주 10~20MB).
+- **이미지**: Ubuntu 22.04/24.04 LTS (A1이면 aarch64, E2면 x86_64)
 - **네트워크**: 공개 IP 할당
 
 #### 2. 보안 규칙 설정
