@@ -30,7 +30,7 @@ export function Step2Terms() {
     doneeMinorAtStart && !!startDate && !!endDate && turningAdultDate >= startDate && turningAdultDate <= endDate;
 
   return (
-    <section>
+    <section className="card">
       <h2>3. 증여내용</h2>
       <label htmlFor="start">증여시작일</label>
       <input id="start" type="date" {...register('terms.startDate')} />

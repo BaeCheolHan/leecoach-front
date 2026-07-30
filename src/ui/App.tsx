@@ -45,17 +45,18 @@ export default function App() {
     <FormProvider {...form}>
       <main className="container">
         <h1>유기정기금 증여계약서 · 평가명세서 생성</h1>
+        <p className="step-indicator">{step}/3</p>
         {step === 1 && <Step1Parties />}
         {step === 2 && <Step2Terms />}
         {step === 3 && <Step3Result values={form.getValues()} onBack={() => setStep(2)} />}
         {step < 3 && (
-          <nav className="step-nav">
+          <nav className={`step-nav${step > 1 ? ' step-nav--split' : ''}`}>
             {step > 1 && (
-              <button type="button" onClick={() => setStep((s) => (s - 1) as 1 | 2)}>
+              <button type="button" className="btn-secondary" onClick={() => setStep((s) => (s - 1) as 1 | 2)}>
                 이전
               </button>
             )}
-            <button type="button" onClick={next}>
+            <button type="button" className="btn-primary" onClick={next}>
               다음
             </button>
           </nav>
