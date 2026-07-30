@@ -4,5 +4,6 @@ set -euo pipefail
 HOST="${1:?ssh host 필요}"
 npm run build
 npm test
+ssh "${HOST}" 'mkdir -p /var/www/gift-annuity'
 rsync -az --delete dist/ "${HOST}:/var/www/gift-annuity/"
 echo "배포 완료: ${HOST}"

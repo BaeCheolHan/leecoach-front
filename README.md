@@ -57,7 +57,13 @@ sudo apt update && sudo apt upgrade -y
 sudo apt install -y nginx certbot python3-certbot-nginx
 ```
 
-#### 4. nginx 설정 배포
+#### 4. 배포 대상 디렉터리 생성
+로컬 머신에서 다음 명령으로 배포 대상 디렉터리를 생성합니다 (rsync이 쓸 수 있도록 ssh 사용자 소유로 설정):
+```bash
+ssh ubuntu@<HOST> 'sudo mkdir -p /var/www/gift-annuity && sudo chown $(whoami) /var/www/gift-annuity'
+```
+
+#### 5. nginx 설정 배포
 로컬 머신에서 다음 명령으로 설정을 서버에 복사합니다:
 ```bash
 scp deploy/nginx.conf ubuntu@<HOST>:/tmp/
@@ -67,11 +73,11 @@ ssh ubuntu@<HOST> 'sudo rm -f /etc/nginx/sites-enabled/default'
 ssh ubuntu@<HOST> 'sudo systemctl restart nginx'
 ```
 
-#### 5. 도메인 설정
+#### 6. 도메인 설정
 - 도메인 A 레코드를 인스턴스의 공개 IP로 가리킵니다.
 - `deploy/nginx.conf`의 `server_name _;`을 실제 도메인으로 변경합니다.
 
-#### 6. HTTPS 설정 (Let's Encrypt)
+#### 7. HTTPS 설정 (Let's Encrypt)
 ```bash
 sudo certbot --nginx -d <yourdomain.com>
 ```
