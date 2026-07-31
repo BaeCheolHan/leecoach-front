@@ -16,6 +16,65 @@
   word-break: keep-all;
 }
 
+/* 인앱 브라우저 안내 ---------------------------------------------------- */
+
+.inapp-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fff8e1;
+  border: 1px solid #f5d989;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 4px 0 12px;
+}
+
+.inapp-notice p {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #6b5b1e;
+  margin: 0;
+}
+
+.inapp-notice button {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #b0a15f;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+/* 개인정보처리방침 ------------------------------------------------------ */
+
+.privacy h2 {
+  font-size: 16px;
+  margin: 20px 0 8px;
+}
+
+.privacy h2:first-child {
+  margin-top: 0;
+}
+
+.privacy p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #4e5968;
+  margin: 0;
+}
+
+.footer-links {
+  text-align: center;
+  margin: 28px 0 0;
+}
+
+.footer-links a {
+  font-size: 12px;
+  color: #8b95a1;
+  text-decoration: none;
+}
+
 /* 필수/선택 표시 — 가상요소라 label 텍스트(테스트·스크린리더 이름)에는 영향 없음 */
 label.req::after {
   content: ' *';

@@ -3,6 +3,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormValues } from './schema';
 import { loadDraft, saveDraft } from '../storage/draft';
+import { InAppBrowserNotice } from './InAppBrowserNotice';
 import { Step1Parties } from './steps/Step1Parties';
 import { Step2Terms } from './steps/Step2Terms';
 import { Step3Result } from './steps/Step3Result';
@@ -49,6 +50,7 @@ export default function App() {
   return (
     <FormProvider {...form}>
       <main className="container">
+        <InAppBrowserNotice />
         <h1>유기정기금 증여계약서 · 평가명세서 생성</h1>
         <p className="step-indicator">{step}/3</p>
         {step < 3 && (
@@ -71,6 +73,9 @@ export default function App() {
             </button>
           </nav>
         )}
+        <p className="footer-links">
+          <a href="/privacy">개인정보처리방침</a>
+        </p>
       </main>
     </FormProvider>
   );
