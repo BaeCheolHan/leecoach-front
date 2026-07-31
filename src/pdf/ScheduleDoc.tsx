@@ -2,7 +2,7 @@ import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { FormValues } from '../ui/schema';
 import type { AnnuityResult } from '../domain/annuity';
 import type { DeductionJudgement } from '../domain/giftTax';
-import { DISCOUNT_RATE, DISCLAIMER } from '../config';
+import { DISCOUNT_RATE } from '../config';
 
 const won = (n: number) => `₩${n.toLocaleString('ko-KR')}`;
 
@@ -21,7 +21,6 @@ const s = StyleSheet.create({
   tdCenter: { flex: 1, padding: 4, textAlign: 'center' },
   judgement: { marginBottom: 12, padding: 8, borderWidth: 0.7, borderColor: '#333' },
   legal: { fontSize: 8, color: '#444', marginBottom: 8 },
-  disclaimer: { fontSize: 7.5, color: '#666' },
 });
 
 export interface ScheduleProps {
@@ -103,13 +102,6 @@ export function ScheduleDoc({ values, result, judgement, doneeBirthDate, isDonee
           </Text>
         </View>
 
-        <Text style={s.legal}>
-          근거: 상속세 및 증여세법 시행령 제62조(정기금을 받을 권리의 평가) 제1호 — 유기정기금은 잔존기간에
-          각 연도에 받을 정기금액을 기준으로 [각 연도에 받을 정기금액 ÷ (1 + 이자율)^n, n은 평가기준일부터의
-          경과연수]로 계산한 금액의 합계액으로 평가하며, 1년분 정기금액의 20배를 초과할 수 없다.
-          이자율은 기획재정부령이 정하는 연 {(DISCOUNT_RATE * 1000).toFixed(0)}/1,000이다.
-        </Text>
-        <Text style={s.disclaimer}>{DISCLAIMER}</Text>
       </Page>
     </Document>
   );

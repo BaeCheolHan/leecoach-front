@@ -89,7 +89,7 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
         <div className="table-scroll">
           <table>
             <thead>
-              <tr>{['년도', '불입년도', '불입횟수(월)', '불입원금', '할인평가액'].map((h) => <th key={h}>{h}</th>)}</tr>
+              <tr>{['년도', '년차', '횟수(월)', '원금', '할인평가액'].map((h) => <th key={h}>{h}</th>)}</tr>
             </thead>
             <tbody>
               {result.rows.map((r) => (

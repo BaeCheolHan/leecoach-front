@@ -58,7 +58,14 @@ export function ContractDoc({ values, result, donorSeal, doneeSeal, isDoneeMinor
           <Text>갑은 제2조의 금원을 {method} 방법으로 을 명의의 계좌({terms.bank} {terms.account})에 입금한다.</Text>
         </View>
         <View style={s.article}>
-          <Text style={s.articleTitle}>제4조 (계약의 효력)</Text>
+          <Text style={s.articleTitle}>제4조 (비용 부담 및 무상성)</Text>
+          <Text>
+            1. 이 증여에 소요되는 제반 비용은 갑의 부담으로 한다.{'\n'}
+            2. 갑은 이 증여와 관련하여 을에게 어떠한 유상의 대가도 청구하지 아니하며, 이 증여는 무상으로 한다.
+          </Text>
+        </View>
+        <View style={s.article}>
+          <Text style={s.articleTitle}>제5조 (계약의 효력)</Text>
           <Text>이 계약은 계약 체결일부터 효력이 발생한다.</Text>
         </View>
         <Text style={s.closing}>

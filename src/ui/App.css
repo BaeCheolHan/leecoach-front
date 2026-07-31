@@ -414,19 +414,36 @@ button {
     padding: 16px;
   }
 
-  /* 평가 표: 좁은 화면에서 금액 열이 최대한 들어오도록 축소 */
+  /* 평가 표: 좁은 화면에서도 5열이 스크롤 없이 들어오도록 축소 */
   .card table {
-    min-width: 440px;
+    min-width: 0;
     font-size: 12px;
   }
 
   .card thead th {
     font-size: 11px;
-    padding: 8px 5px;
+    padding: 8px 4px;
   }
 
   .card tbody td,
   .card tbody th {
-    padding: 8px 5px;
+    padding: 8px 4px;
+  }
+}
+
+/* 초소형(320px대) — 표가 스크롤 없이 들어가도록 한 단계 더 축소 */
+@media (max-width: 359px) {
+  .card table {
+    font-size: 11px;
+  }
+
+  .card thead th {
+    font-size: 10px;
+    padding: 6px 2px;
+  }
+
+  .card tbody td,
+  .card tbody th {
+    padding: 6px 2px;
   }
 }

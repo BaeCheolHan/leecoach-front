@@ -3,7 +3,7 @@ import type { FormValues } from '../schema';
 import { parseRrn } from '../../domain/rrn';
 import { isMinor } from '../../domain/age';
 import { evaluateAnnuity } from '../../domain/annuity';
-import { ADULT_AGE } from '../../config';
+import { ADULT_AGE, DISCOUNT_RATE } from '../../config';
 import { koreanAmount } from '../format';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -113,8 +113,10 @@ export function Step2Terms() {
       {errors.terms?.monthlyAmount && <p role="alert">{errors.terms.monthlyAmount.message}</p>}
       {preview && (
         <p className="preview-total">
-          총 {totalPayments}회 · {koreanAmount(preview.totalPrincipal)}
-          {preview.capApplied ? ' (20배 상한 적용 예정)' : ''}
+          총 {totalPayments}회 · 원금 {koreanAmount(preview.totalPrincipal)}
+          <br />
+          할인평가액(연 {DISCOUNT_RATE * 100}%) <b>{koreanAmount(preview.totalDiscounted)}</b>
+          {preview.capApplied ? ' — 20배 상한 적용' : ''}
         </p>
       )}
       <label htmlFor="bank" className="req">은행/증권사</label>
