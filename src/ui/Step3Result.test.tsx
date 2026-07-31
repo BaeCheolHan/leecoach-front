@@ -1,8 +1,16 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import { Step3Result } from './steps/Step3Result';
 import type { FormValues } from './schema';
+
+// jsdom에서는 canvas·PDF 렌더가 불가하므로 PDF 생성 계층만 대체 (파일명 로직 등은 원본 유지)
+vi.mock('../pdf/download', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../pdf/download')>()),
+  renderPdfBlob: vi.fn(async () => new Blob(['pdf'], { type: 'application/pdf' })),
+}));
+vi.mock('../pdf/seal', () => ({ drawSeal: vi.fn(() => 'data:image/png;base64,') }));
+vi.mock('../pdf/fonts', () => ({ registerFonts: vi.fn() }));
 
 const values: FormValues = {
   donor: { name: '홍길동', rrn: '800101-1000008', address: '서울', phone: '' },
@@ -26,11 +34,16 @@ describe('Step3Result', () => {
     expect(screen.getByRole('button', { name: '평가명세서 PDF' })).toBeTruthy();
     expect(screen.getByRole('button', { name: '모두 다운로드' })).toBeTruthy();
   });
-  it('다운로드 버튼은 초기 상태에서 비활성화되지 않는다', () => {
+  it('문서 준비 중에는 버튼이 비활성화되고, 준비가 끝나면 활성화된다', async () => {
     render(<Step3Result values={values} onBack={() => {}} />);
-    expect((screen.getByRole('button', { name: '증여계약서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByRole('button', { name: '평가명세서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
-    expect((screen.getByRole('button', { name: '모두 다운로드' }) as HTMLButtonElement).disabled).toBe(false);
+    expect(screen.getByText('문서 준비 중…')).toBeTruthy();
+    expect((screen.getByRole('button', { name: '모두 다운로드' }) as HTMLButtonElement).disabled).toBe(true);
+    await waitFor(() => {
+      expect((screen.getByRole('button', { name: '증여계약서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+      expect((screen.getByRole('button', { name: '평가명세서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+      expect((screen.getByRole('button', { name: '모두 다운로드' }) as HTMLButtonElement).disabled).toBe(false);
+    });
+    expect(screen.queryByText('문서 준비 중…')).toBeNull();
   });
   it('관계가 기타이면 증여재산공제 미적용 경고를 표시한다', () => {
     const etcValues: FormValues = { ...values, donee: { ...values.donee, relation: '기타' } };

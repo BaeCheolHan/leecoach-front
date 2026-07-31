@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormValues } from '../schema';
 import { evaluateAnnuity } from '../../domain/annuity';
 import { judgeDeduction } from '../../domain/giftTax';
@@ -8,7 +8,7 @@ import { registerFonts } from '../../pdf/fonts';
 import { drawSeal } from '../../pdf/seal';
 import { ContractDoc } from '../../pdf/ContractDoc';
 import { ScheduleDoc } from '../../pdf/ScheduleDoc';
-import { downloadPdf, pdfFileName } from '../../pdf/download';
+import { pdfFileName, renderPdfBlob, savePdfFiles } from '../../pdf/download';
 import { clearDraft } from '../../storage/draft';
 import { DISCLAIMER } from '../../config';
 
@@ -37,27 +37,50 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
       doneeBirthDate={doneeBirth} isDoneeMinor={minor} />
   );
 
-  const withErrorHandling = (fn: () => Promise<void>) => async () => {
+  // 진입 즉시 PDF를 미리 만들어 캐시 — 버튼 클릭 시 터치 활성화가 살아있는 동안
+  // 바로 저장/공유해야 iOS에서 차단되지 않는다 (savePdfFiles 주석 참조)
+  const [blobs, setBlobs] = useState<{ contract: Blob; schedule: Blob } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        registerFonts();
+        const contract = await renderPdfBlob(makeContract());
+        const schedule = await renderPdfBlob(makeSchedule());
+        if (alive) setBlobs({ contract, schedule });
+      } catch {
+        if (alive) setError('PDF 생성에 실패했습니다. 네트워크 연결을 확인하고 다시 시도해 주세요.');
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const contractName = pdfFileName('증여계약서', values.donee.name, today);
+  const scheduleName = pdfFileName('유기정기금평가명세서', values.donee.name, today);
+
+  const save = (items: { blob: Blob; filename: string }[]) => async () => {
     if (busy) return;
     setError('');
     setBusy(true);
     try {
-      registerFonts();
-      await fn();
+      await savePdfFiles(items);
     } catch {
-      setError('PDF 생성에 실패했습니다. 네트워크 연결을 확인하고 다시 시도해 주세요.');
+      setError('저장에 실패했습니다. 다시 시도해 주세요.');
     } finally {
       setBusy(false);
     }
   };
-  const dlContract = withErrorHandling(() =>
-    downloadPdf(makeContract(), pdfFileName('증여계약서', values.donee.name, today)));
-  const dlSchedule = withErrorHandling(() =>
-    downloadPdf(makeSchedule(), pdfFileName('유기정기금평가명세서', values.donee.name, today)));
-  const dlBoth = withErrorHandling(async () => {
-    await downloadPdf(makeContract(), pdfFileName('증여계약서', values.donee.name, today));
-    await downloadPdf(makeSchedule(), pdfFileName('유기정기금평가명세서', values.donee.name, today));
-  });
+  const dlContract = blobs ? save([{ blob: blobs.contract, filename: contractName }]) : undefined;
+  const dlSchedule = blobs ? save([{ blob: blobs.schedule, filename: scheduleName }]) : undefined;
+  const dlBoth = blobs
+    ? save([
+        { blob: blobs.contract, filename: contractName },
+        { blob: blobs.schedule, filename: scheduleName },
+      ])
+    : undefined;
 
   return (
     <>
@@ -100,11 +123,11 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
       </section>
 
       {error && <p role="alert" className="error">{error}</p>}
-      {busy && <p className="status">PDF 생성 중…</p>}
+      {!blobs && !error && <p className="status">문서 준비 중…</p>}
       <div className="downloads">
-        <button type="button" className="btn-primary" disabled={busy} onClick={dlContract}>증여계약서 PDF</button>
-        <button type="button" className="btn-primary" disabled={busy} onClick={dlSchedule}>평가명세서 PDF</button>
-        <button type="button" className="btn-primary" disabled={busy} onClick={dlBoth}>모두 다운로드</button>
+        <button type="button" className="btn-primary" disabled={busy || !blobs} onClick={dlContract}>증여계약서 PDF</button>
+        <button type="button" className="btn-primary" disabled={busy || !blobs} onClick={dlSchedule}>평가명세서 PDF</button>
+        <button type="button" className="btn-primary" disabled={busy || !blobs} onClick={dlBoth}>모두 다운로드</button>
       </div>
       <nav className="step-nav step-nav--even">
         <button type="button" className="btn-secondary" onClick={onBack}>이전</button>

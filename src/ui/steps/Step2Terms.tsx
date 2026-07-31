@@ -12,6 +12,13 @@ function addYears(date: string, years: number): string {
   return `${Number(date.slice(0, 4)) + years}${date.slice(4)}`;
 }
 
+/** 다음 날 (YYYY-MM-DD) — 종료일 달력의 최소 선택 가능일로 사용 */
+function nextDay(date: string): string {
+  const d = new Date(`${date}T00:00:00`);
+  d.setDate(d.getDate() + 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export function Step2Terms() {
   const {
     register,
@@ -51,7 +58,12 @@ export function Step2Terms() {
       <input id="start" type="date" {...register('terms.startDate')} />
       {errors.terms?.startDate && <p role="alert">{errors.terms.startDate.message}</p>}
       <label htmlFor="end" className="req">증여종료일</label>
-      <input id="end" type="date" {...register('terms.endDate')} />
+      <input
+        id="end"
+        type="date"
+        min={DATE_RE.test(startDate ?? '') ? nextDay(startDate) : undefined}
+        {...register('terms.endDate')}
+      />
       {errors.terms?.endDate && <p role="alert">{errors.terms.endDate.message}</p>}
       {over10y && (
         <p className="warn">
