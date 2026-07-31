@@ -36,6 +36,11 @@ export default function App() {
     };
   }, [form]);
 
+  // 단계 전환 시 이전 단계의 스크롤 위치가 남지 않도록 최상단으로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [step]);
+
   const next = async () => {
     const fields = step === 1 ? STEP1_FIELDS : STEP2_FIELDS;
     if (await form.trigger([...fields])) setStep((s) => Math.min(s + 1, 3) as 1 | 2 | 3);

@@ -2,7 +2,11 @@ import { useFormContext } from 'react-hook-form';
 import type { FormValues } from '../schema';
 import { parseRrn } from '../../domain/rrn';
 import { isMinor } from '../../domain/age';
+import { evaluateAnnuity } from '../../domain/annuity';
 import { ADULT_AGE } from '../../config';
+import { koreanAmount } from '../format';
+
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 function addYears(date: string, years: number): string {
   return `${Number(date.slice(0, 4)) + years}${date.slice(4)}`;
@@ -12,15 +16,26 @@ export function Step2Terms() {
   const {
     register,
     watch,
+    setValue,
     formState: { errors },
   } = useFormContext<FormValues>();
-  const [startDate, endDate, method, doneeRrn] = watch([
+  const [startDate, endDate, method, doneeRrn, paymentDay, monthlyAmount] = watch([
     'terms.startDate',
     'terms.endDate',
     'terms.method',
     'donee.rrn',
+    'terms.paymentDay',
+    'terms.monthlyAmount',
   ]);
   const over10y = !!startDate && !!endDate && endDate > addYears(startDate, 10);
+
+  // 입력이 유효해지는 즉시 총 회수·총액을 미리 보여준다 (실수 조기 발견용)
+  const previewReady =
+    DATE_RE.test(startDate ?? '') && DATE_RE.test(endDate ?? '') && startDate < endDate && monthlyAmount > 0;
+  const preview = previewReady
+    ? evaluateAnnuity({ startDate, endDate, paymentDay: paymentDay || 1, monthlyAmount })
+    : null;
+  const totalPayments = preview ? preview.rows.reduce((s, r) => s + r.payments, 0) : 0;
 
   const info = parseRrn(doneeRrn ?? '');
   const baseDate = startDate || new Date().toISOString().slice(0, 10);
@@ -71,8 +86,25 @@ export function Step2Terms() {
         ))}
       </select>
       <label htmlFor="amount">매월 증여액(원)</label>
-      <input id="amount" type="number" min={1} {...register('terms.monthlyAmount', { valueAsNumber: true })} />
+      <input
+        id="amount"
+        inputMode="numeric"
+        autoComplete="off"
+        placeholder="500,000"
+        value={monthlyAmount > 0 ? monthlyAmount.toLocaleString('ko-KR') : ''}
+        onChange={(e) => {
+          const digits = e.target.value.replace(/\D/g, '').slice(0, 12);
+          setValue('terms.monthlyAmount', digits ? Number(digits) : 0, { shouldDirty: true });
+        }}
+      />
+      {monthlyAmount > 0 && <p className="amount-hint">{koreanAmount(monthlyAmount)}</p>}
       {errors.terms?.monthlyAmount && <p role="alert">{errors.terms.monthlyAmount.message}</p>}
+      {preview && (
+        <p className="preview-total">
+          총 {totalPayments}회 · {koreanAmount(preview.totalPrincipal)}
+          {preview.capApplied ? ' (20배 상한 적용 예정)' : ''}
+        </p>
+      )}
       <label htmlFor="bank">은행/증권사</label>
       <input id="bank" {...register('terms.bank')} />
       {errors.terms?.bank && <p role="alert">{errors.terms.bank.message}</p>}
