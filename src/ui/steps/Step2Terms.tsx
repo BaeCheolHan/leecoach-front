@@ -47,10 +47,10 @@ export function Step2Terms() {
   return (
     <section className="card">
       <h2>3. 증여내용</h2>
-      <label htmlFor="start">증여시작일</label>
+      <label htmlFor="start" className="req">증여시작일</label>
       <input id="start" type="date" {...register('terms.startDate')} />
       {errors.terms?.startDate && <p role="alert">{errors.terms.startDate.message}</p>}
-      <label htmlFor="end">증여종료일</label>
+      <label htmlFor="end" className="req">증여종료일</label>
       <input id="end" type="date" {...register('terms.endDate')} />
       {errors.terms?.endDate && <p role="alert">{errors.terms.endDate.message}</p>}
       {over10y && (
@@ -64,7 +64,7 @@ export function Step2Terms() {
           방식(만 나이)이 다를 수 있으니 세무사 검토를 권합니다.
         </p>
       )}
-      <label htmlFor="method">증여방법</label>
+      <label htmlFor="method" className="req">증여방법</label>
       <select id="method" {...register('terms.method')}>
         <option>자동이체</option>
         <option>직접이체</option>
@@ -72,12 +72,12 @@ export function Step2Terms() {
       </select>
       {method === '기타' && (
         <>
-          <label htmlFor="method-etc">증여방법 직접입력</label>
+          <label htmlFor="method-etc" className="req">증여방법 직접입력</label>
           <input id="method-etc" {...register('terms.methodEtc')} />
           {errors.terms?.methodEtc && <p role="alert">{errors.terms.methodEtc.message}</p>}
         </>
       )}
-      <label htmlFor="payday">매월 지급일</label>
+      <label htmlFor="payday" className="req">매월 지급일</label>
       <select id="payday" {...register('terms.paymentDay', { valueAsNumber: true })}>
         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
           <option key={d} value={d}>
@@ -85,7 +85,7 @@ export function Step2Terms() {
           </option>
         ))}
       </select>
-      <label htmlFor="amount">매월 증여액(원)</label>
+      <label htmlFor="amount" className="req">매월 증여액(원)</label>
       <input
         id="amount"
         inputMode="numeric"
@@ -105,10 +105,10 @@ export function Step2Terms() {
           {preview.capApplied ? ' (20배 상한 적용 예정)' : ''}
         </p>
       )}
-      <label htmlFor="bank">은행/증권사</label>
+      <label htmlFor="bank" className="req">은행/증권사</label>
       <input id="bank" {...register('terms.bank')} />
       {errors.terms?.bank && <p role="alert">{errors.terms.bank.message}</p>}
-      <label htmlFor="account">계좌번호</label>
+      <label htmlFor="account" className="req">계좌번호</label>
       <input id="account" {...register('terms.account')} />
       {errors.terms?.account && <p role="alert">{errors.terms.account.message}</p>}
     </section>

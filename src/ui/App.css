@@ -16,6 +16,30 @@
   word-break: keep-all;
 }
 
+/* 필수/선택 표시 — 가상요소라 label 텍스트(테스트·스크린리더 이름)에는 영향 없음 */
+label.req::after {
+  content: ' *';
+  color: #f04452;
+  font-weight: 700;
+}
+
+label.opt::after {
+  content: ' (선택)';
+  color: #8b95a1;
+  font-weight: 400;
+  font-size: 12px;
+}
+
+.req-legend {
+  font-size: 12px;
+  color: #8b95a1;
+  margin: 0 0 12px;
+}
+
+.req-legend b {
+  color: #f04452;
+}
+
 .amount-hint {
   font-size: 13px;
   font-weight: 600;

@@ -55,25 +55,25 @@ export function Step1Parties() {
     <>
       <section className="card">
         <h2>1. 증여자(돈 주는 사람)</h2>
-        <label htmlFor="donor-name">증여자 성명</label>
+        <label htmlFor="donor-name" className="req">증여자 성명</label>
         <input id="donor-name" {...register('donor.name')} />
         {errors.donor?.name && <p role="alert">{errors.donor.name.message}</p>}
 
-        <label htmlFor="donor-rrn">증여자 주민등록번호</label>
+        <label htmlFor="donor-rrn" className="req">증여자 주민등록번호</label>
         <input id="donor-rrn" {...rrnField('donor.rrn')} />
         {errors.donor?.rrn && <p role="alert">{errors.donor.rrn.message}</p>}
 
-        <label htmlFor="donor-address">증여자 주소</label>
+        <label htmlFor="donor-address" className="req">증여자 주소</label>
         <input id="donor-address" autoComplete="off" spellCheck={false} {...register('donor.address')} />
         {errors.donor?.address && <p role="alert">{errors.donor.address.message}</p>}
 
-        <label htmlFor="donor-phone">증여자 연락처</label>
+        <label htmlFor="donor-phone" className="opt">증여자 연락처</label>
         <input id="donor-phone" autoComplete="off" spellCheck={false} {...register('donor.phone')} />
       </section>
 
       <section className="card">
         <h2>2. 수증자(돈 받는 사람)</h2>
-        <label htmlFor="donee-relation">증여자와의 관계</label>
+        <label htmlFor="donee-relation" className="req">증여자와의 관계</label>
         <select id="donee-relation" {...register('donee.relation')}>
           <option value="">선택하세요</option>
           {RELATIONS.map((r) => (
@@ -84,24 +84,24 @@ export function Step1Parties() {
         </select>
         {errors.donee?.relation && <p role="alert">{errors.donee.relation.message}</p>}
 
-        <label htmlFor="donee-name">수증자 성명</label>
+        <label htmlFor="donee-name" className="req">수증자 성명</label>
         <input id="donee-name" {...register('donee.name')} />
         {errors.donee?.name && <p role="alert">{errors.donee.name.message}</p>}
 
-        <label htmlFor="donee-rrn">수증자 주민등록번호</label>
+        <label htmlFor="donee-rrn" className="req">수증자 주민등록번호</label>
         <input id="donee-rrn" {...rrnField('donee.rrn')} />
         {errors.donee?.rrn && <p role="alert">{errors.donee.rrn.message}</p>}
 
-        <label htmlFor="donee-address">수증자 주소</label>
+        <label htmlFor="donee-address" className="req">수증자 주소</label>
         <input id="donee-address" autoComplete="off" spellCheck={false} {...register('donee.address')} />
         {errors.donee?.address && <p role="alert">{errors.donee.address.message}</p>}
 
-        <label htmlFor="donee-phone">수증자 연락처</label>
+        <label htmlFor="donee-phone" className="opt">수증자 연락처</label>
         <input id="donee-phone" autoComplete="off" spellCheck={false} {...register('donee.phone')} />
 
         {doneeMinor && (
           <>
-            <label htmlFor="legal-rep">법정대리인 성명</label>
+            <label htmlFor="legal-rep" className="opt">법정대리인 성명</label>
             <input
               id="legal-rep"
               placeholder="미성년 수증자를 대리하여 날인할 친권자"

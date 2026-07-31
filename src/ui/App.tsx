@@ -51,6 +51,11 @@ export default function App() {
       <main className="container">
         <h1>유기정기금 증여계약서 · 평가명세서 생성</h1>
         <p className="step-indicator">{step}/3</p>
+        {step < 3 && (
+          <p className="req-legend">
+            <b>*</b> 표시는 필수 입력입니다
+          </p>
+        )}
         {step === 1 && <Step1Parties />}
         {step === 2 && <Step2Terms />}
         {step === 3 && <Step3Result values={form.getValues()} onBack={() => setStep(2)} />}
