@@ -7,6 +7,7 @@ import { AnnuityGiftReport } from './guide/AnnuityGiftReport';
 import { GiftDeductionLimits } from './guide/GiftDeductionLimits';
 import { MinorStockAccount } from './guide/MinorStockAccount';
 import { LoanVsGift } from './guide/LoanVsGift';
+import { NoReportRisks } from './guide/NoReportRisks';
 
 /** 경로 → 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
 export function resolvePage(pathname: string): ComponentType {
@@ -26,6 +27,8 @@ export function resolvePage(pathname: string): ComponentType {
       return MinorStockAccount;
     case '/guide/loan-vs-gift':
       return LoanVsGift;
+    case '/guide/no-report-risks':
+      return NoReportRisks;
     default:
       return NotFound;
   }

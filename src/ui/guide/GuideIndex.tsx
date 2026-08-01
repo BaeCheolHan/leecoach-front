@@ -4,6 +4,11 @@ import { ManualPromo } from './ManualPromo';
 
 const ARTICLES = [
   {
+    path: '/guide/no-report-risks',
+    title: '증여세 신고 안 하면 어떻게 되나요? — 가산세와 자금출처조사',
+    summary: '신고를 미루면 붙는 가산세와 자금출처 소명, 지금이라도 기한 후 신고로 바로잡는 방법을 정리했습니다.',
+  },
+  {
     path: '/guide/minor-stock-account',
     title: '미성년 자녀 주식계좌 만들기 — 서류부터 증여 신고까지',
     summary: '필요한 서류부터 비대면 계좌 개설, 증여세 신고와 주식 매수 순서까지 한 번에 정리했습니다.',

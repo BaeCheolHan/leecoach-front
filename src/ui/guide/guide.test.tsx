@@ -10,6 +10,7 @@ import { AnnuityGiftReport } from './AnnuityGiftReport';
 import { GiftDeductionLimits } from './GiftDeductionLimits';
 import { MinorStockAccount } from './MinorStockAccount';
 import { LoanVsGift } from './LoanVsGift';
+import { NoReportRisks } from './NoReportRisks';
 
 beforeEach(() => {
   localStorage.clear();
@@ -146,6 +147,33 @@ describe('LoanVsGift', () => {
   it('FAQ JSON-LD 5개를 삽입한다', () => {
     render(<LoanVsGift />);
     const script = document.getElementById('faq-jsonld-loan');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe('NoReportRisks', () => {
+  it('증여세 무신고 위험 가이드 경로를 반환한다', () => {
+    expect(resolvePage('/guide/no-report-risks')).toBe(NoReportRisks);
+  });
+
+  it('제목·FAQ·CTA를 렌더한다', () => {
+    const { container } = render(<NoReportRisks />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '증여세 신고 안 하면 어떻게 되나요? — 가산세와 자금출처조사',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('몇 년 지나면 그냥 넘어가나요?')).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(<NoReportRisks />);
+    const script = document.getElementById('faq-jsonld-noreport');
     expect(script).toBeTruthy();
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');
