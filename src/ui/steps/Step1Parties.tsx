@@ -1,6 +1,7 @@
 import { useFormContext } from 'react-hook-form';
 import type { FormValues } from '../schema';
 import { formatRrnInput } from '../../domain/rrn';
+import { formatPhoneInput } from '../format';
 
 const RELATIONS = ['부', '모', '자', '손', '조부', '조모', '배우자', '기타'] as const;
 const RELATION_LABELS: Record<(typeof RELATIONS)[number], string> = {
@@ -20,6 +21,19 @@ export function Step1Parties() {
     setValue,
     formState: { errors },
   } = useFormContext<FormValues>();
+
+  // 숫자만 눌러도 하이픈이 자동 삽입되도록 연락처 입력을 정규화
+  const phoneField = (name: 'donor.phone' | 'donee.phone') => ({
+    ...register(name, {
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+        setValue(name, formatPhoneInput(e.target.value)),
+    }),
+    inputMode: 'tel' as const,
+    placeholder: '010-0000-0000',
+    maxLength: 13,
+    autoComplete: 'off',
+    spellCheck: false,
+  });
 
   // 숫자만 눌러도 하이픈이 자동 삽입되도록 주민등록번호 입력을 정규화
   const rrnField = (name: 'donor.rrn' | 'donee.rrn') => ({
@@ -51,7 +65,7 @@ export function Step1Parties() {
         {errors.donor?.address && <p role="alert">{errors.donor.address.message}</p>}
 
         <label htmlFor="donor-phone" className="opt">증여자 연락처</label>
-        <input id="donor-phone" autoComplete="off" spellCheck={false} {...register('donor.phone')} />
+        <input id="donor-phone" {...phoneField('donor.phone')} />
       </section>
 
       <section className="card">
@@ -80,7 +94,7 @@ export function Step1Parties() {
         {errors.donee?.address && <p role="alert">{errors.donee.address.message}</p>}
 
         <label htmlFor="donee-phone" className="opt">수증자 연락처</label>
-        <input id="donee-phone" autoComplete="off" spellCheck={false} {...register('donee.phone')} />
+        <input id="donee-phone" {...phoneField('donee.phone')} />
       </section>
     </>
   );

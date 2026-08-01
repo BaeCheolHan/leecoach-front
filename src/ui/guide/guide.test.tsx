@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react';
 import { resolvePage } from '../resolvePage';
 import App from '../App';
 import { Privacy } from '../Privacy';
+import { NotFound } from '../NotFound';
 import { GuideIndex } from './GuideIndex';
 import { AnnuityGiftReport } from './AnnuityGiftReport';
 
@@ -20,8 +21,8 @@ describe('resolvePage', () => {
     expect(resolvePage('/guide/')).toBe(GuideIndex); // 트레일링 슬래시 허용
     expect(resolvePage('/guide/annuity-gift-report')).toBe(AnnuityGiftReport);
   });
-  it('알 수 없는 경로는 메인 앱으로 폴백한다', () => {
-    expect(resolvePage('/unknown')).toBe(App);
+  it('알 수 없는 경로는 404 페이지를 반환한다', () => {
+    expect(resolvePage('/unknown')).toBe(NotFound);
   });
 });
 

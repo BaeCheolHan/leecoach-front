@@ -1,3 +1,23 @@
+/** 입력 중인 전화번호를 하이픈 포맷으로 정규화 (휴대폰 3-4-4, 서울 2-4-4, 지역 3-3-4) */
+export function formatPhoneInput(raw: string): string {
+  let d = raw.replace(/\D/g, '');
+  if (d.startsWith('02')) {
+    d = d.slice(0, 10);
+    if (d.length <= 2) return d;
+    if (d.length <= 6) return `02-${d.slice(2)}`;
+    return `02-${d.slice(2, d.length - 4)}-${d.slice(-4)}`;
+  }
+  d = d.slice(0, 11);
+  if (d.startsWith('01')) {
+    if (d.length <= 3) return d;
+    if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+    return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+  }
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}-${d.slice(3)}`;
+  return `${d.slice(0, 3)}-${d.slice(3, d.length - 4)}-${d.slice(-4)}`;
+}
+
 /** 원 단위 금액을 억/만 단위 한글 표기로 변환 (예: 5000000 → "500만원") */
 export function koreanAmount(n: number): string {
   if (!Number.isFinite(n) || n <= 0) return '';

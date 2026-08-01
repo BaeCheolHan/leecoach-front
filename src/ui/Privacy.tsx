@@ -1,3 +1,6 @@
+import { SiteHeader } from './SiteHeader';
+import { usePageMeta } from './usePageMeta';
+
 const EFFECTIVE_DATE = '2026-08-01';
 
 /**
@@ -5,8 +8,14 @@ const EFFECTIVE_DATE = '2026-08-01';
  * 서버 수집이 시작되면(백엔드 도입, 광고·분석 스크립트 추가) 반드시 이 문서를 갱신할 것.
  */
 export function Privacy() {
+  usePageMeta({
+    title: '개인정보처리방침 | 이코치맘',
+    description: '이코치맘 유기정기금 증여계약서 생성기의 개인정보처리방침 — 모든 입력은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.',
+    path: '/privacy',
+  });
   return (
     <main className="container">
+      <SiteHeader />
       <h1>개인정보처리방침</h1>
       <p className="step-indicator">시행일: {EFFECTIVE_DATE}</p>
 

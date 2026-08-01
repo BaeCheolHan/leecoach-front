@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import App from './App';
 import { Privacy } from './Privacy';
+import { NotFound } from './NotFound';
 import { GuideIndex } from './guide/GuideIndex';
 import { AnnuityGiftReport } from './guide/AnnuityGiftReport';
 
@@ -8,6 +9,8 @@ import { AnnuityGiftReport } from './guide/AnnuityGiftReport';
 export function resolvePage(pathname: string): ComponentType {
   const clean = pathname.replace(/\/+$/, '') || '/';
   switch (clean) {
+    case '/':
+      return App;
     case '/privacy':
       return Privacy;
     case '/guide':
@@ -15,6 +18,6 @@ export function resolvePage(pathname: string): ComponentType {
     case '/guide/annuity-gift-report':
       return AnnuityGiftReport;
     default:
-      return App;
+      return NotFound;
   }
 }

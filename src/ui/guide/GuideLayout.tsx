@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
+import { SiteHeader } from '../SiteHeader';
 
-/** 가이드 섹션 공통 프레임 — 상단 브랜드 링크 + 본문 + 하단 링크 */
+/** 가이드 섹션 공통 프레임 — 공통 헤더 + 본문 + 하단 링크 */
 export function GuideLayout({ children }: { children: ReactNode }) {
   return (
     <main className="container guide">
-      <p className="guide-brand">
-        <a href="/">이코치맘 · 유기정기금 증여계약서</a>
-      </p>
+      <SiteHeader />
       {children}
       <p className="footer-links">
         <a href="/guide">가이드 목록</a> · <a href="/">계약서 만들기</a> ·{' '}
