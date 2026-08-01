@@ -1,3 +1,2 @@
-https://www.leecoachmom.com/ https://leecoachmom.com/guide 301
-https://www.leecoachmom.com/* https://leecoachmom.com/:splat 301
+# 주의: Cloudflare Pages _redirects는 호스트 기반 규칙 미지원 (www 처리는 main.tsx에서)
 /* /index.html 200
