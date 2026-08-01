@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormValues } from './schema';
 import { loadDraft, saveDraft } from '../storage/draft';
 import { InAppBrowserNotice } from './InAppBrowserNotice';
-import { SiteHeader } from './SiteHeader';
+import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
 import { Step1Parties } from './steps/Step1Parties';
 import { Step2Terms } from './steps/Step2Terms';
 import { Step3Result } from './steps/Step3Result';
@@ -131,7 +131,11 @@ export default function App() {
           </nav>
         )}
         <p className="footer-links">
-          <a href="/guide">증여 가이드</a> · <a href="/privacy">개인정보처리방침</a>
+          <a href="/guide">증여 가이드</a> ·{' '}
+          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+            인스타그램
+          </a>{' '}
+          · <a href="/privacy">개인정보처리방침</a>
         </p>
       </main>
     </FormProvider>

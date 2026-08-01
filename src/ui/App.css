@@ -32,6 +32,23 @@
   text-decoration: none;
 }
 
+.top-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-nav-insta {
+  display: flex;
+  align-items: center;
+  color: #8b95a1;
+  padding: 6px;
+}
+
+.top-nav-insta:active {
+  color: #3182f6;
+}
+
 .top-nav-cta {
   font-size: 13px;
   font-weight: 700;
