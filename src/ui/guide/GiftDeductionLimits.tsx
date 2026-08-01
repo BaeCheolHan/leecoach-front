@@ -175,7 +175,6 @@ export function GiftDeductionLimits() {
             미성년 자녀의 2,000만 원 한도에서 일시금은 2,000만 원이 끝이지만, 10년 정기금이면 원금 약 2,280만
             원, 월 19만 원까지 가능합니다.
           </p>
-          <ToolCta />
           <p>
             자세한 신고 방법은 <a href="/guide/annuity-gift-report">유기정기금 가이드에서</a> 확인하세요.
           </p>

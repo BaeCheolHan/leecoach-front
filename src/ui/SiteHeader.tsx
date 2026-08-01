@@ -3,7 +3,7 @@ export function SiteHeader() {
   const onTool = window.location.pathname === '/';
   return (
     <nav className="top-nav">
-      <a className="top-nav-brand" href="/">
+      <a className="top-nav-brand" href="/guide">
         이코치맘
       </a>
       {onTool ? (

@@ -70,7 +70,7 @@ describe('GiftDeductionLimits', () => {
       }),
     ).toBeTruthy();
     expect(screen.getByText('아빠와 엄마가 각각 5천만씩 줄 수 있나요?')).toBeTruthy();
-    expect(container.querySelectorAll('.guide-cta')).toHaveLength(2);
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1); // CTA는 글 끝 1개만 (섹션 중복 제거)
   });
 
   it('FAQ JSON-LD 5개를 삽입한다', () => {
