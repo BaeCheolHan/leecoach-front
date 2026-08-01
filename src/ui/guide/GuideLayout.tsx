@@ -15,8 +15,8 @@ export function GuideLayout({ children }: { children: ReactNode }) {
   );
 }
 
-/** 도구로 유도하는 CTA 버튼 */
-export function ToolCta({ label = '증여계약서 1분 만에 무료로 만들기' }: { label?: string }) {
+/** 도구로 유도하는 CTA 버튼 — 라벨은 한 종류로 통일 (같은 목적지의 버튼이 다르게 보이지 않도록) */
+export function ToolCta({ label = '무료로 계산하고 서류 만들기' }: { label?: string }) {
   return (
     <p className="guide-cta">
       <a className="btn-primary" href="/">
