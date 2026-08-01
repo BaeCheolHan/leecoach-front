@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
-import { GuideLayout, ToolCta } from './GuideLayout';
+import { GuideLayout } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
 
 /** FAQ — 화면 렌더와 JSON-LD(FAQPage)의 단일 소스 */
@@ -173,7 +173,6 @@ export function LoanVsGift() {
           ))}
         </section>
 
-        <ToolCta />
         <ManualPromo variant="inline" />
         <p className="disclaimer">{DISCLAIMER}</p>
       </article>

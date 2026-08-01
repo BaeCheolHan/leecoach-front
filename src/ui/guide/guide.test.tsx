@@ -140,7 +140,7 @@ describe('LoanVsGift', () => {
       }),
     ).toBeTruthy();
     expect(screen.getByText('차용증을 나중에 쓰면 안 되나요?')).toBeTruthy();
-    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(0); // 도구 CTA 없음 — 글 성격상 제거 (사용자 결정)
   });
 
   it('FAQ JSON-LD 5개를 삽입한다', () => {
