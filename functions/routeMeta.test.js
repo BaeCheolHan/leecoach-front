@@ -9,6 +9,18 @@ const expectedMeta = {
       '자녀 증여, 유기정기금, 증여세 신고를 쉽게 풀어쓴 가이드 모음. 계약서 작성부터 홈택스 신고까지.',
     ogTitle: '증여 가이드',
   },
+  '/guide/late-report-checklist': {
+    title: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단 | 이코치맘',
+    description:
+      '신고 없이 아이 계좌에 입금해 온 부모님을 위한 자가진단 3단계 — 원금 합계 계산, 한도 비교, 기한 후 신고까지. 지금 확인하면 간단히 정리됩니다.',
+    ogTitle: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단',
+  },
+  '/guide/tax-free-money': {
+    title: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계 | 이코치맘',
+    description:
+      '세뱃돈과 용돈은 어디까지 비과세일까? 아동수당·부모급여는 증여 한도와 별개일까? 아이 돈 관리에서 가장 헷갈리는 비과세 경계를 정리했습니다.',
+    ogTitle: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계',
+  },
   '/guide/annuity-gift-report': {
     title: '자녀에게 매달 증여하고 세금 0원 만들기 — 유기정기금 증여 신고 가이드 | 이코치맘',
     description:
@@ -63,8 +75,8 @@ describe('routeMeta', () => {
     expect(routeMeta).toEqual(expectedMeta);
   });
 
-  it('contains all six guide routes and the privacy route', () => {
-    expect(Object.keys(routeMeta).filter((path) => path.startsWith('/guide'))).toHaveLength(6);
+  it('contains all eight guide routes and the privacy route', () => {
+    expect(Object.keys(routeMeta).filter((path) => path.startsWith('/guide'))).toHaveLength(8);
     expect(routeMeta['/privacy']).toBeDefined();
   });
 

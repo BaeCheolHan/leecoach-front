@@ -1,0 +1,117 @@
+import { useEffect } from 'react';
+import { DISCLAIMER, SITE_ORIGIN } from '../../config';
+import { usePageMeta } from '../usePageMeta';
+import { GuideLayout, ToolCta } from './GuideLayout';
+import { ManualPromo } from './ManualPromo';
+
+const FAQ: { q: string; a: string }[] = [
+  { q: '세뱃돈은 얼마까지 괜찮나요?', a: '법에 금액 기준이 없습니다. 사회통념상 수준의 용돈·세뱃돈은 문제 삼지 않는 것이 실무입니다.' },
+  { q: '세뱃돈을 아이 주식계좌에 넣으면요?', a: '자산 취득이 되어 증여로 해석될 수 있습니다. 금액이 쌓인다면 신고를 권합니다.' },
+  { q: '아동수당을 부모 계좌로 받고 있어요', a: '가능하면 아이 명의 계좌로 변경해 부모 돈과 섞이지 않게 하는 것이 소명에 유리합니다.' },
+  { q: '조부모가 주신 용돈도 합산되나요?', a: '직계존속 그룹으로 합산됩니다. 자세한 내용은 공제 한도 가이드를 참고하세요.' },
+  { q: '학원비·등록금을 대신 내주는 건요?', a: '부양의무자가 지급하는 통상적인 교육비·생활비는 비과세입니다.' },
+];
+
+const META = {
+  title: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계 | 이코치맘',
+  description: '세뱃돈과 용돈은 어디까지 비과세일까? 아동수당·부모급여는 증여 한도와 별개일까? 아이 돈 관리에서 가장 헷갈리는 비과세 경계를 정리했습니다.',
+  path: '/guide/tax-free-money',
+};
+
+export function TaxFreeMoney() {
+  usePageMeta(META);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'faq-jsonld-taxfree';
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQ.map((f) => ({
+        '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+      url: `${SITE_ORIGIN}${META.path}`,
+    });
+    document.head.appendChild(script);
+    return () => script.remove();
+  }, []);
+
+  return (
+    <GuideLayout>
+      <article>
+        <h1>세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계</h1>
+        <p className="guide-lede">아이에게 들어온 돈의 출처와 쓰임을 나누면 비과세의 경계가 선명해집니다.</p>
+
+        <section className="card tldr">
+          <h2>3줄 요약</h2>
+          <ol>
+            <li>사회통념상 세뱃돈·용돈·축의금은 비과세입니다. 단, ‘쓰는 돈’일 때의 이야기입니다.</li>
+            <li>그 돈을 모아 예금·주식을 사는 순간 ‘자산 취득’이 되어 증여 문제가 생길 수 있습니다.</li>
+            <li>아동수당·부모급여는 국가가 주는 돈으로, 부모의 증여 한도와 별개입니다.</li>
+          </ol>
+        </section>
+
+        <section className="card guide-section">
+          <h2>1. 세뱃돈은 세금 안 내는 거 아니었어요?</h2>
+          <p>사회통념상 인정되는 용돈·세뱃돈·축의금은 비과세입니다.</p>
+          <p>
+            다만 세법상 ‘용돈’은 생활비나 교육비처럼 실제 소비되는 돈을 말합니다. 얼마까지라는 구체적인 금액
+            기준은 법에 없습니다.
+          </p>
+        </section>
+
+        <section className="card guide-section">
+          <h2>2. 경계는 ‘사용’이다</h2>
+          <p>쓰면 용돈이지만, 모아서 자산을 사면 증여로 볼 수 있습니다.</p>
+          <div className="table-scroll">
+            <table className="info-table">
+              <tbody>
+                <tr><th>학원비 사용</th><td>비과세</td></tr>
+                <tr><th>주식 매수</th><td>증여 쟁점</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            예를 들어 세뱃돈으로 학원비를 내면 비과세지만, 세뱃돈을 모아 주식을 사면 투자금 증여로 해석될 수
+            있습니다. 아이 계좌에 목돈을 모아줄 계획이라면 처음부터 증여 신고로 기록을 남기는 편이 깔끔합니다.
+          </p>
+        </section>
+
+        <section className="card guide-section">
+          <h2>3. 아동수당·부모급여는 다릅니다</h2>
+          <p>아동수당과 부모급여는 국가가 아이에게 주는 돈이므로 부모의 증여 한도 2,000만 원과 별개입니다.</p>
+          <p className="guide-note">처음부터 아이 명의 계좌로 받고 부모가 넣는 돈과 섞이지 않게 관리하면 소명이 쉬워집니다.</p>
+        </section>
+
+        <section className="card guide-section">
+          <h2>4. 정리 — 아이 돈 관리 원칙 3가지</h2>
+          <ol className="step-list">
+            <li><b>쓸 돈</b> — 생활비·학원비는 비과세이므로 걱정하지 않아도 됩니다.</li>
+            <li><b>모을 돈</b> — 증여 신고로 기록을 남깁니다.</li>
+            <li><b>국가지원금</b> — 아이 계좌로 바로 받고 부모 돈과 분리합니다.</li>
+          </ol>
+          <p>
+            모아둔 세뱃돈의 소명이나 초과분의 비과세 주장처럼 경계가 애매한 실제 사례는 상황별 판단이 필요하며,
+            유료 매뉴얼에 세무사가 답한 케이스별 쟁점을 정리해 두었습니다.
+          </p>
+          <p>
+            모을 돈의 신고는 <a href="/guide/annuity-gift-report">유기정기금 증여 신고 가이드</a>에서, 가족별 합산
+            기준은 <a href="/guide/gift-deduction-limits">증여재산공제 한도 가이드</a>에서 확인하세요.
+          </p>
+        </section>
+
+        <section className="card guide-section">
+          <h2>5. 자주 묻는 질문</h2>
+          {FAQ.map((f) => (
+            <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.a}</p></details>
+          ))}
+        </section>
+
+        <ToolCta />
+        <ManualPromo variant="inline" />
+        <p className="disclaimer">{DISCLAIMER}</p>
+      </article>
+    </GuideLayout>
+  );
+}

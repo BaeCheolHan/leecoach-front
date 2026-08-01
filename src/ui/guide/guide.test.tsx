@@ -11,6 +11,8 @@ import { GiftDeductionLimits } from './GiftDeductionLimits';
 import { MinorStockAccount } from './MinorStockAccount';
 import { LoanVsGift } from './LoanVsGift';
 import { NoReportRisks } from './NoReportRisks';
+import { LateReportChecklist } from './LateReportChecklist';
+import { TaxFreeMoney } from './TaxFreeMoney';
 
 beforeEach(() => {
   localStorage.clear();
@@ -174,6 +176,54 @@ describe('NoReportRisks', () => {
   it('FAQ JSON-LD 5개를 삽입한다', () => {
     render(<NoReportRisks />);
     const script = document.getElementById('faq-jsonld-noreport');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe('LateReportChecklist', () => {
+  it('늦은 증여 신고 자가진단 가이드 경로와 본문을 렌더한다', () => {
+    expect(resolvePage('/guide/late-report-checklist')).toBe(LateReportChecklist);
+    const { container } = render(<LateReportChecklist />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('잔액이 한도를 넘었는데 원금은 이내예요')).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(<LateReportChecklist />);
+    const script = document.getElementById('faq-jsonld-late');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe('TaxFreeMoney', () => {
+  it('비과세 경계 가이드 경로와 본문을 렌더한다', () => {
+    expect(resolvePage('/guide/tax-free-money')).toBe(TaxFreeMoney);
+    const { container } = render(<TaxFreeMoney />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('세뱃돈은 얼마까지 괜찮나요?')).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(<TaxFreeMoney />);
+    const script = document.getElementById('faq-jsonld-taxfree');
     expect(script).toBeTruthy();
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');

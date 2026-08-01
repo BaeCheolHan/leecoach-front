@@ -8,6 +8,8 @@ import { GiftDeductionLimits } from './guide/GiftDeductionLimits';
 import { MinorStockAccount } from './guide/MinorStockAccount';
 import { LoanVsGift } from './guide/LoanVsGift';
 import { NoReportRisks } from './guide/NoReportRisks';
+import { LateReportChecklist } from './guide/LateReportChecklist';
+import { TaxFreeMoney } from './guide/TaxFreeMoney';
 
 /** 경로 → 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
 export function resolvePage(pathname: string): ComponentType {
@@ -29,6 +31,10 @@ export function resolvePage(pathname: string): ComponentType {
       return LoanVsGift;
     case '/guide/no-report-risks':
       return NoReportRisks;
+    case '/guide/late-report-checklist':
+      return LateReportChecklist;
+    case '/guide/tax-free-money':
+      return TaxFreeMoney;
     default:
       return NotFound;
   }

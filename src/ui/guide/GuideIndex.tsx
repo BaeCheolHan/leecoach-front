@@ -4,6 +4,16 @@ import { ManualPromo } from './ManualPromo';
 
 const ARTICLES = [
   {
+    path: '/guide/late-report-checklist',
+    title: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단',
+    summary: '원금 합계 계산부터 한도 비교와 기한 후 신고까지, 지금 확인할 자가진단 3단계를 정리했습니다.',
+  },
+  {
+    path: '/guide/tax-free-money',
+    title: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계',
+    summary: '세뱃돈과 용돈의 비과세 경계, 아동수당·부모급여를 분리해 관리하는 원칙을 정리했습니다.',
+  },
+  {
     path: '/guide/no-report-risks',
     title: '증여세 신고 안 하면 어떻게 되나요? — 가산세와 자금출처조사',
     summary: '신고를 미루면 붙는 가산세와 자금출처 소명, 지금이라도 기한 후 신고로 바로잡는 방법을 정리했습니다.',
