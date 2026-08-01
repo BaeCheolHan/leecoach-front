@@ -51,7 +51,7 @@ export default function App() {
     <FormProvider {...form}>
       <main className="container">
         <InAppBrowserNotice />
-        <h1>유기정기금 증여계약서 · 평가명세서 생성</h1>
+        <h1>유기정기금 증여계약서 · 평가명세서</h1>
         <p className="step-indicator">{step}/3</p>
         {step < 3 && (
           <p className="req-legend">
