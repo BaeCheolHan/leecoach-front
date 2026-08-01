@@ -1,3 +1,5 @@
+import { TAX_MIN_THRESHOLD } from '../config';
+
 export type Relation = '부' | '모' | '자' | '손' | '조부' | '조모' | '배우자' | '기타';
 
 export interface DeductionJudgement {
@@ -5,6 +7,8 @@ export interface DeductionJudgement {
   within: boolean;
   excess: number;
   minorApplied: boolean;
+  /** 한도는 초과했지만 과세표준(초과액)이 과세최저한 미만이라 증여세가 부과되지 않는 경우 */
+  underTaxMin: boolean;
 }
 
 /**
@@ -34,10 +38,12 @@ export function judgeDeduction(
 ): DeductionJudgement {
   const limit = deductionLimit(relation, minor);
   const within = totalDiscounted <= limit;
+  const excess = within ? 0 : totalDiscounted - limit;
   return {
     limit,
     within,
-    excess: within ? 0 : totalDiscounted - limit,
+    excess,
     minorApplied: minor && (relation === '자' || relation === '손'),
+    underTaxMin: !within && excess < TAX_MIN_THRESHOLD,
   };
 }

@@ -4,6 +4,8 @@ export const DISCOUNT_RATE = 0.03;
 export const CAP_MULTIPLIER = 20;
 /** 성년 기준 나이 (만 나이) */
 export const ADULT_AGE = 19;
+/** 증여세 과세최저한: 과세표준이 이 금액 미만이면 부과하지 않음 (상증세법 §55②) */
+export const TAX_MIN_THRESHOLD = 500_000;
 /** 면책 문구 — 화면·PDF 공통 */
 export const DISCLAIMER =
   '본 자료는 서식 작성을 돕는 참고 자료이며 세무 자문이 아닙니다. 증여세 신고의 책임은 납세자 본인에게 있으므로 신고 전 세무사 등 전문가의 검토를 받으시기 바랍니다.';

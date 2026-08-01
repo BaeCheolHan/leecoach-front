@@ -10,7 +10,7 @@ import { ContractDoc } from '../../pdf/ContractDoc';
 import { ScheduleDoc } from '../../pdf/ScheduleDoc';
 import { pdfFileName, renderPdfBlob, savePdfFiles } from '../../pdf/download';
 import { clearDraft } from '../../storage/draft';
-import { DISCLAIMER } from '../../config';
+import { DISCLAIMER, TAX_MIN_THRESHOLD } from '../../config';
 
 const won = (n: number) => `₩${n.toLocaleString('ko-KR')}`;
 
@@ -111,7 +111,11 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
           <p>
             할인평가액 합계 {won(result.totalDiscounted)} / 공제한도 {won(judgement.limit)}
             {judgement.minorApplied ? ' (미성년자 공제)' : ''} → {' '}
-            {judgement.within ? '한도 이내입니다. 예상 증여세는 0원입니다.' : `한도를 ${won(judgement.excess)} 초과합니다. 세무사 검토가 필요합니다.`}
+            {judgement.within
+              ? '한도 이내입니다. 예상 증여세는 0원입니다.'
+              : judgement.underTaxMin
+                ? `한도를 ${won(judgement.excess)} 초과하나, 과세표준이 과세최저한(${won(TAX_MIN_THRESHOLD)}) 미만이므로 증여세가 부과되지 않습니다.`
+                : `한도를 ${won(judgement.excess)} 초과합니다. 세무사 검토가 필요합니다.`}
           </p>
           <p className="warn">10년 내 동일인으로부터 받은 기증여가 있으면 합산됩니다.</p>
           {values.donee.relation === '기타' && (
