@@ -74,7 +74,7 @@ export default function App() {
           </nav>
         )}
         <p className="footer-links">
-          <a href="/privacy">개인정보처리방침</a>
+          <a href="/guide">증여 가이드</a> · <a href="/privacy">개인정보처리방침</a>
         </p>
       </main>
     </FormProvider>
