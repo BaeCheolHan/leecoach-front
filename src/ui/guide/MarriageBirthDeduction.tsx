@@ -3,6 +3,7 @@ import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
 import { GuideLayout } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
+import { RelatedGuides } from './RelatedGuides';
 
 const FAQ = [
   { q: '결혼 전에 미리 받아도 되나요?', a: '혼인신고일 전 2년부터 가능합니다. 신고일을 기준으로 판단합니다.' },
@@ -103,6 +104,7 @@ export function MarriageBirthDeduction() {
         </section>
 
         <ManualPromo variant="inline" />
+        <RelatedGuides current={META.path} />
         <p className="disclaimer">{DISCLAIMER}</p>
       </article>
     </GuideLayout>

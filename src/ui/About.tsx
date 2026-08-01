@@ -21,11 +21,9 @@ export function About() {
           5살 딸과 갓 태어난 아들을 키우고 있습니다. 인스타그램(@leecoach_mom)에서 자녀 증여 시리즈를
           연재하며 받은 질문들에서 이 사이트가 시작됐습니다.
         </p>
-        <p>
-          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-            인스타그램
-          </a>
-        </p>
+        <a className="about-insta" href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
+          @leecoach_mom 팔로우하기 →
+        </a>
       </section>
 
       <section className="card">
@@ -37,13 +35,17 @@ export function About() {
           </li>
           <li>증여 가이드를 무료로 연재합니다.</li>
         </ol>
-        <p>
-          <a href="/">계약서 만들기</a> · <a href="/guide">가이드</a>
-        </p>
+        <div className="about-links">
+          <a className="btn-primary" href="/">
+            계약서 만들기
+          </a>
+          <a className="btn-secondary" href="/guide">
+            가이드 보기
+          </a>
+        </div>
       </section>
 
-      <p>유료 매뉴얼은 현직 세무사의 자문을 받아 제작했으며 크티에서 판매합니다.</p>
-      <ManualPromo variant="inline" />
+      <ManualPromo variant="card" />
       <p className="disclaimer">{DISCLAIMER}</p>
     </main>
   );

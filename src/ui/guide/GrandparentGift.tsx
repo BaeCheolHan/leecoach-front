@@ -3,6 +3,7 @@ import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
 import { GuideLayout, ToolCta } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
+import { RelatedGuides } from './RelatedGuides';
 
 const FAQ = [
   { q: '외할머니도 합산되나요?', a: '네. 외조부모도 직계존속 그룹으로 합산됩니다.' },
@@ -66,6 +67,6 @@ export function GrandparentGift() {
       <li><b>순서 설계</b> — 세액이 나온다면 누구의 증여를 먼저 쓸지 검토합니다.</li>
     </ol><p>조부모도 유기정기금 계약으로 손주에게 정기 증여할 수 있습니다.</p><p>케이스별 유불리는 세무사 상담 영역입니다. 유료 매뉴얼에는 관련 세무사 답변을 정리해 두었습니다.</p><p>먼저 <a href="/guide/gift-deduction-limits">증여재산공제 한도</a>를 확인하세요.</p></section>
     <section className="card guide-section"><h2>5. 자주 묻는 질문</h2>{FAQ.map((f) => <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.a}</p></details>)}</section>
-    <ToolCta /><ManualPromo variant="inline" /><p className="disclaimer">{DISCLAIMER}</p>
+    <ToolCta /><ManualPromo variant="inline" /><RelatedGuides current={META.path} /><p className="disclaimer">{DISCLAIMER}</p>
   </article></GuideLayout>;
 }

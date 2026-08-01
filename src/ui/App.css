@@ -198,6 +198,54 @@
   color: #3182f6;
 }
 
+/* 소개 페이지 ------------------------------------------------------------ */
+
+.about .card {
+  margin-bottom: 14px;
+}
+
+.about .card h2 {
+  font-size: 17px;
+  margin: 0 0 10px;
+}
+
+.about .card p,
+.about .card li {
+  font-size: 15px;
+  line-height: 1.75;
+  color: #333d4b;
+  word-break: keep-all;
+}
+
+.about .card ol {
+  padding-left: 20px;
+  margin: 0 0 14px;
+}
+
+.about-insta {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: linear-gradient(45deg, #f09433, #dc2743, #bc1888);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.about-links {
+  display: flex;
+  gap: 8px;
+}
+
+.about-links a {
+  flex: 1;
+  text-align: center;
+  text-decoration: none;
+  line-height: 56px;
+}
+
 /* 가이드 페이지 ---------------------------------------------------------- */
 
 .guide h1 {
@@ -1042,4 +1090,17 @@ button {
   .manual-promo-card {
     padding: 20px;
   }
+}
+
+.related-guides > h2 {
+  margin: 24px 0 12px;
+  color: #8b95a1;
+  font-size: 14px;
+}
+
+.related-guides .guide-card h3 {
+  margin: 0 0 8px;
+  color: #191f28;
+  font-size: 17px;
+  word-break: keep-all;
 }

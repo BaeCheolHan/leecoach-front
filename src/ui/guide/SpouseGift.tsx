@@ -3,6 +3,7 @@ import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
 import { GuideLayout } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
+import { RelatedGuides } from './RelatedGuides';
 
 const FAQ = [
   { q: '생활비로 매달 300 보내는데 신고하나요?', a: '통상적인 생활비 이체는 증여가 아니므로 신고하지 않습니다.' },
@@ -48,6 +49,6 @@ export function SpouseGift() {
       <p>한도는 <a href="/guide/gift-deduction-limits">증여재산공제 한도 가이드</a>, 신고하지 않았을 때의 문제는 <a href="/guide/no-report-risks">무신고 위험 가이드</a>를 참고하세요.</p>
     </section>
     <section className="card guide-section"><h2>5. 자주 묻는 질문</h2>{FAQ.map((f) => <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.a}</p></details>)}</section>
-    <ManualPromo variant="inline" /><p className="disclaimer">{DISCLAIMER}</p>
+    <ManualPromo variant="inline" /><RelatedGuides current={META.path} /><p className="disclaimer">{DISCLAIMER}</p>
   </article></GuideLayout>;
 }

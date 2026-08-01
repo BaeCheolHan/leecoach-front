@@ -3,6 +3,7 @@ import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
 import { GuideLayout, ToolCta } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
+import { RelatedGuides } from './RelatedGuides';
 
 const FAQ: { q: string; a: string }[] = [
   { q: '세뱃돈은 얼마까지 괜찮나요?', a: '법에 금액 기준이 없습니다. 사회통념상 수준의 용돈·세뱃돈은 문제 삼지 않는 것이 실무입니다.' },
@@ -104,6 +105,7 @@ export function TaxFreeMoney() {
 
         <ToolCta />
         <ManualPromo variant="inline" />
+        <RelatedGuides current={META.path} />
         <p className="disclaimer">{DISCLAIMER}</p>
       </article>
     </GuideLayout>

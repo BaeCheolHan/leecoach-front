@@ -15,6 +15,7 @@ import { GrandparentGift } from './GrandparentGift';
 import { SpouseGift } from './SpouseGift';
 import { GiftRoadmap } from './GiftRoadmap';
 import { MarriageBirthDeduction } from './MarriageBirthDeduction';
+import { RelatedGuides } from './RelatedGuides';
 
 beforeEach(() => {
   localStorage.clear();
@@ -43,12 +44,11 @@ describe('About', () => {
     render(<About />);
     expect(screen.getByRole('heading', { level: 1, name: '이코치맘을 소개합니다' })).toBeTruthy();
     expect(screen.getByText(/간호사이자 두 아이/)).toBeTruthy();
-    expect(screen.getByText(/현직 세무사의 자문을 받아 제작했으며 크티에서 판매/)).toBeTruthy();
     expect(screen.getByText('세무사가 검토한 우리 아이 증여 실무 매뉴얼')).toBeTruthy();
     expect(screen.getByText(/세무 자문이 아닙니다/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: '인스타그램' }).getAttribute('href')).toContain('leecoach_mom');
+    expect(screen.getByRole('link', { name: /팔로우하기/ }).getAttribute('href')).toContain('leecoach_mom');
     expect(screen.getByRole('link', { name: '계약서 만들기' }).getAttribute('href')).toBe('/');
-    expect(screen.getByRole('link', { name: '가이드' }).getAttribute('href')).toBe('/guide');
+    expect(screen.getByRole('link', { name: '가이드 보기' }).getAttribute('href')).toBe('/guide');
     expect(document.title).toBe('이코치맘을 소개합니다 | 이코치맘');
   });
 });
@@ -278,5 +278,24 @@ describe.each([
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');
     expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe('RelatedGuides', () => {
+  it('현재 글을 제외한 다음 글 2개를 렌더한다', () => {
+    const { container } = render(<RelatedGuides current="/guide/gift-roadmap" />);
+    const links = Array.from(container.querySelectorAll<HTMLAnchorElement>('.related-guides a'));
+
+    expect(links).toHaveLength(2);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      '/guide/marriage-birth-deduction',
+      '/guide/tax-free-money',
+    ]);
+    expect(container.querySelector('a[href="/guide/gift-roadmap"]')).toBeNull();
+  });
+
+  it('GiftRoadmap 하단에 관련 글 추천을 렌더한다', () => {
+    render(<GiftRoadmap />);
+    expect(screen.getByRole('heading', { level: 2, name: '다음에 읽어보세요' })).toBeTruthy();
   });
 });

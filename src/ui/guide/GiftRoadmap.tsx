@@ -3,6 +3,7 @@ import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
 import { GuideLayout, ToolCta } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
+import { RelatedGuides } from './RelatedGuides';
 
 const FAQ = [
   { q: '꼭 10년을 채워야 하나요?', a: '각 증여일에서 10년을 소급합니다. 앞선 증여에서 10년이 지나면 새 한도를 쓸 수 있습니다.' },
@@ -48,6 +49,6 @@ export function GiftRoadmap() {
       <p>중간에 목돈을 한 번에 주면 10년 합산으로 한도를 넘을 수 있습니다. 항상 기증여 확인이 먼저입니다.</p><p>신고를 미뤄왔다면 <a href="/guide/no-report-risks">증여세 무신고 위험 가이드</a>에서 지금 정리하는 방법을 확인하세요.</p><p className="guide-note">자산 증식분은 한도와 무관합니다. 신고된 원금을 기준으로 봅니다.</p>
     </section>
     <section className="card guide-section"><h2>5. 자주 묻는 질문</h2>{FAQ.map((f) => <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.a}</p></details>)}</section>
-    <ToolCta /><ManualPromo variant="inline" /><p className="disclaimer">{DISCLAIMER}</p>
+    <ToolCta /><ManualPromo variant="inline" /><RelatedGuides current={META.path} /><p className="disclaimer">{DISCLAIMER}</p>
   </article></GuideLayout>;
 }
