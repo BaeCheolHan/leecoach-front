@@ -132,6 +132,10 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
         <button type="button" className="btn-primary" disabled={busy || !blobs} onClick={dlSchedule}>평가명세서 PDF</button>
         <button type="button" className="btn-primary" disabled={busy || !blobs} onClick={dlBoth}>모두 다운로드</button>
       </div>
+      <a className="next-guide" href="/guide/annuity-gift-report">
+        <b>다음 단계는 홈택스 신고입니다</b>
+        <span>서류 첨부부터 제출까지, 신고 방법 가이드 보기 →</span>
+      </a>
       <nav className="step-nav step-nav--even">
         <button type="button" className="btn-secondary" onClick={onBack}>이전</button>
         <button type="button" className="btn-secondary" onClick={() => { clearDraft(); location.reload(); }}>처음부터 다시</button>

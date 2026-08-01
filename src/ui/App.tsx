@@ -50,6 +50,10 @@ export default function App() {
   return (
     <FormProvider {...form}>
       <main className="container">
+        <nav className="top-nav">
+          <span className="top-nav-brand">이코치맘</span>
+          <a href="/guide">증여 가이드</a>
+        </nav>
         <InAppBrowserNotice />
         <h1>유기정기금 증여계약서 · 평가명세서</h1>
         <p className="step-indicator">{step}/3</p>

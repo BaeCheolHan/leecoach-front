@@ -16,6 +16,55 @@
   word-break: keep-all;
 }
 
+/* 상단 내비 -------------------------------------------------------------- */
+
+.top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 12px;
+}
+
+.top-nav-brand {
+  font-size: 14px;
+  font-weight: 800;
+  color: #191f28;
+}
+
+.top-nav a {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3182f6;
+  text-decoration: none;
+  background: #f2f8ff;
+  border-radius: 999px;
+  padding: 8px 14px;
+}
+
+/* 3단계 → 신고 가이드 연결 카드 */
+.next-guide {
+  display: block;
+  margin-top: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e8eb;
+  border-radius: 14px;
+  text-decoration: none;
+}
+
+.next-guide b {
+  display: block;
+  font-size: 15px;
+  color: #191f28;
+  margin-bottom: 4px;
+}
+
+.next-guide span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3182f6;
+}
+
 /* 가이드 페이지 ---------------------------------------------------------- */
 
 .guide-brand {
