@@ -1,5 +1,6 @@
 import { GuideLayout } from './GuideLayout';
 import { usePageMeta } from '../usePageMeta';
+import { ManualPromo } from './ManualPromo';
 
 const ARTICLES = [
   {
@@ -31,6 +32,7 @@ export function GuideIndex() {
     <GuideLayout>
       <h1>증여 가이드</h1>
       <p className="guide-lede">자녀에게 현명하게 증여하는 방법을 하나씩 쉽게 정리합니다.</p>
+      <ManualPromo variant="card" />
       {ARTICLES.map((a) => (
         <a key={a.path} className="card guide-card" href={a.path}>
           <h2>{a.title}</h2>

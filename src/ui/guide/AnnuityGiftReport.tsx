@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { GuideLayout, ToolCta } from './GuideLayout';
+import { ManualPromo } from './ManualPromo';
 import { usePageMeta } from '../usePageMeta';
 import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 
@@ -182,6 +183,7 @@ export function AnnuityGiftReport() {
         </section>
 
         <ToolCta />
+        <ManualPromo variant="inline" />
         <p className="disclaimer">{DISCLAIMER}</p>
       </article>
     </GuideLayout>

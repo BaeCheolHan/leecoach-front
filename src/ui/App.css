@@ -919,3 +919,106 @@ button {
     padding: 6px 2px;
   }
 }
+
+/* 유료 매뉴얼 프로모션 -------------------------------------------------- */
+
+.manual-promo {
+  word-break: keep-all;
+}
+
+.manual-promo-card {
+  padding: 24px;
+  margin: 0 0 16px;
+  background: #ffffff;
+  border: 1px solid #f0e6d2;
+  border-radius: 20px;
+}
+
+.manual-promo-badge {
+  display: inline-block;
+  padding: 5px 9px;
+  margin-bottom: 12px;
+  border-radius: 999px;
+  background: #fdf6e7;
+  color: #8a6d1f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.manual-promo h2 {
+  color: #191f28;
+  font-weight: 800;
+}
+
+.manual-promo-card h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.manual-promo p {
+  color: #4e5968;
+  line-height: 1.7;
+}
+
+.manual-promo-card p {
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+
+.manual-promo-card a {
+  display: inline-block;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #c9962e;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.manual-promo-card a:hover {
+  background: #a9791f;
+}
+
+.manual-promo-inline {
+  padding: 16px;
+  margin-top: 16px;
+  border-radius: 12px;
+  background: #fdf6e7;
+}
+
+.manual-promo-inline .manual-promo-badge {
+  padding: 0;
+  margin-bottom: 7px;
+  background: transparent;
+}
+
+.manual-promo-inline h2 {
+  margin: 0 0 6px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.manual-promo-inline p {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.manual-promo-inline a {
+  color: #8a6d1f;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.manual-promo-inline a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 479px) {
+  .manual-promo-card {
+    padding: 20px;
+  }
+}
