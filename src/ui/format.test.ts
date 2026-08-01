@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatPhoneInput, koreanAmount } from './format';
+import { formatPhoneInput, koreanAmount, presetEndDate } from './format';
 
 describe('koreanAmount', () => {
   it('만 단위 금액을 한글로 표기한다', () => {
@@ -39,5 +39,15 @@ describe('formatPhoneInput', () => {
   it('숫자 외 문자는 제거하고 11자리 초과는 잘라낸다', () => {
     expect(formatPhoneInput('010-1234-5678999')).toBe('010-1234-5678');
     expect(formatPhoneInput('010 1234 5678')).toBe('010-1234-5678');
+  });
+});
+
+describe('presetEndDate', () => {
+  it('시작일 + N년 - 1일을 계산한다', () => {
+    expect(presetEndDate('2026-08-01', 10)).toBe('2036-07-31');
+    expect(presetEndDate('2026-01-01', 5)).toBe('2030-12-31');
+  });
+  it('윤년 경계를 처리한다', () => {
+    expect(presetEndDate('2024-02-29', 1)).toBe('2025-02-28');
   });
 });

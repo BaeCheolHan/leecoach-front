@@ -138,7 +138,18 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
       </a>
       <nav className="step-nav step-nav--even">
         <button type="button" className="btn-secondary" onClick={onBack}>이전</button>
-        <button type="button" className="btn-secondary" onClick={() => { clearDraft(); location.reload(); }}>처음부터 다시</button>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => {
+            if (window.confirm('입력한 내용을 모두 지우고 처음부터 시작할까요?')) {
+              clearDraft();
+              location.reload();
+            }
+          }}
+        >
+          처음부터 다시
+        </button>
       </nav>
       <p className="disclaimer">{DISCLAIMER}</p>
     </>

@@ -48,9 +48,37 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [step]);
 
+  // 브라우저 뒤로가기 = 이전 단계 (모바일 뒤로가기 제스처로 사이트를 이탈하지 않도록)
+  useEffect(() => {
+    history.replaceState({ step: 1 }, '');
+    const onPop = (e: PopStateEvent) => {
+      const s = e.state?.step;
+      if (s === 1 || s === 2 || s === 3) setStep(s);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  const goTo = (s: 1 | 2 | 3) => {
+    history.pushState({ step: s }, '');
+    setStep(s);
+  };
+
   const next = async () => {
     const fields = step === 1 ? STEP1_FIELDS : STEP2_FIELDS;
-    if (await form.trigger([...fields])) setStep((s) => Math.min(s + 1, 3) as 1 | 2 | 3);
+    if (await form.trigger([...fields])) {
+      goTo(Math.min(step + 1, 3) as 1 | 2 | 3);
+      return;
+    }
+    // 검증 실패: 화면 밖에 있는 첫 에러로 스크롤하고 해당 입력에 포커스
+    // (setTimeout — 에러 메시지가 DOM에 커밋된 다음 프레임에 실행되도록)
+    setTimeout(() => {
+      const alert = document.querySelector('[role="alert"]');
+      if (!alert) return;
+      const input = alert.previousElementSibling;
+      if (input instanceof HTMLElement) input.focus({ preventScroll: true });
+      alert.scrollIntoView?.({ block: 'center' });
+    }, 50);
   };
 
   return (
@@ -75,6 +103,12 @@ export default function App() {
           </div>
         )}
         <h1>유기정기금 증여계약서 · 평가명세서</h1>
+        {step === 1 && (
+          <p className="trust-note">
+            이름·금액·기간만 입력하면 PDF가 완성됩니다. 입력한 모든 정보는{' '}
+            <b>내 브라우저 안에서만 처리되고 서버로 전송되지 않아요.</b>
+          </p>
+        )}
         <p className="step-indicator">{step}/3</p>
         {step < 3 && (
           <p className="req-legend">
@@ -83,11 +117,11 @@ export default function App() {
         )}
         {step === 1 && <Step1Parties />}
         {step === 2 && <Step2Terms />}
-        {step === 3 && <Step3Result values={form.getValues()} onBack={() => setStep(2)} />}
+        {step === 3 && <Step3Result values={form.getValues()} onBack={() => history.back()} />}
         {step < 3 && (
           <nav className={`step-nav${step > 1 ? ' step-nav--split' : ''}`}>
             {step > 1 && (
-              <button type="button" className="btn-secondary" onClick={() => setStep((s) => (s - 1) as 1 | 2)}>
+              <button type="button" className="btn-secondary" onClick={() => history.back()}>
                 이전
               </button>
             )}

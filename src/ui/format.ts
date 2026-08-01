@@ -18,6 +18,15 @@ export function formatPhoneInput(raw: string): string {
   return `${d.slice(0, 3)}-${d.slice(3, d.length - 4)}-${d.slice(-4)}`;
 }
 
+/** 기간 프리셋용 종료일: 시작일 + N년 - 1일 (YYYY-MM-DD) */
+export function presetEndDate(startDate: string, years: number): string {
+  const d = new Date(`${startDate}T00:00:00`);
+  d.setFullYear(d.getFullYear() + years);
+  d.setDate(d.getDate() - 1);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 /** 원 단위 금액을 억/만 단위 한글 표기로 변환 (예: 5000000 → "500만원") */
 export function koreanAmount(n: number): string {
   if (!Number.isFinite(n) || n <= 0) return '';

@@ -4,7 +4,7 @@ import { parseRrn } from '../../domain/rrn';
 import { isMinor } from '../../domain/age';
 import { evaluateAnnuity } from '../../domain/annuity';
 import { ADULT_AGE, DISCOUNT_RATE } from '../../config';
-import { koreanAmount } from '../format';
+import { koreanAmount, presetEndDate } from '../format';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -57,6 +57,23 @@ export function Step2Terms() {
       <label htmlFor="start" className="req">증여시작일</label>
       <input id="start" type="date" {...register('terms.startDate')} />
       {errors.terms?.startDate && <p role="alert">{errors.terms.startDate.message}</p>}
+      <div className="preset-row">
+        <span>기간 빠른 선택</span>
+        {[5, 10].map((y) => (
+          <button
+            key={y}
+            type="button"
+            onClick={() => {
+              // 시작일이 없으면 오늘을 시작일로 채우고, 종료일 = 시작일 + N년 - 1일
+              const start = DATE_RE.test(startDate ?? '') ? startDate : new Date().toISOString().slice(0, 10);
+              setValue('terms.startDate', start, { shouldValidate: true });
+              setValue('terms.endDate', presetEndDate(start, y), { shouldValidate: true });
+            }}
+          >
+            {y}년
+          </button>
+        ))}
+      </div>
       <label htmlFor="end" className="req">증여종료일</label>
       <input
         id="end"

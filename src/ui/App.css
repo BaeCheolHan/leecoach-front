@@ -42,6 +42,47 @@
   padding: 8px 14px;
 }
 
+/* 신뢰 문구 */
+.trust-note {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #4e5968;
+  margin: 0 0 8px;
+  word-break: keep-all;
+}
+
+.trust-note b {
+  color: #3182f6;
+}
+
+/* 기간 빠른 선택 칩 */
+.preset-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0 14px;
+}
+
+.preset-row span {
+  font-size: 13px;
+  color: #8b95a1;
+}
+
+.preset-row button {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3182f6;
+  background: #f2f8ff;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.preset-row button:active {
+  background: #d9eaff;
+}
+
 /* 임시저장 복원 안내 */
 .restored-notice {
   display: flex;
