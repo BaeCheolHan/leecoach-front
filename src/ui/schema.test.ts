@@ -5,7 +5,7 @@ const valid = {
   donor: { name: '홍길동', rrn: '800101-1000008', address: '서울시 강남구', phone: '010-1234-5678' },
   donee: {
     name: '홍아기', rrn: '210301-3999999', address: '서울시 강남구', phone: '',
-    relation: '자', legalRepName: '홍길동',
+    relation: '자',
   },
   terms: {
     startDate: '2026-01-01', endDate: '2035-12-31', method: '자동이체',

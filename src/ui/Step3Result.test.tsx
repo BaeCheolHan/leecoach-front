@@ -14,7 +14,7 @@ vi.mock('../pdf/fonts', () => ({ registerFonts: vi.fn() }));
 
 const values: FormValues = {
   donor: { name: '홍길동', rrn: '800101-1000008', address: '서울', phone: '' },
-  donee: { name: '홍아기', rrn: '210301-3999999', address: '서울', phone: '', relation: '자', legalRepName: '홍길동' },
+  donee: { name: '홍아기', rrn: '210301-3999999', address: '서울', phone: '', relation: '자' },
   terms: { startDate: '2026-01-01', endDate: '2035-12-31', method: '자동이체', paymentDay: 1, monthlyAmount: 100000, bank: '국민은행', account: '123' },
 };
 

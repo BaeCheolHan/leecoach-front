@@ -19,7 +19,7 @@ export default function App() {
     mode: 'onTouched',
     defaultValues: loadDraft() ?? {
       donor: { name: '', rrn: '', address: '', phone: '' },
-      donee: { name: '', rrn: '', address: '', phone: '', relation: undefined as never, legalRepName: '' },
+      donee: { name: '', rrn: '', address: '', phone: '', relation: undefined as never },
       terms: { startDate: '', endDate: '', method: '자동이체', paymentDay: 1, monthlyAmount: 0, bank: '', account: '' },
     },
   });

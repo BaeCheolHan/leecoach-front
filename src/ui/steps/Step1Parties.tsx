@@ -1,8 +1,6 @@
-import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import type { FormValues } from '../schema';
-import { formatRrnInput, parseRrn } from '../../domain/rrn';
-import { isMinor } from '../../domain/age';
+import { formatRrnInput } from '../../domain/rrn';
 
 const RELATIONS = ['부', '모', '자', '손', '조부', '조모', '배우자', '기타'] as const;
 const RELATION_LABELS: Record<(typeof RELATIONS)[number], string> = {
@@ -19,24 +17,9 @@ const RELATION_LABELS: Record<(typeof RELATIONS)[number], string> = {
 export function Step1Parties() {
   const {
     register,
-    watch,
     setValue,
-    getValues,
     formState: { errors },
   } = useFormContext<FormValues>();
-  const doneeRrn = watch('donee.rrn');
-  const startDate = watch('terms.startDate');
-  const donorName = watch('donor.name');
-  const info = parseRrn(doneeRrn ?? '');
-  const baseDate = startDate || new Date().toISOString().slice(0, 10);
-  const doneeMinor = info ? isMinor(info.birthDate, baseDate) : false;
-
-  useEffect(() => {
-    if (doneeMinor && !getValues('donee.legalRepName')) {
-      setValue('donee.legalRepName', donorName ?? '');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [doneeMinor]);
 
   // 숫자만 눌러도 하이픈이 자동 삽입되도록 주민등록번호 입력을 정규화
   const rrnField = (name: 'donor.rrn' | 'donee.rrn') => ({
@@ -98,17 +81,6 @@ export function Step1Parties() {
 
         <label htmlFor="donee-phone" className="opt">수증자 연락처</label>
         <input id="donee-phone" autoComplete="off" spellCheck={false} {...register('donee.phone')} />
-
-        {doneeMinor && (
-          <>
-            <label htmlFor="legal-rep" className="opt">법정대리인 성명</label>
-            <input
-              id="legal-rep"
-              placeholder="미성년 수증자를 대리하여 날인할 친권자"
-              {...register('donee.legalRepName')}
-            />
-          </>
-        )}
       </section>
     </>
   );

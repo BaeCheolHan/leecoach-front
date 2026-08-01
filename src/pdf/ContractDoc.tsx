@@ -25,11 +25,10 @@ export interface ContractProps {
   result: AnnuityResult;
   donorSeal?: string;
   doneeSeal?: string;
-  isDoneeMinor: boolean;
   madeDate: string;
 }
 
-export function ContractDoc({ values, result, donorSeal, doneeSeal, isDoneeMinor, madeDate }: ContractProps) {
+export function ContractDoc({ values, result, donorSeal, doneeSeal, madeDate }: ContractProps) {
   const { donor, donee, terms } = values;
   const method = terms.method === '기타' ? (terms.methodEtc ?? '') : terms.method;
   return (
@@ -85,16 +84,9 @@ export function ContractDoc({ values, result, donorSeal, doneeSeal, isDoneeMinor
           <View style={s.partyRow}>
             <Text style={s.partyLabel}>수증자(을)</Text>
             <Text>성명: {donee.name}</Text>
-            {!isDoneeMinor &&
-              (doneeSeal ? <Image style={s.seal} src={doneeSeal} /> : <Text style={s.sealPlaceholder}>(인)</Text>)}
+            {doneeSeal ? <Image style={s.seal} src={doneeSeal} /> : <Text style={s.sealPlaceholder}>(인)</Text>}
           </View>
           <Text>주민등록번호: {donee.rrn}    주소: {donee.address}</Text>
-          {isDoneeMinor && (
-            <View style={s.partyRow}>
-              <Text>을은 미성년자이므로 법정대리인 {donee.legalRepName ?? ''}이(가) 대리하여 날인함</Text>
-              {doneeSeal ? <Image style={s.seal} src={doneeSeal} /> : <Text style={s.sealPlaceholder}>(인)</Text>}
-            </View>
-          )}
         </View>
       </Page>
     </Document>

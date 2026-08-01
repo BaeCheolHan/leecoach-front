@@ -26,15 +26,14 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
 
   const makeContract = () => {
     const donorSeal = drawSeal(values.donor.name);
-    const doneeSeal = drawSeal(minor ? (values.donee.legalRepName || values.donor.name) : values.donee.name);
+    const doneeSeal = drawSeal(values.donee.name);
     return (
       <ContractDoc values={values} result={result} donorSeal={donorSeal} doneeSeal={doneeSeal}
-        isDoneeMinor={minor} madeDate={values.terms.startDate} />
+        madeDate={values.terms.startDate} />
     );
   };
   const makeSchedule = () => (
-    <ScheduleDoc values={values} result={result} judgement={judgement}
-      doneeBirthDate={doneeBirth} isDoneeMinor={minor} />
+    <ScheduleDoc values={values} result={result} doneeBirthDate={doneeBirth} isDoneeMinor={minor} />
   );
 
   // 진입 즉시 PDF를 미리 만들어 캐시 — 버튼 클릭 시 터치 활성화가 살아있는 동안

@@ -14,7 +14,6 @@ const RELATIONS = ['부', '모', '자', '손', '조부', '조모', '배우자', 
 
 export const doneeSchema = partySchema.extend({
   relation: z.enum(RELATIONS, { message: '관계를 선택하세요' }),
-  legalRepName: z.string().optional(), // 미성년 수증자의 법정대리인 성명
 });
 
 const METHODS = ['자동이체', '직접이체', '기타'] as const;

@@ -1,8 +1,7 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 import type { FormValues } from '../ui/schema';
 import type { AnnuityResult } from '../domain/annuity';
-import type { DeductionJudgement } from '../domain/giftTax';
-import { DISCOUNT_RATE, TAX_MIN_THRESHOLD } from '../config';
+import { DISCOUNT_RATE } from '../config';
 
 const won = (n: number) => `₩${n.toLocaleString('ko-KR')}`;
 
@@ -19,19 +18,17 @@ const s = StyleSheet.create({
   th: { flex: 1, padding: 4, fontWeight: 'bold', textAlign: 'center', backgroundColor: '#f2f2f2' },
   td: { flex: 1, padding: 4, textAlign: 'right' },
   tdCenter: { flex: 1, padding: 4, textAlign: 'center' },
-  judgement: { marginBottom: 12, padding: 8, borderWidth: 0.7, borderColor: '#333' },
   legal: { fontSize: 8, color: '#444', marginBottom: 8 },
 });
 
 export interface ScheduleProps {
   values: FormValues;
   result: AnnuityResult;
-  judgement: DeductionJudgement;
   doneeBirthDate: string;
   isDoneeMinor: boolean;
 }
 
-export function ScheduleDoc({ values, result, judgement, doneeBirthDate, isDoneeMinor }: ScheduleProps) {
+export function ScheduleDoc({ values, result, doneeBirthDate, isDoneeMinor }: ScheduleProps) {
   const { donor, donee, terms } = values;
   const meta: [string, string][] = [
     ['증여자', donor.name],
@@ -87,22 +84,6 @@ export function ScheduleDoc({ values, result, judgement, doneeBirthDate, isDonee
             (상속세 및 증여세법 시행령 제62조 제1호 단서).
           </Text>
         )}
-
-        <View style={s.judgement}>
-          <Text>
-            증여재산공제 한도: {won(judgement.limit)}
-            {judgement.minorApplied ? ' (미성년자·직계존속 공제)' : ''} — {' '}
-            {judgement.within
-              ? `한도 이내이므로 예상 증여세는 0원입니다.`
-              : judgement.underTaxMin
-                ? `한도를 ${won(judgement.excess)} 초과하나 과세표준이 과세최저한(${won(TAX_MIN_THRESHOLD)}) 미만이므로 증여세가 부과되지 아니합니다(상속세 및 증여세법 제55조 제2항).`
-                : `한도를 ${won(judgement.excess)} 초과합니다. 세무사 검토가 필요합니다.`}
-          </Text>
-          <Text>
-            ※ 증여재산공제는 10년간 동일인으로부터 받은 증여를 통산합니다. 이 계약 외 기증여가 있는 경우
-            합산하여 판단하여야 합니다.
-          </Text>
-        </View>
 
       </Page>
     </Document>

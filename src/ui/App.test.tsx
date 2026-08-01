@@ -27,12 +27,6 @@ describe('App 스텝 흐름', () => {
     expect(await screen.findByText('3. 증여내용')).toBeTruthy();
   });
 
-  it('미성년 수증자 주민번호 입력 시 법정대리인 입력란이 나타난다', async () => {
-    render(<App />);
-    await userEvent.type(screen.getByLabelText('수증자 주민등록번호'), '210301-3999999');
-    expect(await screen.findByLabelText('법정대리인 성명')).toBeTruthy();
-  });
-
   it('2단계에서 빈 폼으로 다음을 누르면 시작일/은행/계좌 검증 메시지가 뜬다', async () => {
     render(<App />);
     await userEvent.type(screen.getByLabelText('증여자 성명'), '홍길동');

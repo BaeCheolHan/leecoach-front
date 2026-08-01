@@ -9,7 +9,7 @@ import type { FormValues } from '../ui/schema';
 
 const values: FormValues = {
   donor: { name: '홍길동', rrn: '800101-1000008', address: '서울특별시 강남구 테헤란로 1', phone: '010-1234-5678' },
-  donee: { name: '홍아기', rrn: '210301-3999999', address: '서울특별시 강남구 테헤란로 1', phone: '', relation: '자', legalRepName: '홍길동' },
+  donee: { name: '홍아기', rrn: '210301-3999999', address: '서울특별시 강남구 테헤란로 1', phone: '', relation: '자' },
   terms: { startDate: '2026-01-01', endDate: '2035-12-31', method: '자동이체', paymentDay: 1, monthlyAmount: 100000, bank: '국민은행', account: '123-45-678901' },
 };
 
@@ -18,7 +18,7 @@ describe('ContractDoc', () => {
     registerFonts(path.resolve('public/fonts'));
     const result = evaluateAnnuity(values.terms);
     const buf = await renderToBuffer(
-      <ContractDoc values={values} result={result} isDoneeMinor={true} madeDate="2026-01-01" />,
+      <ContractDoc values={values} result={result} madeDate="2026-01-01" />,
     );
     const pdf = await PDFDocument.load(buf);
     expect(pdf.getPageCount()).toBe(1);
