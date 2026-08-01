@@ -194,7 +194,7 @@ describe('TaxFreeMoney', () => {
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계',
+        name: '세뱃돈과 용돈은 증여인가요? — 비과세의 경계',
       }),
     ).toBeTruthy();
     expect(screen.getByText('세뱃돈은 얼마까지 괜찮나요?')).toBeTruthy();

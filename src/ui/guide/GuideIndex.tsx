@@ -15,8 +15,8 @@ const ARTICLES = [
   },
   {
     path: '/guide/tax-free-money',
-    title: '세뱃돈·용돈·아동수당은 증여인가요? — 비과세의 경계',
-    summary: '세뱃돈과 용돈의 비과세 경계, 아동수당·부모급여를 분리해 관리하는 원칙을 정리했습니다.',
+    title: '세뱃돈과 용돈은 증여인가요? — 비과세의 경계',
+    summary: '쓰면 용돈, 모으면 증여 — 아이에게 들어오는 돈의 비과세 경계와 관리 원칙을 정리했습니다.',
   },
   {
     path: '/guide/no-report-risks',
