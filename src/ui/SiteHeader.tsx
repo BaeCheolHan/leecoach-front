@@ -1,4 +1,4 @@
-/** 전 페이지 공통 헤더 — 브랜드 + 현재 페이지가 아닌 쪽으로 가는 CTA */
+/** 전 페이지 공통 헤더 — 브랜드(→가이드 목록). 도구 페이지에서만 가이드 CTA 표시 */
 export function SiteHeader() {
   const onTool = window.location.pathname === '/';
   return (
@@ -6,13 +6,9 @@ export function SiteHeader() {
       <a className="top-nav-brand" href="/guide">
         이코치맘
       </a>
-      {onTool ? (
+      {onTool && (
         <a className="top-nav-cta" href="/guide">
           증여 가이드
-        </a>
-      ) : (
-        <a className="top-nav-cta" href="/">
-          계약서 만들기
         </a>
       )}
     </nav>
