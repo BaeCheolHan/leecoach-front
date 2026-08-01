@@ -4,6 +4,11 @@ import { ManualPromo } from './ManualPromo';
 
 const ARTICLES = [
   {
+    path: '/guide/gift-roadmap',
+    title: '0세부터 30세까지, 세금 없이 1억 4천 물려주는 로드맵',
+    summary: '0세부터 30세까지 10년 주기 공제를 활용하는 시기별 실행 로드맵을 정리했습니다.',
+  },
+  {
     path: '/guide/late-report-checklist',
     title: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단',
     summary: '원금 합계 계산부터 한도 비교와 기한 후 신고까지, 지금 확인할 자가진단 3단계를 정리했습니다.',
@@ -38,6 +43,16 @@ const ARTICLES = [
     path: '/guide/loan-vs-gift',
     title: '부모 자식 간 돈 거래, 빌린 걸까 증여일까 — 차용증 vs 증여계약서',
     summary: '가족 간 돈 거래를 차용으로 인정받는 조건과 무이자 대여 기준, 증여가 나은 경우를 정리했습니다.',
+  },
+  {
+    path: '/guide/grandparent-gift',
+    title: '할머니가 손주에게 주는 돈, 세금이 더 붙나요? — 세대생략 할증',
+    summary: '조부모 증여의 공제 합산과 세대생략 할증이 실제로 붙는 경우를 정리했습니다.',
+  },
+  {
+    path: '/guide/spouse-gift',
+    title: '부부 사이에도 증여세가 있나요? — 배우자 공제 6억의 활용',
+    summary: '생활비 이체와 자산 이전의 차이, 배우자 공제 6억 원의 활용과 주의점을 정리했습니다.',
   },
 ];
 

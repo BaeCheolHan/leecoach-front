@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { createElement } from 'react';
 import { resolvePage } from '../resolvePage';
 import App from '../App';
 import { Privacy } from '../Privacy';
@@ -13,6 +14,9 @@ import { LoanVsGift } from './LoanVsGift';
 import { NoReportRisks } from './NoReportRisks';
 import { LateReportChecklist } from './LateReportChecklist';
 import { TaxFreeMoney } from './TaxFreeMoney';
+import { GrandparentGift } from './GrandparentGift';
+import { SpouseGift } from './SpouseGift';
+import { GiftRoadmap } from './GiftRoadmap';
 
 beforeEach(() => {
   localStorage.clear();
@@ -224,6 +228,53 @@ describe('TaxFreeMoney', () => {
   it('FAQ JSON-LD 5개를 삽입한다', () => {
     render(<TaxFreeMoney />);
     const script = document.getElementById('faq-jsonld-taxfree');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe.each([
+  {
+    name: 'GrandparentGift',
+    path: '/guide/grandparent-gift',
+    component: GrandparentGift,
+    title: '할머니가 손주에게 주는 돈, 세금이 더 붙나요? — 세대생략 할증',
+    faq: '외할머니도 합산되나요?',
+    jsonLdId: 'faq-jsonld-grand',
+    ctaCount: 1,
+  },
+  {
+    name: 'SpouseGift',
+    path: '/guide/spouse-gift',
+    component: SpouseGift,
+    title: '부부 사이에도 증여세가 있나요? — 배우자 공제 6억의 활용',
+    faq: '생활비로 매달 300 보내는데 신고하나요?',
+    jsonLdId: 'faq-jsonld-spouse',
+    ctaCount: 0,
+  },
+  {
+    name: 'GiftRoadmap',
+    path: '/guide/gift-roadmap',
+    component: GiftRoadmap,
+    title: '0세부터 30세까지, 세금 없이 1억 4천 물려주는 로드맵',
+    faq: '꼭 10년을 채워야 하나요?',
+    jsonLdId: 'faq-jsonld-roadmap',
+    ctaCount: 1,
+  },
+])('$name', ({ path, component, title, faq, jsonLdId, ctaCount }) => {
+  it('가이드 경로와 본문을 렌더한다', () => {
+    expect(resolvePage(path)).toBe(component);
+    const { container } = render(createElement(component));
+    expect(screen.getByRole('heading', { level: 1, name: title })).toBeTruthy();
+    expect(screen.getByText(faq)).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(ctaCount);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(createElement(component));
+    const script = document.getElementById(jsonLdId);
     expect(script).toBeTruthy();
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');

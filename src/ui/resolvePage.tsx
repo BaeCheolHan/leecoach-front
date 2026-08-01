@@ -10,6 +10,9 @@ import { LoanVsGift } from './guide/LoanVsGift';
 import { NoReportRisks } from './guide/NoReportRisks';
 import { LateReportChecklist } from './guide/LateReportChecklist';
 import { TaxFreeMoney } from './guide/TaxFreeMoney';
+import { GrandparentGift } from './guide/GrandparentGift';
+import { SpouseGift } from './guide/SpouseGift';
+import { GiftRoadmap } from './guide/GiftRoadmap';
 
 /** 경로 → 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
 export function resolvePage(pathname: string): ComponentType {
@@ -35,6 +38,12 @@ export function resolvePage(pathname: string): ComponentType {
       return LateReportChecklist;
     case '/guide/tax-free-money':
       return TaxFreeMoney;
+    case '/guide/grandparent-gift':
+      return GrandparentGift;
+    case '/guide/spouse-gift':
+      return SpouseGift;
+    case '/guide/gift-roadmap':
+      return GiftRoadmap;
     default:
       return NotFound;
   }
