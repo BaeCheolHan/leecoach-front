@@ -920,6 +920,10 @@ button {
   }
 }
 
+.page-loading {
+  min-height: 100vh;
+}
+
 /* 초소형(320px대) — 표가 스크롤 없이 들어가도록 한 단계 더 축소 */
 @media (max-width: 359px) {
   .card table {

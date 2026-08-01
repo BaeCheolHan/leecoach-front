@@ -1,50 +1,37 @@
-import type { ComponentType } from 'react';
-import App from './App';
-import { Privacy } from './Privacy';
-import { NotFound } from './NotFound';
-import { GuideIndex } from './guide/GuideIndex';
-import { AnnuityGiftReport } from './guide/AnnuityGiftReport';
-import { GiftDeductionLimits } from './guide/GiftDeductionLimits';
-import { MinorStockAccount } from './guide/MinorStockAccount';
-import { LoanVsGift } from './guide/LoanVsGift';
-import { NoReportRisks } from './guide/NoReportRisks';
-import { TaxFreeMoney } from './guide/TaxFreeMoney';
-import { GrandparentGift } from './guide/GrandparentGift';
-import { SpouseGift } from './guide/SpouseGift';
-import { GiftRoadmap } from './guide/GiftRoadmap';
-import { MarriageBirthDeduction } from './guide/MarriageBirthDeduction';
+import { lazy, type ComponentType } from 'react';
 
-/** 경로 → 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
+/** 경로 → lazy 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
+export const PAGES: Record<string, ComponentType> = {
+  '/': lazy(() => import('./App')),
+  '/about': lazy(() => import('./About').then((m) => ({ default: m.About }))),
+  '/privacy': lazy(() => import('./Privacy').then((m) => ({ default: m.Privacy }))),
+  '/guide': lazy(() => import('./guide/GuideIndex').then((m) => ({ default: m.GuideIndex }))),
+  '/guide/annuity-gift-report': lazy(() =>
+    import('./guide/AnnuityGiftReport').then((m) => ({ default: m.AnnuityGiftReport })),
+  ),
+  '/guide/gift-deduction-limits': lazy(() =>
+    import('./guide/GiftDeductionLimits').then((m) => ({ default: m.GiftDeductionLimits })),
+  ),
+  '/guide/minor-stock-account': lazy(() =>
+    import('./guide/MinorStockAccount').then((m) => ({ default: m.MinorStockAccount })),
+  ),
+  '/guide/loan-vs-gift': lazy(() => import('./guide/LoanVsGift').then((m) => ({ default: m.LoanVsGift }))),
+  '/guide/no-report-risks': lazy(() =>
+    import('./guide/NoReportRisks').then((m) => ({ default: m.NoReportRisks })),
+  ),
+  '/guide/marriage-birth-deduction': lazy(() =>
+    import('./guide/MarriageBirthDeduction').then((m) => ({ default: m.MarriageBirthDeduction })),
+  ),
+  '/guide/tax-free-money': lazy(() => import('./guide/TaxFreeMoney').then((m) => ({ default: m.TaxFreeMoney }))),
+  '/guide/grandparent-gift': lazy(() =>
+    import('./guide/GrandparentGift').then((m) => ({ default: m.GrandparentGift })),
+  ),
+  '/guide/spouse-gift': lazy(() => import('./guide/SpouseGift').then((m) => ({ default: m.SpouseGift }))),
+  '/guide/gift-roadmap': lazy(() => import('./guide/GiftRoadmap').then((m) => ({ default: m.GiftRoadmap }))),
+  '404': lazy(() => import('./NotFound').then((m) => ({ default: m.NotFound }))),
+};
+
 export function resolvePage(pathname: string): ComponentType {
   const clean = pathname.replace(/\/+$/, '') || '/';
-  switch (clean) {
-    case '/':
-      return App;
-    case '/privacy':
-      return Privacy;
-    case '/guide':
-      return GuideIndex;
-    case '/guide/annuity-gift-report':
-      return AnnuityGiftReport;
-    case '/guide/gift-deduction-limits':
-      return GiftDeductionLimits;
-    case '/guide/minor-stock-account':
-      return MinorStockAccount;
-    case '/guide/loan-vs-gift':
-      return LoanVsGift;
-    case '/guide/no-report-risks':
-      return NoReportRisks;
-    case '/guide/marriage-birth-deduction':
-      return MarriageBirthDeduction;
-    case '/guide/tax-free-money':
-      return TaxFreeMoney;
-    case '/guide/grandparent-gift':
-      return GrandparentGift;
-    case '/guide/spouse-gift':
-      return SpouseGift;
-    case '/guide/gift-roadmap':
-      return GiftRoadmap;
-    default:
-      return NotFound;
-  }
+  return PAGES[clean] ?? PAGES['404'];
 }

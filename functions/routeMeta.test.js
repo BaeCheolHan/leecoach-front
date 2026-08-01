@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { normalizePathname, routeMeta } from './routeMeta.js';
 
 const expectedMeta = {
+  '/about': {
+    title: '이코치맘을 소개합니다 | 이코치맘',
+    description: '간호사 엄마 이코치맘이 만든 증여 도구와 가이드 — 사이트 소개와 만든 이유',
+    ogTitle: '이코치맘을 소개합니다',
+  },
   '/guide': {
     title: '증여 가이드 | 이코치맘',
     description:
@@ -92,8 +97,9 @@ describe('routeMeta', () => {
     expect(routeMeta).toEqual(expectedMeta);
   });
 
-  it('contains all eleven guide routes and the privacy route', () => {
+  it('contains all eleven guide routes, the about route, and the privacy route', () => {
     expect(Object.keys(routeMeta).filter((path) => path.startsWith('/guide'))).toHaveLength(11);
+    expect(routeMeta['/about']).toBeDefined();
     expect(routeMeta['/privacy']).toBeDefined();
   });
 

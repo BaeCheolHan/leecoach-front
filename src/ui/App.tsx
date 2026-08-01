@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormValues } from './schema';
@@ -7,8 +7,9 @@ import { InAppBrowserNotice } from './InAppBrowserNotice';
 import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
 import { Step1Parties } from './steps/Step1Parties';
 import { Step2Terms } from './steps/Step2Terms';
-import { Step3Result } from './steps/Step3Result';
 import './App.css';
+
+const Step3Result = lazy(() => import('./steps/Step3Result').then((m) => ({ default: m.Step3Result })));
 
 const STEP1_FIELDS = ['donor', 'donee'] as const;
 const STEP2_FIELDS = ['terms'] as const;
@@ -117,7 +118,11 @@ export default function App() {
         )}
         {step === 1 && <Step1Parties />}
         {step === 2 && <Step2Terms />}
-        {step === 3 && <Step3Result values={form.getValues()} onBack={() => history.back()} />}
+        {step === 3 && (
+          <Suspense fallback={<p className="status">문서 준비 중…</p>}>
+            <Step3Result values={form.getValues()} onBack={() => history.back()} />
+          </Suspense>
+        )}
         {step < 3 && (
           <nav className={`step-nav${step > 1 ? ' step-nav--split' : ''}`}>
             {step > 1 && (
@@ -131,7 +136,7 @@ export default function App() {
           </nav>
         )}
         <p className="footer-links">
-          <a href="/guide">증여 가이드</a> ·{' '}
+          <a href="/guide">증여 가이드</a> · <a href="/about">소개</a> ·{' '}
           <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
             인스타그램
           </a>{' '}

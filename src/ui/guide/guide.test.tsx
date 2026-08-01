@@ -2,10 +2,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { createElement } from 'react';
-import { resolvePage } from '../resolvePage';
-import App from '../App';
-import { Privacy } from '../Privacy';
-import { NotFound } from '../NotFound';
+import { PAGES, resolvePage } from '../resolvePage';
+import { About } from '../About';
 import { GuideIndex } from './GuideIndex';
 import { AnnuityGiftReport } from './AnnuityGiftReport';
 import { GiftDeductionLimits } from './GiftDeductionLimits';
@@ -25,17 +23,33 @@ beforeEach(() => {
 
 describe('resolvePage', () => {
   it('경로별로 올바른 페이지를 반환한다', () => {
-    expect(resolvePage('/')).toBe(App);
-    expect(resolvePage('/privacy')).toBe(Privacy);
-    expect(resolvePage('/guide')).toBe(GuideIndex);
-    expect(resolvePage('/guide/')).toBe(GuideIndex); // 트레일링 슬래시 허용
-    expect(resolvePage('/guide/annuity-gift-report')).toBe(AnnuityGiftReport);
+    expect(resolvePage('/')).toBe(PAGES['/']);
+    expect(resolvePage('/privacy')).toBe(PAGES['/privacy']);
+    expect(resolvePage('/about')).toBe(PAGES['/about']);
+    expect(resolvePage('/guide')).toBe(PAGES['/guide']);
+    expect(resolvePage('/guide/')).toBe(PAGES['/guide']); // 트레일링 슬래시 허용
+    expect(resolvePage('/guide/annuity-gift-report')).toBe(PAGES['/guide/annuity-gift-report']);
   });
   it('알 수 없는 경로는 404 페이지를 반환한다', () => {
-    expect(resolvePage('/unknown')).toBe(NotFound);
+    expect(resolvePage('/unknown')).toBe(PAGES['404']);
   });
   it('증여재산공제 한도 가이드 경로를 반환한다', () => {
-    expect(resolvePage('/guide/gift-deduction-limits')).toBe(GiftDeductionLimits);
+    expect(resolvePage('/guide/gift-deduction-limits')).toBe(PAGES['/guide/gift-deduction-limits']);
+  });
+});
+
+describe('About', () => {
+  it('소개 내용·링크·페이지 메타를 렌더한다', () => {
+    render(<About />);
+    expect(screen.getByRole('heading', { level: 1, name: '이코치맘을 소개합니다' })).toBeTruthy();
+    expect(screen.getByText(/간호사이자 두 아이/)).toBeTruthy();
+    expect(screen.getByText(/현직 세무사의 자문을 받아 제작했으며 크티에서 판매/)).toBeTruthy();
+    expect(screen.getByText('세무사가 검토한 우리 아이 증여 실무 매뉴얼')).toBeTruthy();
+    expect(screen.getByText(/세무 자문이 아닙니다/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: '인스타그램' }).getAttribute('href')).toContain('leecoach_mom');
+    expect(screen.getByRole('link', { name: '계약서 만들기' }).getAttribute('href')).toBe('/');
+    expect(screen.getByRole('link', { name: '가이드' }).getAttribute('href')).toBe('/guide');
+    expect(document.title).toBe('이코치맘을 소개합니다 | 이코치맘');
   });
 });
 
@@ -102,7 +116,7 @@ describe('GiftDeductionLimits', () => {
 
 describe('MinorStockAccount', () => {
   it('미성년 자녀 주식계좌 가이드 경로를 반환한다', () => {
-    expect(resolvePage('/guide/minor-stock-account')).toBe(MinorStockAccount);
+    expect(resolvePage('/guide/minor-stock-account')).toBe(PAGES['/guide/minor-stock-account']);
   });
 
   it('제목·FAQ·CTA를 렌더한다', () => {
@@ -135,7 +149,7 @@ describe('MinorStockAccount', () => {
 
 describe('LoanVsGift', () => {
   it('차용증 vs 증여계약서 가이드 경로를 반환한다', () => {
-    expect(resolvePage('/guide/loan-vs-gift')).toBe(LoanVsGift);
+    expect(resolvePage('/guide/loan-vs-gift')).toBe(PAGES['/guide/loan-vs-gift']);
   });
 
   it('제목·FAQ·CTA를 렌더한다', () => {
@@ -162,7 +176,7 @@ describe('LoanVsGift', () => {
 
 describe('NoReportRisks', () => {
   it('증여세 무신고 위험 가이드 경로를 반환한다', () => {
-    expect(resolvePage('/guide/no-report-risks')).toBe(NoReportRisks);
+    expect(resolvePage('/guide/no-report-risks')).toBe(PAGES['/guide/no-report-risks']);
   });
 
   it('제목·FAQ·CTA를 렌더한다', () => {
@@ -189,7 +203,7 @@ describe('NoReportRisks', () => {
 
 describe('TaxFreeMoney', () => {
   it('비과세 경계 가이드 경로와 본문을 렌더한다', () => {
-    expect(resolvePage('/guide/tax-free-money')).toBe(TaxFreeMoney);
+    expect(resolvePage('/guide/tax-free-money')).toBe(PAGES['/guide/tax-free-money']);
     const { container } = render(<TaxFreeMoney />);
     expect(
       screen.getByRole('heading', {
@@ -250,7 +264,7 @@ describe.each([
   },
 ])('$name', ({ path, component, title, faq, jsonLdId, ctaCount }) => {
   it('가이드 경로와 본문을 렌더한다', () => {
-    expect(resolvePage(path)).toBe(component);
+    expect(resolvePage(path)).toBe(PAGES[path]);
     const { container } = render(createElement(component));
     expect(screen.getByRole('heading', { level: 1, name: title })).toBeTruthy();
     expect(screen.getByText(faq)).toBeTruthy();

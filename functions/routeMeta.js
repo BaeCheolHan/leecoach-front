@@ -1,5 +1,10 @@
 // 메타 원본은 각 페이지의 usePageMeta. 새 가이드 추가 시 이 맵에도 추가할 것.
 export const routeMeta = {
+  '/about': {
+    title: '이코치맘을 소개합니다 | 이코치맘',
+    description: '간호사 엄마 이코치맘이 만든 증여 도구와 가이드 — 사이트 소개와 만든 이유',
+    ogTitle: '이코치맘을 소개합니다',
+  },
   '/guide': {
     title: '증여 가이드 | 이코치맘',
     description:

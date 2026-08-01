@@ -1,4 +1,4 @@
-import { StrictMode, createElement } from 'react'
+import { StrictMode, Suspense, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { resolvePage } from './ui/resolvePage.tsx'
@@ -16,6 +16,8 @@ const Page = resolvePage(window.location.pathname)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {createElement(Page)}
+    <Suspense fallback={<div className="page-loading" />}>
+      {createElement(Page)}
+    </Suspense>
   </StrictMode>,
 )
