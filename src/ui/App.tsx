@@ -55,6 +55,11 @@ export default function App() {
           <a href="/guide">증여 가이드</a>
         </nav>
         <InAppBrowserNotice />
+        {step === 1 && (
+          <a className="first-timer" href="/guide/annuity-gift-report">
+            유기정기금 증여가 처음이신가요? <b>가이드 먼저 보기 →</b>
+          </a>
+        )}
         <h1>유기정기금 증여계약서 · 평가명세서</h1>
         <p className="step-indicator">{step}/3</p>
         {step < 3 && (

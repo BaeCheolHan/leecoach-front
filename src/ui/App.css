@@ -41,6 +41,23 @@
   padding: 8px 14px;
 }
 
+/* 첫 방문자 가이드 배너 */
+.first-timer {
+  display: block;
+  background: #f2f8ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: #333d4b;
+  text-decoration: none;
+  word-break: keep-all;
+}
+
+.first-timer b {
+  color: #3182f6;
+}
+
 /* 3단계 → 신고 가이드 연결 카드 */
 .next-guide {
   display: block;
