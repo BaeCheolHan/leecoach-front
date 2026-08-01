@@ -47,7 +47,7 @@ describe('GuideIndex', () => {
   it('유료 매뉴얼 카드와 크티 외부 링크를 렌더한다', () => {
     render(<GuideIndex />);
     expect(screen.getByText('세무사가 검토한 우리 아이 증여 실무 매뉴얼')).toBeTruthy();
-    const link = screen.getByRole('link', { name: '크티에서 자세히 보기 →' });
+    const link = screen.getByRole('link', { name: '자세히 보기 →' });
     expect(link.getAttribute('href')).toContain('ctee.kr/item/store/91932');
     expect(link.getAttribute('target')).toBe('_blank');
   });
