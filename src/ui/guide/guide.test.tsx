@@ -9,6 +9,7 @@ import { GuideIndex } from './GuideIndex';
 import { AnnuityGiftReport } from './AnnuityGiftReport';
 import { GiftDeductionLimits } from './GiftDeductionLimits';
 import { MinorStockAccount } from './MinorStockAccount';
+import { LoanVsGift } from './LoanVsGift';
 
 beforeEach(() => {
   localStorage.clear();
@@ -122,5 +123,32 @@ describe('MinorStockAccount', () => {
     const { container } = render(<MinorStockAccount />);
     expect(container.querySelector('.manual-promo-inline')).toBeTruthy();
     expect(screen.getByText('세무사가 검토한 우리 아이 증여 실무 매뉴얼')).toBeTruthy();
+  });
+});
+
+describe('LoanVsGift', () => {
+  it('차용증 vs 증여계약서 가이드 경로를 반환한다', () => {
+    expect(resolvePage('/guide/loan-vs-gift')).toBe(LoanVsGift);
+  });
+
+  it('제목·FAQ·CTA를 렌더한다', () => {
+    const { container } = render(<LoanVsGift />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '부모 자식 간 돈 거래, 빌린 걸까 증여일까 — 차용증 vs 증여계약서',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('차용증을 나중에 쓰면 안 되나요?')).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(<LoanVsGift />);
+    const script = document.getElementById('faq-jsonld-loan');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
   });
 });
