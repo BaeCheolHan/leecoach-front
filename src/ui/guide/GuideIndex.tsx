@@ -3,6 +3,11 @@ import { usePageMeta } from '../usePageMeta';
 
 const ARTICLES = [
   {
+    path: '/guide/minor-stock-account',
+    title: '미성년 자녀 주식계좌 만들기 — 서류부터 증여 신고까지',
+    summary: '필요한 서류부터 비대면 계좌 개설, 증여세 신고와 주식 매수 순서까지 한 번에 정리했습니다.',
+  },
+  {
     path: '/guide/gift-deduction-limits',
     title: '세금 없이 줄 수 있는 금액은? 증여재산공제 한도 총정리',
     summary: '배우자부터 자녀·손주·사위·며느리까지, 관계별 공제 한도와 10년 합산 규칙을 표로 정리했습니다.',

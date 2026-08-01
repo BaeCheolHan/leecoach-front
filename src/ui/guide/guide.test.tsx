@@ -8,6 +8,7 @@ import { NotFound } from '../NotFound';
 import { GuideIndex } from './GuideIndex';
 import { AnnuityGiftReport } from './AnnuityGiftReport';
 import { GiftDeductionLimits } from './GiftDeductionLimits';
+import { MinorStockAccount } from './MinorStockAccount';
 
 beforeEach(() => {
   localStorage.clear();
@@ -76,6 +77,33 @@ describe('GiftDeductionLimits', () => {
   it('FAQ JSON-LD 5개를 삽입한다', () => {
     render(<GiftDeductionLimits />);
     const script = document.getElementById('faq-jsonld-deduction');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe('MinorStockAccount', () => {
+  it('미성년 자녀 주식계좌 가이드 경로를 반환한다', () => {
+    expect(resolvePage('/guide/minor-stock-account')).toBe(MinorStockAccount);
+  });
+
+  it('제목·FAQ·CTA를 렌더한다', () => {
+    const { container } = render(<MinorStockAccount />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '미성년 자녀 주식계좌 만들기 — 서류부터 증여 신고까지',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('어떤 증권사가 좋나요?')).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(<MinorStockAccount />);
+    const script = document.getElementById('faq-jsonld-stock');
     expect(script).toBeTruthy();
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');
