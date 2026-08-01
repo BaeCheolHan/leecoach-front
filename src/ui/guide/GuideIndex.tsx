@@ -9,9 +9,9 @@ const ARTICLES = [
     summary: '0세부터 30세까지 10년 주기 공제를 활용하는 시기별 실행 로드맵을 정리했습니다.',
   },
   {
-    path: '/guide/late-report-checklist',
-    title: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단',
-    summary: '원금 합계 계산부터 한도 비교와 기한 후 신고까지, 지금 확인할 자가진단 3단계를 정리했습니다.',
+    path: '/guide/marriage-birth-deduction',
+    title: '결혼하면 1억을 더 받을 수 있다? — 혼인·출산 증여공제',
+    summary: '혼인·출산 증여공제의 적용 기간과 한도, 기본공제와 함께 활용하는 방법을 정리했습니다.',
   },
   {
     path: '/guide/tax-free-money',

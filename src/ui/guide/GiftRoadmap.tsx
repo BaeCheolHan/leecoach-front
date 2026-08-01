@@ -45,7 +45,7 @@ export function GiftRoadmap() {
       <p>미성년 구간은 월 19만 원씩 10년, 원금 2,280만 원을 지급해도 평가액은 1,969만 원으로 한도 안에 들어갑니다.</p><p>성년 구간도 같은 원리로 활용할 수 있습니다.</p><p>실행 방법은 <a href="/guide/annuity-gift-report">유기정기금 증여 신고 가이드</a>에서 확인하세요.</p>
     </section>
     <section className="card guide-section"><h2>4. 주의: 로드맵이 무너지는 경우</h2>
-      <p>중간에 목돈을 한 번에 주면 10년 합산으로 한도를 넘을 수 있습니다. 항상 기증여 확인이 먼저입니다.</p><p><a href="/guide/late-report-checklist">늦은 증여 신고 자가진단</a>으로 지금까지 준 원금을 확인하세요.</p><p className="guide-note">자산 증식분은 한도와 무관합니다. 신고된 원금을 기준으로 봅니다.</p>
+      <p>중간에 목돈을 한 번에 주면 10년 합산으로 한도를 넘을 수 있습니다. 항상 기증여 확인이 먼저입니다.</p><p>신고를 미뤄왔다면 <a href="/guide/no-report-risks">증여세 무신고 위험 가이드</a>에서 지금 정리하는 방법을 확인하세요.</p><p className="guide-note">자산 증식분은 한도와 무관합니다. 신고된 원금을 기준으로 봅니다.</p>
     </section>
     <section className="card guide-section"><h2>5. 자주 묻는 질문</h2>{FAQ.map((f) => <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.a}</p></details>)}</section>
     <ToolCta /><ManualPromo variant="inline" /><p className="disclaimer">{DISCLAIMER}</p>

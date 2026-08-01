@@ -12,11 +12,11 @@ import { GiftDeductionLimits } from './GiftDeductionLimits';
 import { MinorStockAccount } from './MinorStockAccount';
 import { LoanVsGift } from './LoanVsGift';
 import { NoReportRisks } from './NoReportRisks';
-import { LateReportChecklist } from './LateReportChecklist';
 import { TaxFreeMoney } from './TaxFreeMoney';
 import { GrandparentGift } from './GrandparentGift';
 import { SpouseGift } from './SpouseGift';
 import { GiftRoadmap } from './GiftRoadmap';
+import { MarriageBirthDeduction } from './MarriageBirthDeduction';
 
 beforeEach(() => {
   localStorage.clear();
@@ -187,30 +187,6 @@ describe('NoReportRisks', () => {
   });
 });
 
-describe('LateReportChecklist', () => {
-  it('늦은 증여 신고 자가진단 가이드 경로와 본문을 렌더한다', () => {
-    expect(resolvePage('/guide/late-report-checklist')).toBe(LateReportChecklist);
-    const { container } = render(<LateReportChecklist />);
-    expect(
-      screen.getByRole('heading', {
-        level: 1,
-        name: '아이 계좌에 이미 돈이 쌓여 있나요? — 늦은 증여 신고 자가진단',
-      }),
-    ).toBeTruthy();
-    expect(screen.getByText('잔액이 한도를 넘었는데 원금은 이내예요')).toBeTruthy();
-    expect(container.querySelectorAll('.guide-cta')).toHaveLength(1);
-  });
-
-  it('FAQ JSON-LD 5개를 삽입한다', () => {
-    render(<LateReportChecklist />);
-    const script = document.getElementById('faq-jsonld-late');
-    expect(script).toBeTruthy();
-    const data = JSON.parse(script!.textContent!);
-    expect(data['@type']).toBe('FAQPage');
-    expect(data.mainEntity).toHaveLength(5);
-  });
-});
-
 describe('TaxFreeMoney', () => {
   it('비과세 경계 가이드 경로와 본문을 렌더한다', () => {
     expect(resolvePage('/guide/tax-free-money')).toBe(TaxFreeMoney);
@@ -236,6 +212,15 @@ describe('TaxFreeMoney', () => {
 });
 
 describe.each([
+  {
+    name: 'MarriageBirthDeduction',
+    path: '/guide/marriage-birth-deduction',
+    component: MarriageBirthDeduction,
+    title: '결혼하면 1억을 더 받을 수 있다? — 혼인·출산 증여공제',
+    faq: '결혼 전에 미리 받아도 되나요?',
+    jsonLdId: 'faq-jsonld-marriage',
+    ctaCount: 0,
+  },
   {
     name: 'GrandparentGift',
     path: '/guide/grandparent-gift',
