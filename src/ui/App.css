@@ -270,13 +270,14 @@
 
 /* 가이드 — 3줄 요약 (.card보다 우선하도록 결합 선택자) */
 .card.tldr {
-  background: #191f28;
+  background: #f2f8ff;
+  border-left: 4px solid #3182f6;
   margin-bottom: 16px;
 }
 
 .card.tldr h2 {
   font-size: 14px;
-  color: #8b95a1;
+  color: #3182f6;
   margin: 0 0 10px;
 }
 
@@ -288,13 +289,13 @@
 .tldr li {
   font-size: 15px;
   line-height: 1.7;
-  color: #e5e8eb;
+  color: #333d4b;
   margin-bottom: 6px;
   word-break: keep-all;
 }
 
 .tldr b {
-  color: #ffffff;
+  color: #191f28;
 }
 
 /* 가이드 — 숫자 예시 카드 */
