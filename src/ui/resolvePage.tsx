@@ -4,6 +4,7 @@ import { Privacy } from './Privacy';
 import { NotFound } from './NotFound';
 import { GuideIndex } from './guide/GuideIndex';
 import { AnnuityGiftReport } from './guide/AnnuityGiftReport';
+import { GiftDeductionLimits } from './guide/GiftDeductionLimits';
 
 /** 경로 → 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
 export function resolvePage(pathname: string): ComponentType {
@@ -17,6 +18,8 @@ export function resolvePage(pathname: string): ComponentType {
       return GuideIndex;
     case '/guide/annuity-gift-report':
       return AnnuityGiftReport;
+    case '/guide/gift-deduction-limits':
+      return GiftDeductionLimits;
     default:
       return NotFound;
   }

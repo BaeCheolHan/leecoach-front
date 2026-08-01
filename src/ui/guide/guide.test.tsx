@@ -7,6 +7,7 @@ import { Privacy } from '../Privacy';
 import { NotFound } from '../NotFound';
 import { GuideIndex } from './GuideIndex';
 import { AnnuityGiftReport } from './AnnuityGiftReport';
+import { GiftDeductionLimits } from './GiftDeductionLimits';
 
 beforeEach(() => {
   localStorage.clear();
@@ -23,6 +24,9 @@ describe('resolvePage', () => {
   });
   it('알 수 없는 경로는 404 페이지를 반환한다', () => {
     expect(resolvePage('/unknown')).toBe(NotFound);
+  });
+  it('증여재산공제 한도 가이드 경로를 반환한다', () => {
+    expect(resolvePage('/guide/gift-deduction-limits')).toBe(GiftDeductionLimits);
   });
 });
 
@@ -53,5 +57,28 @@ describe('AnnuityGiftReport', () => {
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');
     expect(data.mainEntity.length).toBe(6);
+  });
+});
+
+describe('GiftDeductionLimits', () => {
+  it('제목·FAQ·CTA를 렌더한다', () => {
+    const { container } = render(<GiftDeductionLimits />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '세금 없이 줄 수 있는 금액은? 증여재산공제 한도 총정리',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('아빠와 엄마가 각각 5천만씩 줄 수 있나요?')).toBeTruthy();
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(2);
+  });
+
+  it('FAQ JSON-LD 5개를 삽입한다', () => {
+    render(<GiftDeductionLimits />);
+    const script = document.getElementById('faq-jsonld-deduction');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(5);
   });
 });

@@ -435,6 +435,21 @@
   word-break: keep-all;
 }
 
+/* 가이드 정보 표 — 셀 줄바꿈 허용 (평가 표의 nowrap을 해제해 모바일에서 스크롤 없이) */
+.info-table thead th,
+.info-table tbody th,
+.info-table tbody td {
+  white-space: normal;
+  word-break: keep-all;
+}
+
+/* 정보 표에는 평가 표의 '합계 행' 강조를 적용하지 않음 */
+.info-table tbody tr:last-child td,
+.info-table tbody tr:last-child th {
+  font-weight: 400;
+  border-top: none;
+}
+
 .guide-card {
   display: block;
   text-decoration: none;

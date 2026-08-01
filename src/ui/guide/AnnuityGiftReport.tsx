@@ -117,7 +117,6 @@ export function AnnuityGiftReport() {
             </div>
             <p className="stat-foot">미성년 공제 한도 2,000만 원(10년) 이내 — 한 번에 주면 한도를 넘지만, 나눠 주면 0원.</p>
           </div>
-          <ToolCta />
         </section>
 
         <section className="card guide-section">
@@ -133,6 +132,7 @@ export function AnnuityGiftReport() {
             </li>
           </ul>
           <p>이름·금액·기간만 입력하면 두 서류가 PDF로 완성됩니다. 정보는 서버로 전송되지 않아요.</p>
+          <ToolCta />
         </section>
 
         <section className="card guide-section">
