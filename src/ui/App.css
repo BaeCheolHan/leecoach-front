@@ -1150,9 +1150,25 @@ button {
   cursor: pointer;
 }
 
+/*
+ * 라디오는 숨기되 접근성은 유지한다. position:absolute만 주면 .card input의 width:100%가
+ * 뷰포트 기준으로 잡혀 화면 밖으로 삐져나가 가로 스크롤이 생긴다 — 크기를 직접 고정해야 한다.
+ */
 .simulator-mode input {
   position: absolute;
+  width: 1px;
+  height: 1px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
   opacity: 0;
+  pointer-events: none;
+}
+
+/* 시각적으로 숨긴 라디오 대신 라벨에 포커스 링을 그린다. */
+.simulator-mode input:focus-visible + span {
+  outline: 2px solid #3182f6;
+  outline-offset: 2px;
 }
 
 .simulator-mode span {
