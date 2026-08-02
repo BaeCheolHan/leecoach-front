@@ -175,22 +175,20 @@ export function Simulator() {
       <h1>자녀 증여자산 시뮬레이터</h1>
       <p className="trust-note">입력한 가정으로 증여 단계와 상품 유형별 세후 금액을 계산합니다.</p>
 
-      {calculation.errors.length > 0 ? (
-        <section className="card simulator-errors" aria-labelledby="simulator-errors-title">
-          <h2 id="simulator-errors-title">입력값을 확인해 주세요</h2>
-          <ul>{calculation.errors.map((error) => <li key={error}>{error}</li>)}</ul>
-        </section>
-      ) : calculation.result && (
-        <section className="card simulator-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
-          <h2 id="simulator-summary-title">상품별 세후 금액</h2>
-          <dl>
-            {productTypes.map((type) => (
-              <div key={type}><dt>{productNames[type]}</dt><dd>{won(calculation.result!.byProduct[type].afterTax)}</dd></div>
-            ))}
-          </dl>
-          {allAfterTaxEqual && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
-        </section>
-      )}
+      <section className="card simulator-form" aria-labelledby="simulator-basic-title">
+        <h2 id="simulator-basic-title">기본 조건</h2>
+        <div className="simulator-basic-grid">
+          <div className="simulator-field">
+            <label htmlFor="sim-child-age">아이 나이</label>
+            <input id="sim-child-age" type="number" inputMode="numeric" min="0" step="1" value={form.childAge} onChange={(event) => update('childAge', event.target.value)} />
+          </div>
+          <AmountInput id="sim-monthly-amount" label="매월 증여액" value={form.monthlyAmount} onChange={(value) => update('monthlyAmount', value)} />
+          <div className="simulator-field">
+            <label htmlFor="sim-gift-years">증여 기간</label>
+            <div className="simulator-unit-input"><input id="sim-gift-years" type="number" inputMode="numeric" min="0" step="1" value={form.giftYears} onChange={(event) => update('giftYears', event.target.value)} /><span>년</span></div>
+          </div>
+        </div>
+      </section>
 
       <section className="card simulator-controls" aria-labelledby="simulator-growth-label">
         <div className="simulator-growth-heading">
@@ -209,20 +207,22 @@ export function Simulator() {
         />
       </section>
 
-      <section className="card simulator-form" aria-labelledby="simulator-basic-title">
-        <h2 id="simulator-basic-title">기본 조건</h2>
-        <div className="simulator-basic-grid">
-          <div className="simulator-field">
-            <label htmlFor="sim-child-age">아이 나이</label>
-            <input id="sim-child-age" type="number" inputMode="numeric" min="0" step="1" value={form.childAge} onChange={(event) => update('childAge', event.target.value)} />
-          </div>
-          <AmountInput id="sim-monthly-amount" label="매월 증여액" value={form.monthlyAmount} onChange={(value) => update('monthlyAmount', value)} />
-          <div className="simulator-field">
-            <label htmlFor="sim-gift-years">증여 기간</label>
-            <div className="simulator-unit-input"><input id="sim-gift-years" type="number" inputMode="numeric" min="0" step="1" value={form.giftYears} onChange={(event) => update('giftYears', event.target.value)} /><span>년</span></div>
-          </div>
-        </div>
-      </section>
+      {calculation.errors.length > 0 ? (
+        <section className="card simulator-errors" aria-labelledby="simulator-errors-title">
+          <h2 id="simulator-errors-title">입력값을 확인해 주세요</h2>
+          <ul>{calculation.errors.map((error) => <li key={error}>{error}</li>)}</ul>
+        </section>
+      ) : calculation.result && (
+        <section className="card simulator-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
+          <h2 id="simulator-summary-title">상품별 세후 금액</h2>
+          <dl>
+            {productTypes.map((type) => (
+              <div key={type}><dt>{productNames[type]}</dt><dd>{won(calculation.result!.byProduct[type].afterTax)}</dd></div>
+            ))}
+          </dl>
+          {allAfterTaxEqual && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
+        </section>
+      )}
 
       <details className="card simulator-details">
         <summary>자세히 설정</summary>
