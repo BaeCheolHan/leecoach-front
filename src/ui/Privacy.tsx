@@ -1,5 +1,6 @@
 import { SiteHeader } from './SiteHeader';
 import { usePageMeta } from './usePageMeta';
+import { SiteFooter } from './SiteFooter';
 
 const EFFECTIVE_DATE = '2026-08-01';
 
@@ -53,9 +54,7 @@ export function Privacy() {
         <p>개인정보 처리에 관한 문의: joker10421@gmail.com</p>
       </section>
 
-      <p className="disclaimer">
-        <a href="/">← 계약서 생성기로 돌아가기</a>
-      </p>
+      <SiteFooter />
     </main>
   );
 }

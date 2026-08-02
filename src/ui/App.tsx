@@ -5,7 +5,8 @@ import { formSchema, type FormValues } from './schema';
 import { loadDraft, saveDraft } from '../storage/draft';
 import { loadToContract } from '../storage/simHandoff';
 import { InAppBrowserNotice } from './InAppBrowserNotice';
-import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
+import { SiteHeader } from './SiteHeader';
+import { SiteFooter } from './SiteFooter';
 import { Step1Parties } from './steps/Step1Parties';
 import { Step2Terms } from './steps/Step2Terms';
 import './App.css';
@@ -147,13 +148,7 @@ export default function App() {
             </button>
           </nav>
         )}
-        <p className="footer-links">
-          <a href="/guide">증여 가이드</a> · <a href="/about">소개</a> ·{' '}
-          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-            인스타그램
-          </a>{' '}
-          · <a href="/privacy">개인정보처리방침</a>
-        </p>
+        <SiteFooter />
       </main>
     </FormProvider>
   );

@@ -12,6 +12,7 @@ import { loadToSimulator, saveToContract } from '../../storage/simHandoff';
 import { koreanAmount, presetEndDate } from '../format';
 import { SiteHeader } from '../SiteHeader';
 import { usePageMeta } from '../usePageMeta';
+import { SiteFooter } from '../SiteFooter';
 
 const META = {
   title: '자녀 증여자산 시뮬레이터 — 세후 얼마가 남을까 | 이코치맘',
@@ -146,6 +147,7 @@ function AmountInput({ id, label, value, onChange }: {
 export function Simulator() {
   usePageMeta(META);
   const [handoff] = useState(() => loadToSimulator());
+  const [referenceBasis, setReferenceBasis] = useState<'excluding' | 'recent'>('excluding');
   const defaultStartDate = handoff?.startDate ?? nextMonthFirst();
   const [form, setForm] = useState<FormState>(() => ({
     calculationMode: 'amount',
@@ -274,17 +276,53 @@ export function Simulator() {
             <label htmlFor="sim-gift-years">증여 기간</label>
             <div className="simulator-unit-input"><input id="sim-gift-years" type="number" inputMode="numeric" min="0" step="1" value={form.giftYears} onChange={(event) => update('giftYears', event.target.value)} /><span>년</span></div>
           </div>
+          <fieldset className="simulator-mode simulator-reference-mode">
+            <legend>참고 수익률 기준</legend>
+            <label><input type="radio" name="sim-reference-basis" checked={referenceBasis === 'excluding'} onChange={() => setReferenceBasis('excluding')} /><span>급등 제외</span></label>
+            <label><input type="radio" name="sim-reference-basis" checked={referenceBasis === 'recent'} onChange={() => setReferenceBasis('recent')} /><span>최근까지</span></label>
+          </fieldset>
           {/* 수익률도 다른 조건과 같은 숫자 입력으로 둔다. 슬라이더는 ±20% 범위에서 1스텝이
               3.9px라 원하는 값을 집을 수 없었다. 기본값 0은 수익을 제시하지 않기 위함이다. */}
           <div className="simulator-field">
             <label htmlFor="sim-domestic-growth">국내 수익률</label>
             <div className="simulator-unit-input"><input id="sim-domestic-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.domesticGrowthRate} onChange={(event) => update('domesticGrowthRate', event.target.value)} /><span>%</span></div>
+            <div className="preset-row simulator-reference-presets">
+              {INDEX_REFERENCE_RETURNS.filter((index) => index.scope === 'domestic').map((index) => {
+                const value = ratePercent(index[referenceBasis].rate);
+                const isSelected = form.domesticGrowthRate.trim() !== '' && Number(form.domesticGrowthRate) === Number(value);
+                return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
+              })}
+            </div>
           </div>
           <div className="simulator-field">
             <label htmlFor="sim-overseas-growth">해외 수익률</label>
             <div className="simulator-unit-input"><input id="sim-overseas-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.overseasGrowthRate} onChange={(event) => update('overseasGrowthRate', event.target.value)} /><span>%</span></div>
+            <div className="preset-row simulator-reference-presets">
+              {INDEX_REFERENCE_RETURNS.filter((index) => index.scope === 'overseas').map((index) => {
+                const value = ratePercent(index[referenceBasis].rate);
+                const isSelected = form.overseasGrowthRate.trim() !== '' && Number(form.overseasGrowthRate) === Number(value);
+                return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
+              })}
+            </div>
           </div>
         </div>
+        <details className="simulator-reference-details">
+          <summary>⚠️ 참고 수익률의 출처와 주의사항</summary>
+          <div className="simulator-reference-content">
+            <ul className="simulator-reference-list">
+              {INDEX_REFERENCE_RETURNS.map((index) => {
+                const reference = index[referenceBasis];
+                const basisLabel = referenceBasis === 'excluding' ? '급등 제외' : '최근까지';
+                return <li key={index.name}>{index.name} · {basisLabel} {ratePercent(reference.rate)}% — {reference.period}, {reference.basis}, {reference.source}</li>;
+              })}
+            </ul>
+            <div className="simulator-reference-warning">
+              <p><strong>⚠️ 이 수치를 그대로 믿지 마세요.</strong></p>
+              <p>코스피는 2025년 +75%, 2026년 들어 두 달 만에 +40% 오르며 사상 첫 6,000선을 돌파했습니다. 나스닥도 최근 10년이 기술주 상승장으로 부풀려져 있습니다. 두 지수 모두 최근 급등을 포함한 수치와 제외한 수치를 나란히 실은 이유입니다.</p>
+              <p>지수마다 측정 기간과 출처가 다르므로 행끼리 직접 비교할 수 없습니다. 과거 수익률은 미래를 보장하지 않으며, 어느 기간을 기준으로 삼느냐에 따라 결론이 뒤집힙니다.</p>
+            </div>
+          </div>
+        </details>
       </section>
 
       {calculation.errors.length > 0 ? (
@@ -322,35 +360,6 @@ export function Simulator() {
           {allRequiredEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
         </section>
       )}
-
-      <details className="card simulator-details simulator-reference">
-        <summary>지수별 참고 수익률</summary>
-        <div className="simulator-details-body">
-          <div className="simulator-reference-warning">
-            <p><strong>⚠️ 이 수치를 그대로 믿지 마세요.</strong></p>
-            <p>코스피는 2025년 +75%, 2026년 들어 두 달 만에 +40% 오르며 사상 첫 6,000선을 돌파했습니다. 나스닥도 최근 10년이 기술주 상승장으로 부풀려져 있습니다. 두 지수 모두 최근 급등을 포함한 수치와 제외한 수치를 나란히 실은 이유입니다.</p>
-            <p>지수마다 측정 기간과 출처가 다르므로 행끼리 직접 비교할 수 없습니다. 과거 수익률은 미래를 보장하지 않으며, 어느 기간을 기준으로 삼느냐에 따라 결론이 뒤집힙니다.</p>
-          </div>
-          <div className="table-scroll">
-            <table className="info-table simulator-reference-table">
-              <thead><tr><th scope="col">지수</th><th scope="col">최근까지(급등 포함)</th><th scope="col">급등 제외</th></tr></thead>
-              <tbody>{INDEX_REFERENCE_RETURNS.map((index) => (
-                <tr key={index.name}>
-                  <th scope="row">{index.name}</th>
-                  {([index.recent, index.excluding] as const).map((reference) => (
-                    <td key={`${index.name}-${reference.period}`}>
-                      <span>{ratePercent(reference.rate)}%</span>
-                      <small>{reference.period} · {reference.source}</small>
-                      <small>{reference.basis}</small>
-                      <button type="button" onClick={() => applyReferenceRate(index.scope, reference.rate)}>적용</button>
-                    </td>
-                  ))}
-                </tr>
-              ))}</tbody>
-            </table>
-          </div>
-        </div>
-      </details>
 
       {/* 오류를 일으킨 입력이 대부분 이 안에 있다. 접혀 있으면 무엇을 고쳐야 할지 알 수 없다. */}
       <details className="card simulator-details" open={calculation.errors.length > 0}>
@@ -470,6 +479,7 @@ export function Simulator() {
         </>
       )}
       <p className="disclaimer">{DISCLAIMER}</p>
+      <SiteFooter />
     </main>
   );
 }

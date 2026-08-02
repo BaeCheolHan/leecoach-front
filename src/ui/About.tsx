@@ -1,5 +1,6 @@
 import { DISCLAIMER } from '../config';
 import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
+import { SiteFooter } from './SiteFooter';
 import { ManualPromo } from './guide/ManualPromo';
 import { usePageMeta } from './usePageMeta';
 
@@ -47,6 +48,7 @@ export function About() {
 
       <ManualPromo variant="card" />
       <p className="disclaimer">{DISCLAIMER}</p>
+      <SiteFooter />
     </main>
   );
 }

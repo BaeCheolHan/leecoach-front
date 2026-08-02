@@ -47,9 +47,14 @@ describe('About', () => {
     expect(screen.getByText('세무사가 검토한 우리 아이 증여 실무 매뉴얼')).toBeTruthy();
     expect(screen.getByText(/세무 자문이 아닙니다/)).toBeTruthy();
     expect(screen.getByRole('link', { name: /팔로우하기/ }).getAttribute('href')).toContain('leecoach_mom');
-    expect(screen.getByRole('link', { name: '계약서 만들기' }).getAttribute('href')).toBe('/');
+    // 공통 푸터에도 '계약서 만들기'가 있으므로 본문 버튼(.btn-primary)으로 좁힌다.
+    const mainCta = screen.getAllByRole('link', { name: '계약서 만들기' })
+      .find((link) => link.classList.contains('btn-primary'));
+    expect(mainCta?.getAttribute('href')).toBe('/');
     expect(screen.getByRole('link', { name: '가이드 보기' }).getAttribute('href')).toBe('/guide');
     expect(document.title).toBe('이코치맘을 소개합니다 | 이코치맘');
+    // 공통 푸터가 붙어 있어야 한다.
+    expect(screen.getByRole('link', { name: '자산 시뮬레이터' }).getAttribute('href')).toBe('/simulator');
   });
 });
 

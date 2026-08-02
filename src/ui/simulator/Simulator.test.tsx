@@ -100,22 +100,6 @@ describe('Simulator', () => {
     expect(screen.queryByText(/자녀 생년월일|증여 종료일/)).toBeNull();
   });
 
-  it('참고 표의 적용 버튼은 부동소수점 찌꺼기 없는 값을 넣는다', async () => {
-    render(<Simulator />);
-    await userEvent.click(screen.getByText('지수별 참고 수익률'));
-    const applyButtons = screen.getAllByRole('button', { name: '적용' });
-
-    expect(applyButtons.length).toBeGreaterThan(0);
-    for (const button of applyButtons) {
-      await userEvent.click(button);
-    }
-    // 0.082 * 100 === 8.200000000000001 이 화면에 노출되면 안 된다.
-    for (const input of screen.getAllByLabelText(/수익률/) as HTMLInputElement[]) {
-      expect(input.value).toMatch(/^-?\d+(\.\d)?$/);
-    }
-    expect(screen.queryByText('입력값을 확인해 주세요')).toBeNull();
-  });
-
   it('상품의 우열을 표현하지 않는다', () => {
     render(<Simulator />);
     expect(screen.queryByText(/추천|유리|베스트/)).toBeNull();
@@ -197,29 +181,59 @@ describe('Simulator', () => {
     expect(screen.queryByText(/추천|유리|베스트/)).toBeNull();
   });
 
-  it('지수별 참고 수익률은 기본 접힘이며 기간·출처와 적용 버튼을 제공한다', () => {
+  it('참고 표와 적용 버튼은 더 이상 표시하지 않는다', () => {
     render(<Simulator />);
-    const details = screen.getByText('지수별 참고 수익률').closest('details')!;
 
-    expect(details.hasAttribute('open')).toBe(false);
-    expect(within(details).getByText('2006~2026 · 지수 레벨로 산출')).toBeTruthy();
-    expect(within(details).getByText('1996~2026.5 · dqydj')).toBeTruthy();
-    expect(within(details).getAllByRole('button', { name: '적용' })).toHaveLength(6);
-    expect(within(details).getByText('⚠️ 이 수치를 그대로 믿지 마세요.')).toBeTruthy();
+    expect(screen.queryByText('지수별 참고 수익률')).toBeNull();
+    expect(screen.queryByRole('table', { name: /참고 수익률/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: '적용' })).toBeNull();
   });
 
-  it('참고 수익률 적용 버튼은 지수 scope에 맞는 입력만 바꾼다', async () => {
+  it('참고 수익률 기준은 급등 제외가 기본값이다', () => {
     render(<Simulator />);
-    const details = screen.getByText('지수별 참고 수익률').closest('details')!;
-    const rows = within(details).getAllByRole('row');
 
-    await userEvent.click(within(rows[1]).getAllByRole('button', { name: '적용' })[0]);
-    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '9');
+    expect(screen.getByRole('radio', { name: '급등 제외' })).toHaveProperty('checked', true);
+    expect(screen.getByRole('radio', { name: '최근까지' })).toHaveProperty('checked', false);
+  });
+
+  it('국내 칩은 국내 수익률만 바꾸고 선택 상태를 표시한다', async () => {
+    render(<Simulator />);
+    const chip = screen.getByRole('button', { name: '코스피 8.2%' });
+
+    await userEvent.click(chip);
+
+    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '8.2');
     expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '0');
+    expect(chip.getAttribute('aria-pressed')).toBe('true');
+  });
 
-    await userEvent.click(within(rows[2]).getAllByRole('button', { name: '적용' })[1]);
-    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '9');
+  it('해외 칩은 해외 수익률만 바꾼다', async () => {
+    render(<Simulator />);
+
+    await userEvent.click(screen.getByRole('button', { name: 'S&P 500 7.6%' }));
+
+    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '0');
     expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '7.6');
+  });
+
+  it('최근까지 기준으로 바꾸면 config 순서 그대로 칩 수치가 바뀐다', async () => {
+    render(<Simulator />);
+
+    await userEvent.click(screen.getByRole('radio', { name: '최근까지' }));
+
+    const chips = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'));
+    expect(chips.map((chip) => chip.textContent)).toEqual(['코스피 9%', 'S&P 500 10.3%', '나스닥 22.1%']);
+  });
+
+  it('빠른 선택 칩은 부동소수점 찌꺼기 없는 값을 입력한다', async () => {
+    render(<Simulator />);
+    const chips = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'));
+
+    for (const chip of chips) await userEvent.click(chip);
+    for (const input of screen.getAllByLabelText(/수익률/) as HTMLInputElement[]) {
+      expect(input.value).toMatch(/^-?\d+(\.\d)?$/);
+    }
+    expect(screen.queryByText('입력값을 확인해 주세요')).toBeNull();
   });
 
   it('세금 차이 힌트는 국내·해외 수익률이 모두 0일 때만 보인다', () => {
