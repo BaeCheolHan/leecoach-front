@@ -2,6 +2,7 @@ import { DISCLAIMER } from '../config';
 import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
 import { ManualPromo } from './guide/ManualPromo';
 import { usePageMeta } from './usePageMeta';
+import { SiteFooter } from './SiteFooter';
 
 export function About() {
   usePageMeta({
@@ -47,6 +48,7 @@ export function About() {
 
       <ManualPromo variant="card" />
       <p className="disclaimer">{DISCLAIMER}</p>
+      <SiteFooter />
     </main>
   );
 }

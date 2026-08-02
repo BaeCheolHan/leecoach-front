@@ -4,10 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormValues } from './schema';
 import { loadDraft, saveDraft } from '../storage/draft';
 import { InAppBrowserNotice } from './InAppBrowserNotice';
-import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
+import { SiteHeader } from './SiteHeader';
 import { Step1Parties } from './steps/Step1Parties';
 import { Step2Terms } from './steps/Step2Terms';
 import './App.css';
+import { SiteFooter } from './SiteFooter';
 
 const Step3Result = lazy(() => import('./steps/Step3Result').then((m) => ({ default: m.Step3Result })));
 
@@ -135,13 +136,7 @@ export default function App() {
             </button>
           </nav>
         )}
-        <p className="footer-links">
-          <a href="/guide">증여 가이드</a> · <a href="/about">소개</a> ·{' '}
-          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
-            인스타그램
-          </a>{' '}
-          · <a href="/privacy">개인정보처리방침</a>
-        </p>
+        <SiteFooter />
       </main>
     </FormProvider>
   );

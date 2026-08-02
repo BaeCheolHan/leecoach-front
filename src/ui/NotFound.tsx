@@ -1,5 +1,6 @@
 import { SiteHeader } from './SiteHeader';
 import { usePageMeta } from './usePageMeta';
+import { SiteFooter } from './SiteFooter';
 
 export function NotFound() {
   usePageMeta({
@@ -22,6 +23,7 @@ export function NotFound() {
           </a>
         </p>
       </section>
+      <SiteFooter />
     </main>
   );
 }
