@@ -2,6 +2,7 @@ import { StrictMode, Suspense, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import { resolvePage } from './ui/resolvePage.tsx'
+import { RootErrorBoundary } from './ui/RootErrorBoundary.tsx'
 import './ui/App.css'
 
 // www는 "가이드 입구": 루트는 /guide로, 그 외 경로는 메인 도메인의 같은 경로로 이동
@@ -16,8 +17,10 @@ const Page = resolvePage(window.location.pathname)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Suspense fallback={<div className="page-loading" />}>
-      {createElement(Page)}
-    </Suspense>
+    <RootErrorBoundary>
+      <Suspense fallback={<div className="page-loading" />}>
+        {createElement(Page)}
+      </Suspense>
+    </RootErrorBoundary>
   </StrictMode>,
 )
