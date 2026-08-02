@@ -86,7 +86,7 @@ export function AnnuityGiftReport() {
         <section className="card guide-section">
           <h2>1. 유기정기금 증여가 뭔가요?</h2>
           <p>
-            <b>"10년간 매달 50만 원씩 줄게"</b>라고 계약하고 나눠서 주는 증여입니다.
+            <b>"10년간 매달 20만 원씩 줄게"</b>라고 계약하고 나눠서 주는 증여입니다.
           </p>
           <ul>
             <li>목돈을 한 번에 주는 대신, 기간을 정해 매달 지급합니다.</li>

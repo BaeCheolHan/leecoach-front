@@ -1036,17 +1036,6 @@ button {
   border-radius: 20px;
 }
 
-.manual-promo-badge {
-  display: inline-block;
-  padding: 5px 9px;
-  margin-bottom: 12px;
-  border-radius: 999px;
-  background: #fdf6e7;
-  color: #8a6d1f;
-  font-size: 12px;
-  font-weight: 700;
-}
-
 .manual-promo h2 {
   color: #191f28;
   font-weight: 800;
@@ -1089,12 +1078,6 @@ button {
   margin-top: 16px;
   border-radius: 12px;
   background: #fdf6e7;
-}
-
-.manual-promo-inline .manual-promo-badge {
-  padding: 0;
-  margin-bottom: 7px;
-  background: transparent;
 }
 
 .manual-promo-inline h2 {
