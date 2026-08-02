@@ -1104,3 +1104,128 @@ button {
   font-size: 17px;
   word-break: keep-all;
 }
+
+/* ── 시뮬레이터 ── */
+
+.simulator { overflow-x: hidden; }
+
+.simulator-form fieldset {
+  min-width: 0;
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+}
+
+.simulator-method legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.simulator-method label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 18px 0 0;
+  font-size: 15px;
+}
+
+.simulator-method input {
+  width: auto;
+  margin: 0;
+}
+
+.simulator-rate-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.simulator-errors ul,
+.simulator-assumptions ul {
+  padding-left: 20px;
+  margin: 0;
+  color: #4e5968;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.simulator-errors li { color: #f04452; }
+
+.simulator-gift-result dl,
+.simulator-product dl { margin: 0; }
+
+.simulator-gift-result dl > div,
+.simulator-product dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f2f4f6;
+  font-size: 14px;
+}
+
+.simulator-gift-result dl > div:last-child,
+.simulator-product dl > div:last-child {
+  border-bottom: 0;
+  font-weight: 700;
+}
+
+.simulator-gift-result dt,
+.simulator-product dt { color: #4e5968; }
+
+.simulator-gift-result dd,
+.simulator-product dd {
+  margin: 0;
+  color: #191f28;
+  text-align: right;
+}
+
+.simulator-neutral-note,
+.simulator-warning {
+  margin: 0 0 16px;
+  word-break: keep-all;
+}
+
+.simulator-warning {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.simulator-section-title {
+  margin: 24px 0 12px;
+  font-size: 18px;
+  color: #191f28;
+}
+
+.simulator-products {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.simulator-product {
+  min-width: 0;
+  margin-bottom: 0;
+  padding: 18px;
+}
+
+.simulator-product h3 {
+  margin: 0 0 10px;
+  color: #191f28;
+  font-size: 15px;
+  word-break: keep-all;
+}
+
+.simulator-assumptions { margin-top: 16px; }
+.simulator-contract-cta { margin-top: 8px; }
+
+@media (min-width: 640px) {
+  .container.simulator { max-width: 960px; }
+
+  .simulator-rate-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .simulator-products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

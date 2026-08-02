@@ -3,8 +3,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
+import { CONTRACT_HANDOFF_KEY } from '../storage/simHandoff';
+import { DRAFT_KEY } from '../storage/draft';
 
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  sessionStorage.clear();
+});
 
 describe('App 스텝 흐름', () => {
   it('1단계에서 빈 폼으로 다음을 누르면 검증 메시지가 뜬다', async () => {
@@ -50,5 +55,25 @@ describe('App 스텝 흐름', () => {
     render(<App />);
     const option = screen.getByRole('option', { name: /기타친족/ }) as HTMLOptionElement;
     expect(option.value).toBe('기타');
+  });
+
+  it('draft 당사자는 유지하고 더 최근 의도인 핸드오프 조건을 우선한다', async () => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      donor: { name: '홍길동', rrn: '', address: '서울', phone: '' },
+      donee: { name: '홍아기', rrn: '', address: '서울', phone: '', relation: '자' },
+      terms: { startDate: '2025-01-01', endDate: '2029-12-31', method: '자동이체', paymentDay: 1, monthlyAmount: 100000, bank: '', account: '' },
+    }));
+    sessionStorage.setItem(CONTRACT_HANDOFF_KEY, JSON.stringify({
+      startDate: '2026-02-01', endDate: '2030-01-31', paymentDay: 15, monthlyAmount: 250000,
+    }));
+    render(<App />);
+    expect(screen.getByLabelText('증여자 성명')).toHaveProperty('value', '홍길동');
+    await userEvent.type(screen.getByLabelText('증여자 주민등록번호'), '800101-1000008');
+    await userEvent.type(screen.getByLabelText('수증자 주민등록번호'), '210301-3999999');
+    await userEvent.click(screen.getByRole('button', { name: '다음' }));
+    expect(await screen.findByLabelText('매월 증여액(원)')).toHaveProperty('value', '250,000');
+    expect(screen.getByLabelText('증여시작일')).toHaveProperty('value', '2026-02-01');
+    expect(screen.getByLabelText('매월 지급일')).toHaveProperty('value', '15');
+    expect(sessionStorage.getItem(CONTRACT_HANDOFF_KEY)).toBeNull();
   });
 });

@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { normalizePathname, routeMeta } from './routeMeta.js';
 
 const expectedMeta = {
+  '/simulator': {
+    title: '자녀 증여자산 시뮬레이터 — 세후 얼마가 남을까 | 이코치맘',
+    description: '증여한 돈이 아이가 자랄 때까지 얼마가 되고 세금이 얼마나 붙는지, 조건을 넣어 직접 계산해 보세요. 상품 유형별 세후 금액을 나란히 비교합니다.',
+    ogTitle: '자녀 증여자산 시뮬레이터 — 세후 얼마가 남을까',
+  },
   '/about': {
     title: '이코치맘을 소개합니다 | 이코치맘',
     description: '간호사 엄마 이코치맘이 만든 증여 도구와 가이드 — 사이트 소개와 만든 이유',
@@ -97,10 +102,12 @@ describe('routeMeta', () => {
     expect(routeMeta).toEqual(expectedMeta);
   });
 
-  it('contains all eleven guide routes, the about route, and the privacy route', () => {
+  it('contains all eleven guide routes and the three top-level content routes', () => {
+    expect(Object.keys(routeMeta)).toHaveLength(14);
     expect(Object.keys(routeMeta).filter((path) => path.startsWith('/guide'))).toHaveLength(11);
     expect(routeMeta['/about']).toBeDefined();
     expect(routeMeta['/privacy']).toBeDefined();
+    expect(routeMeta['/simulator']).toBeDefined();
   });
 
   it('uses titles without the site suffix for Open Graph', () => {

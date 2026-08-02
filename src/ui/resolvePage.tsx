@@ -5,6 +5,7 @@ export const PAGES: Record<string, ComponentType> = {
   '/': lazy(() => import('./App')),
   '/about': lazy(() => import('./About').then((m) => ({ default: m.About }))),
   '/privacy': lazy(() => import('./Privacy').then((m) => ({ default: m.Privacy }))),
+  '/simulator': lazy(() => import('./simulator/Simulator').then((m) => ({ default: m.Simulator }))),
   '/guide': lazy(() => import('./guide/GuideIndex').then((m) => ({ default: m.GuideIndex }))),
   '/guide/annuity-gift-report': lazy(() =>
     import('./guide/AnnuityGiftReport').then((m) => ({ default: m.AnnuityGiftReport })),

@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { Step3Result } from './steps/Step3Result';
 import type { FormValues } from './schema';
+import { SIMULATOR_HANDOFF_KEY } from '../storage/simHandoff';
 
 // jsdom에서는 canvas·PDF 렌더가 불가하므로 PDF 생성 계층만 대체 (파일명 로직 등은 원본 유지)
 vi.mock('../pdf/download', async (importOriginal) => ({
@@ -17,6 +19,8 @@ const values: FormValues = {
   donee: { name: '홍아기', rrn: '210301-3999999', address: '서울', phone: '', relation: '자' },
   terms: { startDate: '2026-01-01', endDate: '2035-12-31', method: '자동이체', paymentDay: 1, monthlyAmount: 100000, bank: '국민은행', account: '123' },
 };
+
+beforeEach(() => sessionStorage.clear());
 
 describe('Step3Result', () => {
   it('평가 표와 합계를 렌더한다 (픽스처 값)', () => {
@@ -55,5 +59,24 @@ describe('Step3Result', () => {
   it('관계가 기타가 아니면 증여재산공제 미적용 경고를 표시하지 않는다', () => {
     render(<Step3Result values={values} onBack={() => {}} />);
     expect(screen.queryByText(/증여재산공제가 적용되지 않습니다/)).toBeNull();
+  });
+  it('신고 가이드 다음에 시뮬레이터 CTA를 표시하고 허용된 값만 넘긴다', async () => {
+    render(<Step3Result values={values} onBack={() => {}} />);
+    const links = screen.getAllByRole('link');
+    const guideIndex = links.findIndex((link) => link.getAttribute('href') === '/guide/annuity-gift-report');
+    const simulator = screen.getByRole('link', { name: /이 돈이 아이 손에 갈 때쯤 얼마가 될까요/ });
+    expect(links.indexOf(simulator)).toBeGreaterThan(guideIndex);
+    await userEvent.click(simulator);
+    const stored = JSON.parse(sessionStorage.getItem(SIMULATOR_HANDOFF_KEY)!);
+    expect(stored).toEqual({
+      monthlyAmount: 100000,
+      startDate: '2026-01-01',
+      endDate: '2035-12-31',
+      paymentDay: 1,
+      childBirthDate: '2021-03-01',
+    });
+    expect(stored).not.toHaveProperty('donor');
+    expect(stored).not.toHaveProperty('donee');
+    expect(stored).not.toHaveProperty('rrn');
   });
 });

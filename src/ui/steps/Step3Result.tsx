@@ -10,6 +10,7 @@ import { ContractDoc } from '../../pdf/ContractDoc';
 import { ScheduleDoc } from '../../pdf/ScheduleDoc';
 import { pdfFileName, renderPdfBlob, savePdfFiles } from '../../pdf/download';
 import { clearDraft } from '../../storage/draft';
+import { saveToSimulator } from '../../storage/simHandoff';
 import { DISCLAIMER, TAX_MIN_THRESHOLD } from '../../config';
 
 const won = (n: number) => `₩${n.toLocaleString('ko-KR')}`;
@@ -135,6 +136,20 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
       <a className="next-guide" href="/guide/annuity-gift-report">
         <b>다음 단계는 홈택스 신고입니다</b>
         <span>서류 첨부부터 제출까지, 신고 방법 가이드 보기 →</span>
+      </a>
+      <a
+        className="next-guide"
+        href="/simulator"
+        onClick={() => saveToSimulator({
+          monthlyAmount: values.terms.monthlyAmount,
+          startDate: values.terms.startDate,
+          endDate: values.terms.endDate,
+          paymentDay: values.terms.paymentDay,
+          childBirthDate: doneeBirth,
+        })}
+      >
+        <b>이 돈이 아이 손에 갈 때쯤 얼마가 될까요?</b>
+        <span>세후 금액을 상품 유형별로 계산해 보기 →</span>
       </a>
       <nav className="step-nav step-nav--even">
         <button type="button" className="btn-secondary" onClick={onBack}>이전</button>

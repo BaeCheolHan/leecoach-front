@@ -3,6 +3,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormValues } from './schema';
 import { loadDraft, saveDraft } from '../storage/draft';
+import { loadToContract } from '../storage/simHandoff';
 import { InAppBrowserNotice } from './InAppBrowserNotice';
 import { INSTAGRAM_URL, SiteHeader } from './SiteHeader';
 import { Step1Parties } from './steps/Step1Parties';
@@ -16,19 +17,30 @@ const STEP2_FIELDS = ['terms'] as const;
 
 export default function App() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [draft] = useState(() => loadDraft());
+  const [initial] = useState(() => {
+    const draft = loadDraft();
+    const handoff = loadToContract();
+    const empty: FormValues = {
+      donor: { name: '', rrn: '', address: '', phone: '' },
+      donee: { name: '', rrn: '', address: '', phone: '', relation: undefined as never },
+      terms: { startDate: '', endDate: '', method: '자동이체', paymentDay: 1, monthlyAmount: 0, bank: '', account: '' },
+    };
+    // 핸드오프는 사용자가 방금 시뮬레이터에서 계약서 생성을 선택한 더 최근 의도다.
+    // 따라서 draft의 당사자·계좌 정보는 보존하되, 겹치는 계약 조건은 핸드오프를 우선한다.
+    const values = draft ?? empty;
+    return {
+      draft,
+      values: handoff ? { ...values, terms: { ...values.terms, ...handoff } } : values,
+    };
+  });
   // 의미 있는 내용이 복원됐을 때만 안내 (빈 초안 저장분은 제외)
   const [showRestored, setShowRestored] = useState(
-    () => !!(draft && (draft.donor?.name || draft.donee?.name || draft.terms?.monthlyAmount)),
+    () => !!(initial.draft && (initial.draft.donor?.name || initial.draft.donee?.name || initial.draft.terms?.monthlyAmount)),
   );
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: 'onTouched',
-    defaultValues: draft ?? {
-      donor: { name: '', rrn: '', address: '', phone: '' },
-      donee: { name: '', rrn: '', address: '', phone: '', relation: undefined as never },
-      terms: { startDate: '', endDate: '', method: '자동이체', paymentDay: 1, monthlyAmount: 0, bank: '', account: '' },
-    },
+    defaultValues: initial.values,
   });
 
   // debounce 자동 저장 (주민번호는 draft.ts가 제거)
