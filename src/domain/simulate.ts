@@ -22,7 +22,10 @@ export interface SimulateInput {
   lumpSumAmount?: number;
   giftDate?: string;
   childBirthDate: string;
-  priceGrowthRate: number;
+  /** 국내 주식형 ETF에 적용할 연 가격상승률 */
+  domesticGrowthRate: number;
+  /** 해외 지수를 추종하는 ETF에 적용할 연 가격상승률 (국내 상장·해외 상장 공통) */
+  overseasGrowthRate: number;
   distributionRate: number;
   withdrawalAge: number;
 }
@@ -68,16 +71,24 @@ const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
 /** 시뮬레이터 입력의 필수값, 범위, 증여 종료와 인출 시점 순서를 검증한다. */
+/** 수익률 입력 허용 폭(±30%). 참고 표에 싣는 값을 그대로 받을 수 있어야 한다. */
+const GROWTH_RATE_LIMIT = 0.3;
+
 export function validateSimulateInput(input: SimulateInput): string[] {
   const errors: string[] = [];
 
   if (!input.childBirthDate) errors.push('자녀 생년월일은 필수입니다');
   if (!isNonNegative(input.withdrawalAge)) errors.push('인출 나이를 확인해 주세요');
-  // 손실 시나리오도 계산할 수 있어야 한다. 상승만 허용하면 "투자하면 반드시 불어난다"는
-  // 인상을 주어, 수익을 제시하지 않는다는 원칙과 어긋난다. 하한 -100%는 전액 손실.
-  if (!isFiniteNumber(input.priceGrowthRate)
-    || input.priceGrowthRate < -1 || input.priceGrowthRate > 1) {
-    errors.push('가격상승률은 -100% 이상 100% 이하여야 합니다');
+  // 손실 시나리오도 계산할 수 있어야 하므로 음수를 허용한다. 상한이 ±20%였을 때는
+  // 참고 표의 나스닥 최근 10년(22.1%)을 '적용'하면 곧바로 오류가 나는 모순이 있었다.
+  // 실제로 제시하는 참고값을 받아들일 수 있어야 한다.
+  if (!isFiniteNumber(input.domesticGrowthRate)
+    || input.domesticGrowthRate < -GROWTH_RATE_LIMIT || input.domesticGrowthRate > GROWTH_RATE_LIMIT) {
+    errors.push('국내 수익률은 -30% 이상 30% 이하여야 합니다');
+  }
+  if (!isFiniteNumber(input.overseasGrowthRate)
+    || input.overseasGrowthRate < -GROWTH_RATE_LIMIT || input.overseasGrowthRate > GROWTH_RATE_LIMIT) {
+    errors.push('해외 수익률은 -30% 이상 30% 이하여야 합니다');
   }
   if (!isNonNegative(input.distributionRate) || input.distributionRate > 1) {
     errors.push('분배율은 0% 이상 100% 이하여야 합니다');
@@ -146,6 +157,9 @@ export function simulate(input: SimulateInput): SimulateResult {
   const endYear = Math.max(...contributions.keys());
 
   for (const productType of productTypes) {
+    const growthRate = productType === 'domesticEquityEtf'
+      ? input.domesticGrowthRate
+      : input.overseasGrowthRate;
     let balance = 0;
     let costBasis = 0;
     let distributionTax = 0;
@@ -168,7 +182,7 @@ export function simulate(input: SimulateInput): SimulateResult {
       distributionTax += distTax;
       balance += distribution - distTax;
       costBasis += distribution - distTax;
-      balance *= 1 + input.priceGrowthRate;
+      balance *= 1 + growthRate;
     }
 
     const capitalGain = balance - costBasis;

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ADULT_AGE, DISCLAIMER } from '../../config';
+import { ADULT_AGE, DISCLAIMER, INDEX_REFERENCE_RETURNS } from '../../config';
 import {
   simulate,
   validateSimulateInput,
@@ -38,6 +38,8 @@ const detailRows: [string, keyof ProductResult][] = [
 ];
 
 const won = (value: number) => `₩${Math.round(value).toLocaleString('ko-KR')}`;
+/** 비율(0.082) → 화면·입력용 퍼센트 문자열. 그냥 ×100 하면 8.200000000000001이 노출된다. */
+const ratePercent = (rate: number) => String(Math.round(rate * 1000) / 10);
 const percent = (value: string) => value.trim() === '' ? Number.NaN : Number(value) / 100;
 const number = (value: string) => value.trim() === '' ? Number.NaN : Number(value);
 const pad = (value: number) => String(value).padStart(2, '0');
@@ -83,7 +85,8 @@ interface FormState {
   lumpSumAmount: number;
   giftDate: string;
   childAge: string;
-  priceGrowthRate: string;
+  domesticGrowthRate: string;
+  overseasGrowthRate: string;
   distributionRate: string;
   withdrawalAge: string;
 }
@@ -98,7 +101,8 @@ function validateForm(form: FormState): string[] {
   const blank = (value: string) => value.trim() === '';
 
   if (blank(form.childAge) || number(form.childAge) < 0) errors.push('아이 나이를 입력해 주세요.');
-  if (blank(form.priceGrowthRate)) errors.push('연 가격상승률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.');
+  if (blank(form.domesticGrowthRate)) errors.push('국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.');
+  if (blank(form.overseasGrowthRate)) errors.push('해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.');
   if (blank(form.distributionRate)) errors.push('연 분배율을 입력해 주세요. 모르면 0을 넣으세요.');
 
   if (form.calculationMode === 'target') {
@@ -154,7 +158,8 @@ export function Simulator() {
     lumpSumAmount: 24_000_000,
     giftDate: defaultStartDate,
     childAge: handoff?.childBirthDate ? ageFromBirthDate(handoff.childBirthDate) : '5',
-    priceGrowthRate: '0',
+    domesticGrowthRate: '0',
+    overseasGrowthRate: '0',
     distributionRate: '0',
     withdrawalAge: '',
   }));
@@ -189,7 +194,8 @@ export function Simulator() {
     lumpSumAmount: form.lumpSumAmount,
     giftDate: form.giftDate,
     childBirthDate,
-    priceGrowthRate: percent(form.priceGrowthRate),
+    domesticGrowthRate: percent(form.domesticGrowthRate),
+    overseasGrowthRate: percent(form.overseasGrowthRate),
     distributionRate: percent(form.distributionRate),
     withdrawalAge: number(withdrawalAge),
   }), [childBirthDate, endDate, form, withdrawalAge]);
@@ -234,6 +240,11 @@ export function Simulator() {
   const financialIncomeWarning = calculation.result?.financialIncomeWarning
     || Object.values(calculation.targetResults ?? {}).some((result) =>
       result.simulated?.financialIncomeWarning);
+  const bothGrowthRatesZero = percent(form.domesticGrowthRate) === 0
+    && percent(form.overseasGrowthRate) === 0;
+  const applyReferenceRate = (scope: 'domestic' | 'overseas', rate: number) => {
+    update(scope === 'domestic' ? 'domesticGrowthRate' : 'overseasGrowthRate', ratePercent(rate));
+  };
 
   return (
     <main className="container simulator">
@@ -266,8 +277,12 @@ export function Simulator() {
           {/* 수익률도 다른 조건과 같은 숫자 입력으로 둔다. 슬라이더는 ±20% 범위에서 1스텝이
               3.9px라 원하는 값을 집을 수 없었다. 기본값 0은 수익을 제시하지 않기 위함이다. */}
           <div className="simulator-field">
-            <label htmlFor="sim-growth">연 가격상승률</label>
-            <div className="simulator-unit-input"><input id="sim-growth" type="number" inputMode="decimal" min="-20" max="20" step="any" value={form.priceGrowthRate} onChange={(event) => update('priceGrowthRate', event.target.value)} /><span>%</span></div>
+            <label htmlFor="sim-domestic-growth">국내 수익률</label>
+            <div className="simulator-unit-input"><input id="sim-domestic-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.domesticGrowthRate} onChange={(event) => update('domesticGrowthRate', event.target.value)} /><span>%</span></div>
+          </div>
+          <div className="simulator-field">
+            <label htmlFor="sim-overseas-growth">해외 수익률</label>
+            <div className="simulator-unit-input"><input id="sim-overseas-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.overseasGrowthRate} onChange={(event) => update('overseasGrowthRate', event.target.value)} /><span>%</span></div>
           </div>
         </div>
       </section>
@@ -285,7 +300,7 @@ export function Simulator() {
               <div key={type}><dt>{productNames[type]}</dt><dd>{won(calculation.result!.byProduct[type].afterTax)}</dd></div>
             ))}
           </dl>
-          {allAfterTaxEqual && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
+          {allAfterTaxEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
         </section>
       ) : calculation.targetResults && (
         <section className="card simulator-summary simulator-target-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
@@ -304,9 +319,38 @@ export function Simulator() {
               );
             })}
           </dl>
-          {allRequiredEqual && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
+          {allRequiredEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
         </section>
       )}
+
+      <details className="card simulator-details simulator-reference">
+        <summary>지수별 참고 수익률</summary>
+        <div className="simulator-details-body">
+          <div className="simulator-reference-warning">
+            <p><strong>⚠️ 이 수치를 그대로 믿지 마세요.</strong></p>
+            <p>코스피는 2025년 +75%, 2026년 들어 두 달 만에 +40% 오르며 사상 첫 6,000선을 돌파했습니다. 나스닥도 최근 10년이 기술주 상승장으로 부풀려져 있습니다. 두 지수 모두 최근 급등을 포함한 수치와 제외한 수치를 나란히 실은 이유입니다.</p>
+            <p>지수마다 측정 기간과 출처가 다르므로 행끼리 직접 비교할 수 없습니다. 과거 수익률은 미래를 보장하지 않으며, 어느 기간을 기준으로 삼느냐에 따라 결론이 뒤집힙니다.</p>
+          </div>
+          <div className="table-scroll">
+            <table className="info-table simulator-reference-table">
+              <thead><tr><th scope="col">지수</th><th scope="col">최근까지(급등 포함)</th><th scope="col">급등 제외</th></tr></thead>
+              <tbody>{INDEX_REFERENCE_RETURNS.map((index) => (
+                <tr key={index.name}>
+                  <th scope="row">{index.name}</th>
+                  {([index.recent, index.excluding] as const).map((reference) => (
+                    <td key={`${index.name}-${reference.period}`}>
+                      <span>{ratePercent(reference.rate)}%</span>
+                      <small>{reference.period} · {reference.source}</small>
+                      <small>{reference.basis}</small>
+                      <button type="button" onClick={() => applyReferenceRate(index.scope, reference.rate)}>적용</button>
+                    </td>
+                  ))}
+                </tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </div>
+      </details>
 
       {/* 오류를 일으킨 입력이 대부분 이 안에 있다. 접혀 있으면 무엇을 고쳐야 할지 알 수 없다. */}
       <details className="card simulator-details" open={calculation.errors.length > 0}>

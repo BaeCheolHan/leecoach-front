@@ -29,6 +29,28 @@ export const GIFT_TAX_BRACKETS = [
   { limit: 3_000_000_000, rate: 0.4, deduction: 160_000_000 },
   { limit: Infinity, rate: 0.5, deduction: 460_000_000 },
 ] as const;
+/**
+ * 지수별 참고 연평균 수익률. 사용자가 "얼마를 넣어야 할지" 모를 때 고르는 출발점이며,
+ * 우리가 권하는 값이 아니다. 기간·출처가 제각각이라 행끼리 직접 비교할 수 없다.
+ * 최근 급등이 결과를 크게 부풀리므로 '급등 포함'과 '급등 제외'를 함께 싣는다.
+ */
+export const INDEX_REFERENCE_RETURNS = [
+  {
+    name: '코스피', scope: 'domestic',
+    recent:    { rate: 0.09,  period: '2006~2026', basis: '토탈리턴', source: '지수 레벨로 산출' },
+    excluding: { rate: 0.082, period: '2002~2022', basis: '토탈리턴(배당 1.7% 포함)', source: '삼성증권' },
+  },
+  {
+    name: 'S&P 500', scope: 'overseas',
+    recent:    { rate: 0.103, period: '1996~2026.5', basis: '배당 재투자', source: 'dqydj' },
+    excluding: { rate: 0.076, period: '2002~2022', basis: '가격지수', source: '삼성증권' },
+  },
+  {
+    name: '나스닥', scope: 'overseas',
+    recent:    { rate: 0.221, period: '2016~2026.6', basis: '토탈리턴', source: 'financecharts' },
+    excluding: { rate: 0.105, period: '최근 30년', basis: '명목', source: 'Bitget' },
+  },
+] as const;
 /** 운영 도메인 (canonical·JSON-LD 용) */
 export const SITE_ORIGIN = 'https://leecoachmom.com';
 /** 면책 문구 — 화면·PDF 공통 */

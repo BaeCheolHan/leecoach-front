@@ -1338,6 +1338,54 @@ button {
   border-top: 1px solid #f2f4f6;
 }
 
+.simulator-reference-warning {
+  margin: 14px 0;
+  color: #4e5968;
+  font-size: 12px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.simulator-reference-warning p { margin: 0 0 8px; }
+.simulator-reference-warning p:last-child { margin-bottom: 0; }
+.simulator-reference .table-scroll { margin: 0; }
+/*
+ * 어떤 지수도 시각적으로 돋보이면 안 된다(우열 표시 금지). .card tbody tr:last-child의
+ * '합계 행' 강조가 .info-table 재설정과 같은 우선순위인데 뒤에 있어 이기므로,
+ * 마지막 행인 나스닥만 굵게+윗줄이 그어졌다. .card 스코프로 특정도를 올려 확실히 끈다.
+ */
+.card .simulator-reference-table tbody tr:last-child td,
+.card .simulator-reference-table tbody tr:last-child th {
+  font-weight: 400;
+  border-top: none;
+  border-bottom: 1px solid #f2f4f6;
+}
+
+.simulator-reference-table { min-width: 560px; }
+.simulator-reference-table th:first-child { text-align: left; }
+.simulator-reference-table td { text-align: center; }
+
+.simulator-reference-table small {
+  display: block;
+  margin-top: 3px;
+  color: #8b95a1;
+  font-size: 10px;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.simulator-reference-table button {
+  min-height: 32px;
+  margin-top: 8px;
+  padding: 5px 12px;
+  border: 1px solid #d1d6db;
+  border-radius: 6px;
+  color: #4e5968;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 .simulator-method {
   min-width: 0;
   margin: 14px 0;

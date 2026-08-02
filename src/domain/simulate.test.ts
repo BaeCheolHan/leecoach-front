@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DOMESTIC_FOREIGN_ETF_GAIN_TAX_RATE,
   FINANCIAL_INCOME_THRESHOLD,
+  INDEX_REFERENCE_RETURNS,
   OVERSEAS_ETF_BASIC_DEDUCTION,
   OVERSEAS_ETF_GAIN_TAX_RATE,
 } from '../config';
@@ -12,7 +13,8 @@ const lumpSumInput = (overrides: Partial<SimulateInput> = {}): SimulateInput => 
   lumpSumAmount: 10_000_000,
   giftDate: '2026-01-01',
   childBirthDate: '2025-01-01',
-  priceGrowthRate: 0.05,
+  domesticGrowthRate: 0.05,
+  overseasGrowthRate: 0.05,
   distributionRate: 0.02,
   withdrawalAge: 2,
   ...overrides,
@@ -25,7 +27,8 @@ const annuityInput = (overrides: Partial<SimulateInput> = {}): SimulateInput => 
   endDate: '2026-12-31',
   paymentDay: 1,
   childBirthDate: '2025-01-01',
-  priceGrowthRate: 0.05,
+  domesticGrowthRate: 0.05,
+  overseasGrowthRate: 0.05,
   distributionRate: 0.02,
   withdrawalAge: 2,
   ...overrides,
@@ -50,7 +53,7 @@ describe('simulate', () => {
   });
 
   it('국내주식형 ETF의 매도세금은 항상 0이다', () => {
-    expect(simulate(lumpSumInput({ priceGrowthRate: 1 })).byProduct.domesticEquityEtf.saleTax).toBe(0);
+    expect(simulate(lumpSumInput({ domesticGrowthRate: 0.2 })).byProduct.domesticEquityEtf.saleTax).toBe(0);
   });
 
   it('해외 ETF 차익이 기본공제 미만이거나 정확히 같으면 매도세금이 0이다', () => {
@@ -58,12 +61,12 @@ describe('simulate', () => {
     const below = simulate(lumpSumInput({
       lumpSumAmount: amount,
       distributionRate: 0,
-      priceGrowthRate: (OVERSEAS_ETF_BASIC_DEDUCTION - 1) / amount,
+      overseasGrowthRate: (OVERSEAS_ETF_BASIC_DEDUCTION - 1) / amount,
     }));
     const atBoundary = simulate(lumpSumInput({
       lumpSumAmount: amount,
       distributionRate: 0,
-      priceGrowthRate: OVERSEAS_ETF_BASIC_DEDUCTION / amount,
+      overseasGrowthRate: OVERSEAS_ETF_BASIC_DEDUCTION / amount,
     }));
 
     expect(below.byProduct.overseasEtf.saleTax).toBe(0);
@@ -77,7 +80,7 @@ describe('simulate', () => {
     const result = simulate(lumpSumInput({
       lumpSumAmount: amount,
       distributionRate: 0,
-      priceGrowthRate: (OVERSEAS_ETF_BASIC_DEDUCTION + excess) / amount,
+      overseasGrowthRate: (OVERSEAS_ETF_BASIC_DEDUCTION + excess) / amount,
     }));
 
     expect(result.byProduct.overseasEtf.saleTax)
@@ -85,7 +88,7 @@ describe('simulate', () => {
   });
 
   it('가격 하락으로 차익이 음수이면 모든 상품의 매도세금이 0이다', () => {
-    const input = lumpSumInput({ priceGrowthRate: -0.1, distributionRate: 0 });
+    const input = lumpSumInput({ domesticGrowthRate: -0.1, overseasGrowthRate: -0.1, distributionRate: 0 });
 
     expect(validateSimulateInput(input)).toEqual([]);
 
@@ -126,7 +129,8 @@ describe('simulate', () => {
     // 20년간 소액 분배금이 쌓여 누적으로는 기준을 넘지만, 어느 해에도 연간 기준을 넘지 않는다.
     const result = simulate(lumpSumInput({
       lumpSumAmount: 100_000_000,
-      priceGrowthRate: 0,
+      domesticGrowthRate: 0,
+      overseasGrowthRate: 0,
       distributionRate: 0.01,
       withdrawalAge: 21,
     }));
@@ -139,7 +143,8 @@ describe('simulate', () => {
   it('한 해 분배금이 기준을 넘으면 종합과세를 경고한다', () => {
     const result = simulate(lumpSumInput({
       lumpSumAmount: 3_000_000_000,
-      priceGrowthRate: 0,
+      domesticGrowthRate: 0,
+      overseasGrowthRate: 0,
       distributionRate: 0.05,
     }));
 
@@ -152,6 +157,41 @@ describe('simulate', () => {
 
     expect(result.byProduct.domesticForeignEtf.saleTax)
       .toBe(Math.round(gain * DOMESTIC_FOREIGN_ETF_GAIN_TAX_RATE));
+  });
+
+  it('국내 수익률만 올리면 국내 주식형만 커지고 해외 지수 추종 둘은 그대로다', () => {
+    const baseline = simulate(lumpSumInput({ domesticGrowthRate: 0, overseasGrowthRate: 0 }));
+    const changed = simulate(lumpSumInput({ domesticGrowthRate: 0.1, overseasGrowthRate: 0 }));
+
+    expect(changed.byProduct.domesticEquityEtf.finalValue)
+      .toBeGreaterThan(baseline.byProduct.domesticEquityEtf.finalValue);
+    expect(changed.byProduct.domesticForeignEtf).toEqual(baseline.byProduct.domesticForeignEtf);
+    expect(changed.byProduct.overseasEtf).toEqual(baseline.byProduct.overseasEtf);
+  });
+
+  it('해외 수익률만 올리면 해외 지수 추종 둘만 커지고 국내 주식형은 그대로다', () => {
+    const baseline = simulate(lumpSumInput({ domesticGrowthRate: 0, overseasGrowthRate: 0 }));
+    const changed = simulate(lumpSumInput({ domesticGrowthRate: 0, overseasGrowthRate: 0.1 }));
+
+    expect(changed.byProduct.domesticEquityEtf).toEqual(baseline.byProduct.domesticEquityEtf);
+    expect(changed.byProduct.domesticForeignEtf.finalValue)
+      .toBeGreaterThan(baseline.byProduct.domesticForeignEtf.finalValue);
+    expect(changed.byProduct.overseasEtf.finalValue)
+      .toBeGreaterThan(baseline.byProduct.overseasEtf.finalValue);
+  });
+
+  it('해외 수익률이 국내보다 충분히 높으면 국내 주식형이 세후 금액 1등이 아니다', () => {
+    const result = simulate(lumpSumInput({
+      domesticGrowthRate: 0.02,
+      overseasGrowthRate: 0.2,
+      distributionRate: 0,
+      withdrawalAge: 10,
+    }));
+
+    expect(Math.max(
+      result.byProduct.domesticForeignEtf.afterTax,
+      result.byProduct.overseasEtf.afterTax,
+    )).toBeGreaterThan(result.byProduct.domesticEquityEtf.afterTax);
   });
 });
 
@@ -176,13 +216,26 @@ describe('validateSimulateInput', () => {
   });
 
   it('손실 시나리오를 위해 마이너스 가격상승률을 허용한다', () => {
-    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -0.01 }))).toEqual([]);
-    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -1 }))).toEqual([]);
+    expect(validateSimulateInput(lumpSumInput({ domesticGrowthRate: -0.01 }))).toEqual([]);
+    expect(validateSimulateInput(lumpSumInput({ overseasGrowthRate: -0.01 }))).toEqual([]);
   });
 
-  it('가격상승률이 -100% 미만이거나 100% 초과이면 오류를 반환한다', () => {
-    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -1.01 }))).not.toEqual([]);
-    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: 1.01 }))).not.toEqual([]);
+  it('국내·해외 수익률을 각각 -30% 이상 30% 이하로 검증한다', () => {
+    expect(validateSimulateInput(lumpSumInput({ domesticGrowthRate: -0.301 })))
+      .toContain('국내 수익률은 -30% 이상 30% 이하여야 합니다');
+    expect(validateSimulateInput(lumpSumInput({ overseasGrowthRate: 0.301 })))
+      .toContain('해외 수익률은 -30% 이상 30% 이하여야 합니다');
+  });
+
+  it.each(
+    INDEX_REFERENCE_RETURNS.flatMap((index) => [
+      [`${index.name} 최근까지`, index.recent.rate] as const,
+      [`${index.name} 급등 제외`, index.excluding.rate] as const,
+    ]),
+  )('참고 표의 %s 수익률(%f)은 그대로 계산에 넣을 수 있다', (_label, rate) => {
+    // 나스닥 최근 10년 22.1%가 상한 20%를 넘어, 참고 표의 '적용'을 누르면 오류가 나던 모순의 회귀 테스트.
+    expect(validateSimulateInput(lumpSumInput({ domesticGrowthRate: rate }))).toEqual([]);
+    expect(validateSimulateInput(lumpSumInput({ overseasGrowthRate: rate }))).toEqual([]);
   });
 
   it('분배율은 음수이거나 100% 초과이면 오류를 반환한다', () => {

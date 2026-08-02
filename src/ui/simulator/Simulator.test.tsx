@@ -28,28 +28,30 @@ describe('Simulator', () => {
     expect(screen.queryByRole('button', { name: /계산|제출/ })).toBeNull();
   });
 
-  it('가격상승률은 투자 수익률을 제시하지 않고 0에서 시작한다', () => {
+  it('국내·해외 수익률은 투자 수익률을 제시하지 않고 0에서 시작한다', () => {
     render(<Simulator />);
-    const growth = screen.getByLabelText('연 가격상승률') as HTMLInputElement;
+    const growthInputs = ['국내 수익률', '해외 수익률']
+      .map((label) => screen.getByLabelText(label) as HTMLInputElement);
 
-    expect(growth).toHaveProperty('value', '0');
+    expect(growthInputs.every((input) => input.value === '0')).toBe(true);
     // 다른 조건과 같은 숫자 입력이어야 원하는 값을 정확히 넣을 수 있다.
-    expect(growth.type).toBe('number');
-    expect(growth).toHaveProperty('min', '-20');
-    expect(growth).toHaveProperty('max', '20');
+    expect(growthInputs.every((input) => input.type === 'number')).toBe(true);
+    expect(growthInputs.every((input) => input.min === '-30')).toBe(true);
+    expect(growthInputs.every((input) => input.max === '30')).toBe(true);
     expect(screen.queryByRole('slider')).toBeNull();
   });
 
   it('소수점 수익률도 그대로 입력된다', () => {
     render(<Simulator />);
-    fireEvent.change(screen.getByLabelText('연 가격상승률'), { target: { value: '7.2' } });
+    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '7.2' } });
 
-    expect(screen.getByLabelText('연 가격상승률')).toHaveProperty('value', '7.2');
+    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '7.2');
   });
 
   it('수익률을 올리면 상품 간 세후 금액에 차이가 생긴다', () => {
     render(<Simulator />);
-    fireEvent.change(screen.getByLabelText('연 가격상승률'), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '5' } });
 
     const amounts = within(screen.getByTestId('simulator-result-summary'))
       .getAllByText(/^₩[\d,]+$/)
@@ -87,7 +89,8 @@ describe('Simulator', () => {
   it.each([
     ['아이 나이', '', '아이 나이를 입력해 주세요.'],
     ['증여 기간', '0', '증여 기간은 1년 이상이어야 합니다.'],
-    ['연 가격상승률', '', '연 가격상승률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
+    ['국내 수익률', '', '국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
+    ['해외 수익률', '', '해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
   ])('%s이(가) 비거나 잘못되면 그 필드를 가리키는 안내를 보여준다', (label, value, expected) => {
     render(<Simulator />);
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -95,6 +98,22 @@ describe('Simulator', () => {
     expect(screen.getByText(expected)).toBeTruthy();
     // 도메인 용어('자녀 생년월일', '증여 종료일')는 이 화면에 없는 필드라 노출하면 안 된다.
     expect(screen.queryByText(/자녀 생년월일|증여 종료일/)).toBeNull();
+  });
+
+  it('참고 표의 적용 버튼은 부동소수점 찌꺼기 없는 값을 넣는다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByText('지수별 참고 수익률'));
+    const applyButtons = screen.getAllByRole('button', { name: '적용' });
+
+    expect(applyButtons.length).toBeGreaterThan(0);
+    for (const button of applyButtons) {
+      await userEvent.click(button);
+    }
+    // 0.082 * 100 === 8.200000000000001 이 화면에 노출되면 안 된다.
+    for (const input of screen.getAllByLabelText(/수익률/) as HTMLInputElement[]) {
+      expect(input.value).toMatch(/^-?\d+(\.\d)?$/);
+    }
+    expect(screen.queryByText('입력값을 확인해 주세요')).toBeNull();
   });
 
   it('상품의 우열을 표현하지 않는다', () => {
@@ -161,7 +180,8 @@ describe('Simulator', () => {
   it('목표 역산 필요 금액은 수익률이 있을 때 세 상품 모두 같지는 않다', async () => {
     render(<Simulator />);
     await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
-    fireEvent.change(screen.getByLabelText('연 가격상승률'), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '5' } });
 
     const amounts = within(screen.getByTestId('simulator-result-summary'))
       .getAllByText(/^₩[\d,]+\/월$/)
@@ -175,5 +195,39 @@ describe('Simulator', () => {
     await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
 
     expect(screen.queryByText(/추천|유리|베스트/)).toBeNull();
+  });
+
+  it('지수별 참고 수익률은 기본 접힘이며 기간·출처와 적용 버튼을 제공한다', () => {
+    render(<Simulator />);
+    const details = screen.getByText('지수별 참고 수익률').closest('details')!;
+
+    expect(details.hasAttribute('open')).toBe(false);
+    expect(within(details).getByText('2006~2026 · 지수 레벨로 산출')).toBeTruthy();
+    expect(within(details).getByText('1996~2026.5 · dqydj')).toBeTruthy();
+    expect(within(details).getAllByRole('button', { name: '적용' })).toHaveLength(6);
+    expect(within(details).getByText('⚠️ 이 수치를 그대로 믿지 마세요.')).toBeTruthy();
+  });
+
+  it('참고 수익률 적용 버튼은 지수 scope에 맞는 입력만 바꾼다', async () => {
+    render(<Simulator />);
+    const details = screen.getByText('지수별 참고 수익률').closest('details')!;
+    const rows = within(details).getAllByRole('row');
+
+    await userEvent.click(within(rows[1]).getAllByRole('button', { name: '적용' })[0]);
+    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '9');
+    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '0');
+
+    await userEvent.click(within(rows[2]).getAllByRole('button', { name: '적용' })[1]);
+    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '9');
+    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '7.6');
+  });
+
+  it('세금 차이 힌트는 국내·해외 수익률이 모두 0일 때만 보인다', () => {
+    const { rerender } = render(<Simulator />);
+    expect(screen.getByText('수익률을 올려보면 상품별 세금 차이가 나타납니다.')).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '5' } });
+    rerender(<Simulator />);
+    expect(screen.queryByText('수익률을 올려보면 상품별 세금 차이가 나타납니다.')).toBeNull();
   });
 });

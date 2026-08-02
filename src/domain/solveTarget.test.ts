@@ -12,7 +12,8 @@ const annuityInput: SolveTargetInput = {
   endDate: '2035-12-31',
   paymentDay: 1,
   childBirthDate: '2021-01-01',
-  priceGrowthRate: 0.05,
+  domesticGrowthRate: 0.05,
+  overseasGrowthRate: 0.05,
   distributionRate: 0.02,
   withdrawalAge: 19,
 };
@@ -49,7 +50,7 @@ describe('solveTargetAmount', () => {
 
   it('상한 금액으로도 목표에 도달할 수 없으면 null을 반환한다', () => {
     const result = solveTargetAmount(
-      { ...annuityInput, priceGrowthRate: -0.2 },
+      { ...annuityInput, domesticGrowthRate: -0.2 },
       'domesticEquityEtf',
       1_000_000_000_000,
     );
@@ -62,7 +63,8 @@ describe('solveTargetAmount', () => {
       giftMethod: 'lumpSum',
       giftDate: '2026-01-01',
       childBirthDate: '2021-01-01',
-      priceGrowthRate: 0.05,
+      domesticGrowthRate: 0.05,
+      overseasGrowthRate: 0.05,
       distributionRate: 0.02,
       withdrawalAge: 19,
     };
