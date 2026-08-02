@@ -330,6 +330,11 @@ export function Simulator() {
                 수익을 지급하는 것으로, 개별 주식의 배당금과 구분해 부릅니다. 세법상으로는 둘 다
                 배당소득으로 과세됩니다.
               </p>
+              <p className="simulator-detail-caption">
+                해외 상장 ETF의 양도차익은 취득·양도 시점의 환율로 각각 원화 환산해 계산합니다.
+                주가가 그대로여도 환율이 오르면 양도차익이 생겨 세금이 붙습니다. 이 계산기는 환율을
+                따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
+              </p>
               <div className="table-scroll">
                 <table className="info-table simulator-detail-table">
                   <thead><tr><th scope="col">항목</th>{productTypes.map((type) => <th scope="col" key={type}>{productNames[type]}</th>)}</tr></thead>
@@ -361,6 +366,10 @@ export function Simulator() {
               <li>분배금은 세후 전액 재투자한다고 가정합니다.</li>
               <li>증여세는 별도 납부하는 것으로 보고 투자 원금에서 빼지 않았습니다.</li>
               <li>부모가 자녀에게 증여하는 경우를 기준으로 계산합니다.</li>
+              <li>
+                <b>환율은 따로 계산하지 않습니다.</b> 모든 금액이 원화 기준이므로, 해외 상장 ETF를
+                볼 때는 가격상승률에 환율 변동까지 포함한 원화 기준 수치를 넣어야 합니다.
+              </li>
             </ul></div>
           </details>
           {form.giftMethod === 'annuity' && (
