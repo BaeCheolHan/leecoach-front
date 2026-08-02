@@ -1,15 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { DISCLAIMER, SITE_ORIGIN } from '../../config';
 import { usePageMeta } from '../usePageMeta';
 import { GuideLayout, ToolCta } from './GuideLayout';
 import { ManualPromo } from './ManualPromo';
 import { RelatedGuides } from './RelatedGuides';
 
-const FAQ: { q: string; a: string }[] = [
+/** aJsx: 화면 렌더 전용(링크 포함 가능). JSON-LD에는 항상 평문 a를 사용한다. */
+const FAQ: { q: string; a: string; aJsx?: ReactNode }[] = [
   { q: '세뱃돈은 얼마까지 괜찮나요?', a: '법에 금액 기준이 없습니다. 사회통념상 수준의 용돈·세뱃돈은 문제 삼지 않는 것이 실무입니다.' },
   { q: '세뱃돈을 아이 주식계좌에 넣으면요?', a: '자산 취득이 되어 증여로 해석될 수 있습니다. 금액이 쌓인다면 신고를 권합니다.' },
   { q: '친척이 준 세뱃돈은 누구 기준으로 보나요?', a: '준 사람 기준입니다. 조부모는 직계존속 그룹으로 부모와 합산되고, 삼촌·이모 등은 기타친족 한도로 봅니다.' },
-  { q: '조부모가 주신 용돈도 합산되나요?', a: '직계존속 그룹으로 합산됩니다. 자세한 내용은 공제 한도 가이드를 참고하세요.' },
+  {
+    q: '조부모가 주신 용돈도 합산되나요?',
+    a: '직계존속 그룹으로 합산됩니다. 자세한 내용은 공제 한도 가이드를 참고하세요.',
+    aJsx: (
+      <>
+        직계존속 그룹으로 합산됩니다. 자세한 내용은{' '}
+        <a href="/guide/gift-deduction-limits">공제 한도 가이드</a>를 참고하세요.
+      </>
+    ),
+  },
   { q: '학원비·등록금을 대신 내주는 건요?', a: '부양의무자가 지급하는 통상적인 교육비·생활비는 비과세입니다.' },
 ];
 
@@ -91,15 +101,14 @@ export function TaxFreeMoney() {
             세무사가 답한 케이스별 쟁점으로 정리해 두었습니다.
           </p>
           <p>
-            모을 돈의 신고는 <a href="/guide/annuity-gift-report">유기정기금 증여 신고 가이드</a>에서, 가족별 합산
-            기준은 <a href="/guide/gift-deduction-limits">증여재산공제 한도 가이드</a>에서 확인하세요.
+            가족별 합산 기준은 <a href="/guide/gift-deduction-limits">증여재산공제 한도 가이드</a>에서 확인하세요.
           </p>
         </section>
 
         <section className="card guide-section">
           <h2>4. 자주 묻는 질문</h2>
           {FAQ.map((f) => (
-            <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.a}</p></details>
+            <details key={f.q} className="guide-faq"><summary>{f.q}</summary><p>{f.aJsx ?? f.a}</p></details>
           ))}
         </section>
 
