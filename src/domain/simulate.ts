@@ -64,6 +64,8 @@ const distributionTaxRate: Record<ProductType, number> = {
 const isPresent = (value: unknown) => value !== undefined && value !== null && value !== '';
 const isNonNegative = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
 
 /** 시뮬레이터 입력의 필수값, 범위, 증여 종료와 인출 시점 순서를 검증한다. */
 export function validateSimulateInput(input: SimulateInput): string[] {
@@ -71,8 +73,11 @@ export function validateSimulateInput(input: SimulateInput): string[] {
 
   if (!input.childBirthDate) errors.push('자녀 생년월일은 필수입니다');
   if (!isNonNegative(input.withdrawalAge)) errors.push('인출 나이를 확인해 주세요');
-  if (!isNonNegative(input.priceGrowthRate) || input.priceGrowthRate > 1) {
-    errors.push('가격상승률은 0% 이상 100% 이하여야 합니다');
+  // 손실 시나리오도 계산할 수 있어야 한다. 상승만 허용하면 "투자하면 반드시 불어난다"는
+  // 인상을 주어, 수익을 제시하지 않는다는 원칙과 어긋난다. 하한 -100%는 전액 손실.
+  if (!isFiniteNumber(input.priceGrowthRate)
+    || input.priceGrowthRate < -1 || input.priceGrowthRate > 1) {
+    errors.push('가격상승률은 -100% 이상 100% 이하여야 합니다');
   }
   if (!isNonNegative(input.distributionRate) || input.distributionRate > 1) {
     errors.push('분배율은 0% 이상 100% 이하여야 합니다');

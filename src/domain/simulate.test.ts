@@ -85,10 +85,15 @@ describe('simulate', () => {
   });
 
   it('가격 하락으로 차익이 음수이면 모든 상품의 매도세금이 0이다', () => {
-    const result = simulate(lumpSumInput({ priceGrowthRate: -0.1, distributionRate: 0 }));
+    const input = lumpSumInput({ priceGrowthRate: -0.1, distributionRate: 0 });
 
+    expect(validateSimulateInput(input)).toEqual([]);
+
+    const result = simulate(input);
     expect(Object.values(result.byProduct).every(product => product.capitalGain < 0)).toBe(true);
     expect(Object.values(result.byProduct).every(product => product.saleTax === 0)).toBe(true);
+    // 손실이 세후 금액에 그대로 반영된다 — 원금보다 적게 남는다.
+    expect(Object.values(result.byProduct).every(p => p.afterTax < result.giftPrincipal)).toBe(true);
   });
 
   it('분배율이 0이면 분배금 세금이 없고 세 상품의 최종가치가 같다', () => {
@@ -151,8 +156,18 @@ describe('validateSimulateInput', () => {
     expect(validateSimulateInput(annuityInput({ monthlyAmount: undefined, paymentDay: undefined }))).not.toEqual([]);
   });
 
-  it('음수 또는 100% 초과 수익률과 분배율을 검증한다', () => {
-    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -0.01 }))).not.toEqual([]);
+  it('손실 시나리오를 위해 마이너스 가격상승률을 허용한다', () => {
+    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -0.01 }))).toEqual([]);
+    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -1 }))).toEqual([]);
+  });
+
+  it('가격상승률이 -100% 미만이거나 100% 초과이면 오류를 반환한다', () => {
+    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: -1.01 }))).not.toEqual([]);
+    expect(validateSimulateInput(lumpSumInput({ priceGrowthRate: 1.01 }))).not.toEqual([]);
+  });
+
+  it('분배율은 음수이거나 100% 초과이면 오류를 반환한다', () => {
+    expect(validateSimulateInput(lumpSumInput({ distributionRate: -0.01 }))).not.toEqual([]);
     expect(validateSimulateInput(lumpSumInput({ distributionRate: 1.01 }))).not.toEqual([]);
   });
 });
