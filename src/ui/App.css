@@ -542,6 +542,39 @@
   color: #3182f6;
 }
 
+.tool-card {
+  display: block;
+  box-sizing: border-box;
+  padding: 20px;
+  margin-bottom: 16px;
+  color: #191f28;
+  background: #f2f8ff;
+  border: 1px solid #3182f6;
+  border-radius: 20px;
+  text-decoration: none;
+}
+
+.tool-card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.tool-card p {
+  margin: 0 0 10px;
+  color: #4e5968;
+  font-size: 14px;
+  line-height: 1.65;
+  word-break: keep-all;
+}
+
+.tool-card span {
+  color: #3182f6;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 /* 인앱 브라우저 안내 ---------------------------------------------------- */
 
 .inapp-notice {

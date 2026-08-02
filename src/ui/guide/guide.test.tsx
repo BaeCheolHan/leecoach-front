@@ -71,6 +71,15 @@ describe('GuideIndex', () => {
     expect(link.getAttribute('href')).toContain('ctee.kr/item/store/91932');
     expect(link.getAttribute('target')).toBe('_blank');
   });
+
+  it('유료 매뉴얼보다 먼저 자산 시뮬레이터 카드를 렌더한다', () => {
+    const { container } = render(<GuideIndex />);
+    const toolCard = screen.getByRole('link', { name: /우리 아이에게 준 돈, 20년 뒤 얼마가 될까/ });
+    const manualPromo = container.querySelector('.manual-promo-card')!;
+
+    expect(toolCard.getAttribute('href')).toBe('/simulator');
+    expect(toolCard.compareDocumentPosition(manualPromo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
 
 describe('AnnuityGiftReport', () => {
@@ -88,6 +97,16 @@ describe('AnnuityGiftReport', () => {
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');
     expect(data.mainEntity.length).toBe(6);
+  });
+
+  it('본문과 푸터에 자산 시뮬레이터 링크를 한 번씩 렌더한다', () => {
+    const { container } = render(<AnnuityGiftReport />);
+    const articleLinks = container.querySelectorAll('article a[href="/simulator"]');
+    const allLinks = container.querySelectorAll('a[href="/simulator"]');
+
+    expect(articleLinks).toHaveLength(1);
+    expect(articleLinks[0].textContent).toBe('증여자산 시뮬레이터');
+    expect(allLinks).toHaveLength(2);
   });
 });
 
@@ -144,6 +163,16 @@ describe('MinorStockAccount', () => {
     const { container } = render(<MinorStockAccount />);
     expect(container.querySelector('.manual-promo-inline')).toBeTruthy();
     expect(screen.getByText('세무사가 검토한 우리 아이 증여 실무 매뉴얼')).toBeTruthy();
+  });
+
+  it('본문과 푸터에 자산 시뮬레이터 링크를 한 번씩 렌더한다', () => {
+    const { container } = render(<MinorStockAccount />);
+    const articleLinks = container.querySelectorAll('article a[href="/simulator"]');
+    const allLinks = container.querySelectorAll('a[href="/simulator"]');
+
+    expect(articleLinks).toHaveLength(1);
+    expect(articleLinks[0].textContent).toBe('증여자산 시뮬레이터');
+    expect(allLinks).toHaveLength(2);
   });
 });
 

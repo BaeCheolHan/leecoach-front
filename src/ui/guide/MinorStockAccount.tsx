@@ -117,6 +117,10 @@ export function MinorStockAccount() {
               <b>주식 매수</b> — 자녀 계좌 안에서 매수합니다. 매매는 법정대리인인 부모가 할 수 있습니다.
             </li>
           </ol>
+          <p>
+            상품 유형에 따라 세금이 어떻게 달라지는지는 <a href="/simulator">증여자산 시뮬레이터</a>에서 숫자로
+            확인할 수 있습니다.
+          </p>
         </section>
 
         <section className="card guide-section">

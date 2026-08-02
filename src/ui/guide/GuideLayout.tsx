@@ -8,7 +8,8 @@ export function GuideLayout({ children }: { children: ReactNode }) {
       <SiteHeader />
       {children}
       <p className="footer-links">
-        <a href="/guide">가이드 목록</a> · <a href="/">계약서 만들기</a> · <a href="/about">소개</a> ·{' '}
+        <a href="/guide">가이드 목록</a> · <a href="/">계약서 만들기</a> ·{' '}
+        <a href="/simulator">자산 시뮬레이터</a> · <a href="/about">소개</a> ·{' '}
         <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
           인스타그램
         </a>{' '}
