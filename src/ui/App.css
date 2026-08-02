@@ -1107,27 +1107,171 @@ button {
 
 /* ── 시뮬레이터 ── */
 
-.simulator { overflow-x: hidden; }
+.simulator {
+  max-width: 640px;
+  overflow-x: hidden;
+}
 
-.simulator-form fieldset {
+.simulator .card {
   min-width: 0;
-  margin: 0 0 18px;
+  margin-bottom: 10px;
+  padding: 16px;
+}
+
+.simulator-summary h2,
+.simulator-form h2,
+.simulator-errors h2 {
+  margin: 0 0 8px;
+  color: #191f28;
+  font-size: 15px;
+}
+
+.simulator-summary dl { margin: 0; }
+
+.simulator-summary dl > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f2f4f6;
+  font-size: 14px;
+}
+
+.simulator-summary dl > div:last-child { border-bottom: 0; }
+.simulator-summary dt { min-width: 0; color: #4e5968; }
+
+.simulator-summary dd {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #191f28;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.simulator-equal-hint {
+  margin: 8px 0 0;
+  color: #8b95a1;
+  font-size: 12px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.simulator-growth-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.simulator-growth-heading label {
+  margin: 0;
+  color: #4e5968;
+  font-size: 14px;
+}
+
+.simulator-growth-heading output {
+  color: #191f28;
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.simulator-controls input[type='range'] {
+  width: 100%;
+  height: 38px;
+  padding: 0;
+  margin: 4px 0 0;
+  cursor: pointer;
+  accent-color: #3182f6;
+}
+
+.simulator-basic-grid,
+.simulator-advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.simulator-field { min-width: 0; }
+
+.simulator-field label {
+  display: block;
+  margin: 0 0 5px;
+  color: #4e5968;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.simulator-field input,
+.simulator-field select {
+  height: 42px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.simulator-field .amount-hint,
+.simulator-help {
+  min-height: 16px;
+  margin: 3px 0 0;
+  color: #8b95a1;
+  font-size: 11px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+.simulator-unit-input { position: relative; }
+.simulator-unit-input input { padding-right: 28px; }
+
+.simulator-unit-input span {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  color: #8b95a1;
+  font-size: 13px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.simulator-details { padding: 0 !important; }
+
+.simulator-details summary {
+  padding: 15px 16px;
+  color: #333d4b;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.simulator-details-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid #f2f4f6;
+}
+
+.simulator-method {
+  min-width: 0;
+  margin: 14px 0;
   padding: 0;
   border: 0;
 }
 
 .simulator-method legend {
   margin-bottom: 8px;
-  font-size: 13px;
+  color: #4e5968;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .simulator-method label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin: 0 18px 0 0;
-  font-size: 15px;
+  gap: 5px;
+  margin: 0 14px 0 0;
+  font-size: 14px;
 }
 
 .simulator-method input {
@@ -1135,54 +1279,61 @@ button {
   margin: 0;
 }
 
-.simulator-rate-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-}
+.simulator-advanced-grid + .simulator-advanced-grid { margin-top: 10px; }
 
-.simulator-errors ul,
-.simulator-assumptions ul {
+.simulator-errors ul {
   padding-left: 20px;
   margin: 0;
-  color: #4e5968;
   font-size: 14px;
   line-height: 1.7;
 }
 
 .simulator-errors li { color: #f04452; }
 
-.simulator-gift-result dl,
-.simulator-product dl { margin: 0; }
+.simulator-gift-line {
+  padding: 10px 2px 14px;
+}
 
-.simulator-gift-result dl > div,
-.simulator-product dl > div {
+.simulator-gift-line h2 {
+  margin: 0 0 5px;
+  color: #8b95a1;
+  font-size: 12px;
+}
+
+.simulator-gift-line p {
+  margin: 0;
+  color: #333d4b;
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.simulator-gift-line span { color: #b0b8c1; }
+
+.simulator-deduction { margin: 12px 0; }
+
+.simulator-deduction > div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid #f2f4f6;
-  font-size: 14px;
+  color: #4e5968;
+  font-size: 13px;
 }
 
-.simulator-gift-result dl > div:last-child,
-.simulator-product dl > div:last-child {
-  border-bottom: 0;
-  font-weight: 700;
-}
-
-.simulator-gift-result dt,
-.simulator-product dt { color: #4e5968; }
-
-.simulator-gift-result dd,
-.simulator-product dd {
+.simulator-deduction dd {
   margin: 0;
   color: #191f28;
   text-align: right;
 }
 
+.simulator-breakdown .table-scroll { margin: 0; }
+.simulator-breakdown table { min-width: 620px; }
+.simulator-breakdown th:first-child { text-align: left; }
+.simulator-breakdown td { text-align: right; white-space: nowrap; }
+
 .simulator-neutral-note,
 .simulator-warning {
-  margin: 0 0 16px;
+  margin: 12px 0;
   word-break: keep-all;
 }
 
@@ -1191,41 +1342,39 @@ button {
   line-height: 1.6;
 }
 
-.simulator-section-title {
-  margin: 24px 0 12px;
-  font-size: 18px;
-  color: #191f28;
+.simulator-assumptions ul {
+  padding-left: 20px;
+  margin: 12px 0 0;
+  color: #4e5968;
+  font-size: 13px;
+  line-height: 1.7;
 }
 
-.simulator-products {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 12px;
+.simulator-contract-cta { margin-top: 2px; }
+
+@media (max-width: 374px) {
+  .simulator .card { padding: 14px; }
+  .simulator-details { padding: 0 !important; }
+  .simulator-summary dl > div { font-size: 13px; }
+  .simulator-basic-grid,
+  .simulator-advanced-grid { gap: 8px; }
 }
 
-.simulator-product {
-  min-width: 0;
-  margin-bottom: 0;
-  padding: 18px;
+.simulator-detail-caption {
+  caption-side: top;
+  text-align: left;
+  padding: 0 0 8px;
+  color: #8b95a1;
+  font-size: 12px;
 }
 
-.simulator-product h3 {
-  margin: 0 0 10px;
-  color: #191f28;
-  font-size: 15px;
-  word-break: keep-all;
-}
-
-.simulator-assumptions { margin-top: 16px; }
-.simulator-contract-cta { margin-top: 8px; }
-
-@media (min-width: 640px) {
-  .container.simulator { max-width: 960px; }
-
-  .simulator-rate-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .simulator-products { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* 상세 표는 금액 문자열이 열 너비를 결정한다 — 여백·자간을 조여 640px 컨테이너 안에 들어오게 한다. */
+/* .card tbody td(0,1,2)를 이기려면 .card 스코프가 필요하다. */
+.card .simulator-detail-table { min-width: 0; }
+.card .simulator-detail-table thead th,
+.card .simulator-detail-table tbody th,
+.card .simulator-detail-table tbody td {
+  padding: 10px 6px;
+  font-size: 12px;
+  letter-spacing: -0.02em;
 }
