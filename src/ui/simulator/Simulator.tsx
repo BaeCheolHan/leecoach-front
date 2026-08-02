@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DISCLAIMER } from '../../config';
+import { ADULT_AGE, DISCLAIMER } from '../../config';
 import {
   simulate,
   validateSimulateInput,
@@ -88,6 +88,33 @@ interface FormState {
   withdrawalAge: string;
 }
 
+/**
+ * 화면 용어로 된 입력 검증. 도메인 메시지는 '자녀 생년월일', '증여 종료일'처럼
+ * 이 화면에 존재하지 않는 필드를 가리켜서, 사용자가 무엇을 고쳐야 할지 알 수 없다.
+ * 도메인 검증은 계산 직전의 안전망으로 남기고, 사용자에게는 이 메시지를 보여준다.
+ */
+function validateForm(form: FormState): string[] {
+  const errors: string[] = [];
+  const blank = (value: string) => value.trim() === '';
+
+  if (blank(form.childAge) || number(form.childAge) < 0) errors.push('아이 나이를 입력해 주세요.');
+  if (blank(form.priceGrowthRate)) errors.push('연 가격상승률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.');
+  if (blank(form.distributionRate)) errors.push('연 분배율을 입력해 주세요. 모르면 0을 넣으세요.');
+
+  if (form.calculationMode === 'target') {
+    if (form.targetAmount <= 0) errors.push('목표 금액을 입력해 주세요.');
+  }
+
+  if (form.giftMethod === 'annuity') {
+    if (blank(form.giftYears) || number(form.giftYears) < 1) errors.push('증여 기간은 1년 이상이어야 합니다.');
+    if (form.calculationMode === 'amount' && form.monthlyAmount <= 0) errors.push('매월 증여액을 입력해 주세요.');
+  } else if (form.calculationMode === 'amount' && form.lumpSumAmount <= 0) {
+    errors.push('증여 금액을 입력해 주세요.');
+  }
+
+  return errors;
+}
+
 function AmountInput({ id, label, value, onChange }: {
   id: string;
   label: string;
@@ -129,7 +156,7 @@ export function Simulator() {
     childAge: handoff?.childBirthDate ? ageFromBirthDate(handoff.childBirthDate) : '5',
     priceGrowthRate: '0',
     distributionRate: '0',
-    withdrawalAge: '19',
+    withdrawalAge: '',
   }));
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
@@ -139,6 +166,20 @@ export function Simulator() {
     [form.startDate, form.giftYears],
   );
   const childBirthDate = useMemo(() => birthDateFromAge(form.childAge), [form.childAge]);
+
+  /**
+   * 증여가 끝나는 해부터 인출할 수 있다. 인출 나이를 19세로 고정해 두면
+   * "10살 아이에게 10년 증여" 같은 평범한 조건에서도 곧바로 모순이 생기는데,
+   * 그 입력은 '자세히 설정' 안에 접혀 있어 사용자가 원인을 볼 수조차 없었다.
+   * 그래서 사용자가 직접 만지기 전까지는 조건에서 파생된 값을 따라가게 한다.
+   */
+  const minWithdrawalAge = useMemo(() => {
+    if (!childBirthDate || !endDate) return 0;
+    return Number(endDate.slice(0, 4)) - Number(childBirthDate.slice(0, 4));
+  }, [childBirthDate, endDate]);
+  const withdrawalAge = form.withdrawalAge === ''
+    ? String(Math.max(ADULT_AGE, minWithdrawalAge))
+    : form.withdrawalAge;
   const input = useMemo<SimulateInput>(() => ({
     giftMethod: form.giftMethod,
     monthlyAmount: form.monthlyAmount,
@@ -150,10 +191,13 @@ export function Simulator() {
     childBirthDate,
     priceGrowthRate: percent(form.priceGrowthRate),
     distributionRate: percent(form.distributionRate),
-    withdrawalAge: number(form.withdrawalAge),
-  }), [childBirthDate, endDate, form]);
+    withdrawalAge: number(withdrawalAge),
+  }), [childBirthDate, endDate, form, withdrawalAge]);
   const calculation = useMemo(() => {
-    const errors = validateSimulateInput(input);
+    // 화면 용어 검증이 우선이고, 도메인 검증은 UI가 놓친 경우만 드러내는 안전망이다.
+    // 둘을 합치면 같은 문제를 두 번, 그것도 화면에 없는 필드 이름으로 말하게 된다.
+    const formErrors = validateForm(form);
+    const errors = formErrors.length > 0 ? formErrors : validateSimulateInput(input);
     if (errors.length > 0) return { errors, result: null, targetResults: null };
     if (form.calculationMode === 'amount') {
       return { errors, result: simulate(input), targetResults: null };
@@ -163,7 +207,7 @@ export function Simulator() {
       solveTargetAmount(input, type, form.targetAmount),
     ])) as Record<ProductType, SolveTargetResult>;
     return { errors, result: null, targetResults };
-  }, [form.calculationMode, form.targetAmount, input]);
+  }, [form, input]);
 
   const makeContract = () => {
     const monthlyAmount = form.calculationMode === 'target'
@@ -264,7 +308,8 @@ export function Simulator() {
         </section>
       )}
 
-      <details className="card simulator-details">
+      {/* 오류를 일으킨 입력이 대부분 이 안에 있다. 접혀 있으면 무엇을 고쳐야 할지 알 수 없다. */}
+      <details className="card simulator-details" open={calculation.errors.length > 0}>
         <summary>자세히 설정</summary>
         <div className="simulator-details-body">
           <fieldset className="simulator-method">
@@ -303,7 +348,7 @@ export function Simulator() {
             </div>
             <div className="simulator-field">
               <label htmlFor="sim-withdrawal-age">인출 시점</label>
-              <div className="simulator-unit-input"><input id="sim-withdrawal-age" type="number" inputMode="numeric" min="0" step="1" value={form.withdrawalAge} onChange={(event) => update('withdrawalAge', event.target.value)} /><span>세</span></div>
+              <div className="simulator-unit-input"><input id="sim-withdrawal-age" type="number" inputMode="numeric" min="0" step="1" value={withdrawalAge} onChange={(event) => update('withdrawalAge', event.target.value)} /><span>세</span></div>
               <p className="simulator-help">아이가 이 나이가 될 때 전액 인출한다고 봅니다.</p>
             </div>
           </div>

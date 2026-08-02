@@ -101,9 +101,11 @@ export function validateSimulateInput(input: SimulateInput): string[] {
     giftEndDate = input.giftDate;
   }
 
+  // 증여가 끝나는 해에 인출하는 것은 정상이다("10살에 시작해 10년 주고 20살에 찾는다").
+  // 그보다 앞서 찾는 것만 막는다 — 지급이 남은 상태의 인출은 유기정기금 계약과 충돌한다.
   if (input.childBirthDate && isNonNegative(input.withdrawalAge) && giftEndDate) {
     const withdrawalYear = Number(input.childBirthDate.slice(0, 4)) + input.withdrawalAge;
-    if (`${withdrawalYear}-01-01` <= giftEndDate) {
+    if (withdrawalYear < Number(giftEndDate.slice(0, 4))) {
       errors.push('인출 시점은 증여가 끝난 뒤여야 합니다');
     }
   }
@@ -141,6 +143,7 @@ export function simulate(input: SimulateInput): SimulateResult {
   const deduction = judgeDeduction(giftValuation, '자', minor);
   const rawProducts = {} as Record<ProductType, RawProductResult>;
   const startYear = Number(giftStartDate.slice(0, 4));
+  const endYear = Math.max(...contributions.keys());
 
   for (const productType of productTypes) {
     let balance = 0;
@@ -148,10 +151,16 @@ export function simulate(input: SimulateInput): SimulateResult {
     let distributionTax = 0;
     let maxAnnualDistribution = 0;
 
-    for (let year = startYear; year < withdrawalYear; year++) {
+    // 납입 기간과 성장 기간을 분리한다. 하나로 묶으면 인출 연도가 증여 종료 연도와 같을 때
+    // 마지막 해 납입이 통째로 누락되어, 인출 시점을 항상 1년 뒤로 미뤄야 했다.
+    const lastYear = Math.max(endYear, withdrawalYear - 1);
+    for (let year = startYear; year <= lastYear; year++) {
       const contribution = contributions.get(year) ?? 0;
       balance += contribution;
       costBasis += contribution;
+
+      // 인출하는 해에는 분배·성장이 일어나지 않는다 (연초에 매도한다고 본다).
+      if (year >= withdrawalYear) continue;
 
       const distribution = balance * input.distributionRate;
       const distTax = distribution * distributionTaxRate[productType];

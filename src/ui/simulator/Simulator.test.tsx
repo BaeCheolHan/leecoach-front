@@ -67,6 +67,36 @@ describe('Simulator', () => {
     expect(screen.getByRole('row', { name: /매도 세금/ })).toBeTruthy();
   });
 
+  // 아래 두 묶음은 "사용자가 실제로 넣을 값"을 전수로 밟는다.
+  // 렌더링만 확인하던 방식으로는 평범한 입력에서 나던 오류를 놓쳤다.
+  it.each([
+    [0, 1], [0, 10], [0, 20],
+    [5, 1], [5, 10], [5, 20],
+    [10, 10], [15, 5], [18, 1],
+  ])('아이 %i살 / 증여 %i년이면 증여가 끝나는 나이에 인출한다', (age, years) => {
+    render(<Simulator />);
+    fireEvent.change(screen.getByLabelText('아이 나이'), { target: { value: String(age) } });
+    fireEvent.change(screen.getByLabelText('증여 기간'), { target: { value: String(years) } });
+
+    expect(screen.queryByText('입력값을 확인해 주세요')).toBeNull();
+    fireEvent.click(screen.getByText('자세히 설정'));
+    expect(screen.getByLabelText('인출 시점'))
+      .toHaveProperty('value', String(Math.max(19, age + years)));
+  });
+
+  it.each([
+    ['아이 나이', '', '아이 나이를 입력해 주세요.'],
+    ['증여 기간', '0', '증여 기간은 1년 이상이어야 합니다.'],
+    ['연 가격상승률', '', '연 가격상승률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
+  ])('%s이(가) 비거나 잘못되면 그 필드를 가리키는 안내를 보여준다', (label, value, expected) => {
+    render(<Simulator />);
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+
+    expect(screen.getByText(expected)).toBeTruthy();
+    // 도메인 용어('자녀 생년월일', '증여 종료일')는 이 화면에 없는 필드라 노출하면 안 된다.
+    expect(screen.queryByText(/자녀 생년월일|증여 종료일/)).toBeNull();
+  });
+
   it('상품의 우열을 표현하지 않는다', () => {
     render(<Simulator />);
     expect(screen.queryByText(/추천|유리|베스트/)).toBeNull();

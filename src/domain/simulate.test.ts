@@ -108,6 +108,20 @@ describe('simulate', () => {
     expect(simulate(lumpSumInput()).giftTax.payable).toBe(0);
   });
 
+  it('증여 종료 해에 인출해도 마지막 해 납입이 누락되지 않는다', () => {
+    // 납입·성장 기간을 하나로 묶었을 때 마지막 해 납입이 통째로 빠지던 결함의 회귀 테스트.
+    const sameYear = simulate(annuityInput({ endDate: '2027-12-31', withdrawalAge: 2 }));
+    const laterYear = simulate(annuityInput({ endDate: '2027-12-31', withdrawalAge: 3 }));
+
+    expect(sameYear.giftPrincipal).toBe(2_400_000);
+    // 인출 시점이 같은 해든 다음 해든 납입 원금(취득가액의 출발점)은 같아야 한다.
+    expect(sameYear.byProduct.domesticEquityEtf.costBasis)
+      .toBeGreaterThanOrEqual(sameYear.giftPrincipal);
+    // 한 해 더 굴리면 평가액이 커진다 — 성장 기간만 달라져야 한다.
+    expect(laterYear.byProduct.domesticEquityEtf.finalValue)
+      .toBeGreaterThan(sameYear.byProduct.domesticEquityEtf.finalValue);
+  });
+
   it('여러 해 분배금을 합산해 종합과세를 경고하지 않는다', () => {
     // 20년간 소액 분배금이 쌓여 누적으로는 기준을 넘지만, 어느 해에도 연간 기준을 넘지 않는다.
     const result = simulate(lumpSumInput({
@@ -146,8 +160,13 @@ describe('validateSimulateInput', () => {
     expect(validateSimulateInput(annuityInput())).toEqual([]);
   });
 
-  it('인출 시점이 증여 종료 전이면 오류를 반환한다', () => {
-    expect(validateSimulateInput(annuityInput({ endDate: '2027-12-31' })))
+  it('증여가 끝나는 해에 인출하는 것은 허용한다', () => {
+    // "10살에 시작해 10년 주고 20살에 찾는다"가 성립해야 한다.
+    expect(validateSimulateInput(annuityInput({ endDate: '2027-12-31' }))).toEqual([]);
+  });
+
+  it('인출 시점이 증여 종료 연도보다 앞서면 오류를 반환한다', () => {
+    expect(validateSimulateInput(annuityInput({ endDate: '2028-12-31' })))
       .toContain('인출 시점은 증여가 끝난 뒤여야 합니다');
   });
 
