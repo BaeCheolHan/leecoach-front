@@ -179,8 +179,12 @@ export function Simulator() {
     window.location.href = '/';
   };
 
+  // 수익률 0이면 세금이 생기지 않아 세 상품이 같아진다. 고장으로 오해하지 않게 안내한다.
   const allAfterTaxEqual = calculation.result
     ? new Set(productTypes.map((type) => calculation.result!.byProduct[type].afterTax)).size === 1
+    : false;
+  const allRequiredEqual = calculation.targetResults
+    ? new Set(productTypes.map((type) => calculation.targetResults![type].requiredAmount)).size === 1
     : false;
   const hasResults = calculation.result !== null || calculation.targetResults !== null;
   const financialIncomeWarning = calculation.result?.financialIncomeWarning
@@ -256,6 +260,7 @@ export function Simulator() {
               );
             })}
           </dl>
+          {allRequiredEqual && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
         </section>
       )}
 
@@ -290,14 +295,16 @@ export function Simulator() {
             </div>
           )}
           <div className="simulator-advanced-grid">
+            {/* 단위는 기본 조건과 같이 입력창 안에 둔다 — 라벨에 괄호로 넣으면 표기가 섞인다. */}
             <div className="simulator-field">
-              <label htmlFor="sim-distribution">연 분배율(%)</label>
-              <input id="sim-distribution" type="number" inputMode="decimal" min="0" max="100" step="0.1" value={form.distributionRate} onChange={(event) => update('distributionRate', event.target.value)} />
+              <label htmlFor="sim-distribution">연 분배율</label>
+              <div className="simulator-unit-input"><input id="sim-distribution" type="number" inputMode="decimal" min="0" max="100" step="any" value={form.distributionRate} onChange={(event) => update('distributionRate', event.target.value)} /><span>%</span></div>
               <p className="simulator-help">ETF가 보유 자산의 수익을 매년 지급하는 비율입니다. 개별 주식의 배당금과 구분해 분배금이라 부릅니다.</p>
             </div>
             <div className="simulator-field">
-              <label htmlFor="sim-withdrawal-age">인출 시점(아이 나이)</label>
-              <input id="sim-withdrawal-age" type="number" inputMode="numeric" min="0" step="1" value={form.withdrawalAge} onChange={(event) => update('withdrawalAge', event.target.value)} />
+              <label htmlFor="sim-withdrawal-age">인출 시점</label>
+              <div className="simulator-unit-input"><input id="sim-withdrawal-age" type="number" inputMode="numeric" min="0" step="1" value={form.withdrawalAge} onChange={(event) => update('withdrawalAge', event.target.value)} /><span>세</span></div>
+              <p className="simulator-help">아이가 이 나이가 될 때 전액 인출한다고 봅니다.</p>
             </div>
           </div>
         </div>

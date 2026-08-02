@@ -1172,11 +1172,14 @@ button {
 }
 
 .simulator-mode span {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px; /* 모바일 최소 터치 타깃 */
   padding: 9px 6px;
   border-radius: 6px;
   color: #4e5968;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
@@ -1249,13 +1252,18 @@ button {
   font-weight: 500;
 }
 
+/*
+ * 주 유입이 모바일(인스타)이라 두 가지를 반드시 지킨다.
+ * 1) font-size 16px 미만이면 iOS Safari가 입력창을 탭할 때마다 화면을 확대해 레이아웃이 튄다.
+ * 2) 높이는 최소 터치 타깃 44px 이상.
+ */
 .simulator-field input,
 .simulator-field select {
-  height: 42px;
+  height: 48px;
   min-width: 0;
   margin: 0;
-  padding: 8px 10px;
-  font-size: 14px;
+  padding: 8px 12px;
+  font-size: 16px;
   box-sizing: border-box;
 }
 
