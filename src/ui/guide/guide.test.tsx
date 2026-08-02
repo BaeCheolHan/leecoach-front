@@ -11,6 +11,7 @@ import { MinorStockAccount } from './MinorStockAccount';
 import { LoanVsGift } from './LoanVsGift';
 import { NoReportRisks } from './NoReportRisks';
 import { TaxFreeMoney } from './TaxFreeMoney';
+import { ChildBenefitAccount } from './ChildBenefitAccount';
 import { GrandparentGift } from './GrandparentGift';
 import { SpouseGift } from './SpouseGift';
 import { GiftRoadmap } from './GiftRoadmap';
@@ -222,6 +223,36 @@ describe('TaxFreeMoney', () => {
     const data = JSON.parse(script!.textContent!);
     expect(data['@type']).toBe('FAQPage');
     expect(data.mainEntity).toHaveLength(5);
+  });
+});
+
+describe('ChildBenefitAccount', () => {
+  it('아동수당 계좌 가이드 경로와 본문을 렌더한다', () => {
+    expect(resolvePage('/guide/child-benefit-account')).toBe(PAGES['/guide/child-benefit-account']);
+    const { container } = render(<ChildBenefitAccount />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: '아동수당도 증여세 신고해야 하나요? — 아이 계좌로 받는 3단계 방어 전략',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('아동수당을 모아서 아이 주식계좌에서 투자해도 되나요?')).toBeTruthy();
+    expect(container.querySelectorAll('.step-list')).toHaveLength(1);
+    expect(container.querySelectorAll('.guide-cta')).toHaveLength(0);
+    expect(container.querySelector('.manual-promo-inline')).toBeTruthy();
+    expect(document.title).toBe('아동수당도 증여세 신고해야 하나요? — 아이 계좌로 받는 3단계 방어 전략 | 이코치맘');
+    expect(document.head.querySelector<HTMLMetaElement>('meta[name="description"]')!.content).toBe(
+      '아동수당은 증여세 신고 대상일까? 비과세 원리와 부모 이체로 생기는 오해, 아이 명의 계좌·자금 분리·장기 보유의 3단계 관리 전략을 정리했습니다.',
+    );
+  });
+
+  it('FAQ JSON-LD 3개를 삽입한다', () => {
+    render(<ChildBenefitAccount />);
+    const script = document.getElementById('faq-jsonld-child-benefit');
+    expect(script).toBeTruthy();
+    const data = JSON.parse(script!.textContent!);
+    expect(data['@type']).toBe('FAQPage');
+    expect(data.mainEntity).toHaveLength(3);
   });
 });
 
