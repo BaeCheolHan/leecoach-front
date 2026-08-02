@@ -9,7 +9,6 @@ export function ManualPromo({ variant }: ManualPromoProps) {
 
   return (
     <aside className={`manual-promo manual-promo-${variant}`}>
-      <span className="manual-promo-badge">유료 매뉴얼</span>
       <h2>세무사가 검토한 우리 아이 증여 실무 매뉴얼</h2>
       <p>
         {isCard
