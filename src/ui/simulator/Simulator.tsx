@@ -215,24 +215,13 @@ export function Simulator() {
             <label htmlFor="sim-gift-years">증여 기간</label>
             <div className="simulator-unit-input"><input id="sim-gift-years" type="number" inputMode="numeric" min="0" step="1" value={form.giftYears} onChange={(event) => update('giftYears', event.target.value)} /><span>년</span></div>
           </div>
+          {/* 수익률도 다른 조건과 같은 숫자 입력으로 둔다. 슬라이더는 ±20% 범위에서 1스텝이
+              3.9px라 원하는 값을 집을 수 없었다. 기본값 0은 수익을 제시하지 않기 위함이다. */}
+          <div className="simulator-field">
+            <label htmlFor="sim-growth">연 가격상승률</label>
+            <div className="simulator-unit-input"><input id="sim-growth" type="number" inputMode="decimal" min="-20" max="20" step="any" value={form.priceGrowthRate} onChange={(event) => update('priceGrowthRate', event.target.value)} /><span>%</span></div>
+          </div>
         </div>
-      </section>
-
-      <section className="card simulator-controls" aria-labelledby="simulator-growth-label">
-        <div className="simulator-growth-heading">
-          <label id="simulator-growth-label" htmlFor="sim-growth">연 가격상승률</label>
-          <output htmlFor="sim-growth">{number(form.priceGrowthRate) > 0 ? '+' : ''}{form.priceGrowthRate}%</output>
-        </div>
-        <input
-          id="sim-growth"
-          aria-labelledby="simulator-growth-label"
-          type="range"
-          min="-20"
-          max="20"
-          step="0.5"
-          value={form.priceGrowthRate}
-          onChange={(event) => update('priceGrowthRate', event.target.value)}
-        />
       </section>
 
       {calculation.errors.length > 0 ? (

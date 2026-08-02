@@ -28,19 +28,28 @@ describe('Simulator', () => {
     expect(screen.queryByRole('button', { name: /계산|제출/ })).toBeNull();
   });
 
-  it('가격상승률 슬라이더는 투자 수익률을 제시하지 않고 0에서 시작한다', () => {
+  it('가격상승률은 투자 수익률을 제시하지 않고 0에서 시작한다', () => {
     render(<Simulator />);
-    const slider = screen.getByRole('slider', { name: '연 가격상승률' });
+    const growth = screen.getByLabelText('연 가격상승률') as HTMLInputElement;
 
-    expect(slider).toHaveProperty('value', '0');
-    expect(slider).toHaveProperty('min', '-20');
-    expect(slider).toHaveProperty('max', '20');
-    expect(slider).toHaveProperty('step', '0.5');
+    expect(growth).toHaveProperty('value', '0');
+    // 다른 조건과 같은 숫자 입력이어야 원하는 값을 정확히 넣을 수 있다.
+    expect(growth.type).toBe('number');
+    expect(growth).toHaveProperty('min', '-20');
+    expect(growth).toHaveProperty('max', '20');
+    expect(screen.queryByRole('slider')).toBeNull();
   });
 
-  it('슬라이더를 올리면 상품 간 세후 금액에 차이가 생긴다', () => {
+  it('소수점 수익률도 그대로 입력된다', () => {
     render(<Simulator />);
-    fireEvent.change(screen.getByRole('slider', { name: '연 가격상승률' }), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('연 가격상승률'), { target: { value: '7.2' } });
+
+    expect(screen.getByLabelText('연 가격상승률')).toHaveProperty('value', '7.2');
+  });
+
+  it('수익률을 올리면 상품 간 세후 금액에 차이가 생긴다', () => {
+    render(<Simulator />);
+    fireEvent.change(screen.getByLabelText('연 가격상승률'), { target: { value: '5' } });
 
     const amounts = within(screen.getByTestId('simulator-result-summary'))
       .getAllByText(/^₩[\d,]+$/)
@@ -122,7 +131,7 @@ describe('Simulator', () => {
   it('목표 역산 필요 금액은 수익률이 있을 때 세 상품 모두 같지는 않다', async () => {
     render(<Simulator />);
     await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
-    fireEvent.change(screen.getByRole('slider', { name: '연 가격상승률' }), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('연 가격상승률'), { target: { value: '5' } });
 
     const amounts = within(screen.getByTestId('simulator-result-summary'))
       .getAllByText(/^₩[\d,]+\/월$/)
