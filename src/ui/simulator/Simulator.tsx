@@ -7,6 +7,7 @@ import {
   type ProductType,
   type SimulateInput,
 } from '../../domain/simulate';
+import { solveTargetAmount, type SolveTargetResult } from '../../domain/solveTarget';
 import { loadToSimulator, saveToContract } from '../../storage/simHandoff';
 import { koreanAmount, presetEndDate } from '../format';
 import { SiteHeader } from '../SiteHeader';
@@ -19,21 +20,19 @@ const META = {
 };
 
 const productTypes: ProductType[] = ['domesticEquityEtf', 'domesticForeignEtf', 'overseasEtf'];
+/**
+ * 세 항목 모두 ETF다. 'ETF'를 떼면 첫 항목이 개별 종목 투자로 읽히므로 어디서든 전체 이름을 쓴다.
+ * 표 열 머리글은 .info-table의 white-space:normal로 줄바꿈되어 너비가 넘치지 않는다.
+ */
 const productNames: Record<ProductType, string> = {
-  domesticEquityEtf: '국내주식형 ETF',
-  domesticForeignEtf: '국내상장 해외 ETF',
-  overseasEtf: '해외상장 ETF',
-};
-/** 상세 표 열 머리글 — 세 항목이 모두 ETF이므로 공통 접미사를 빼 표 너비를 줄인다. */
-const productShortNames: Record<ProductType, string> = {
-  domesticEquityEtf: '국내주식형',
-  domesticForeignEtf: '국내상장 해외',
-  overseasEtf: '해외상장',
+  domesticEquityEtf: '국내 주식형 ETF',
+  domesticForeignEtf: '국내 상장 해외 ETF',
+  overseasEtf: '해외 상장 ETF',
 };
 const detailRows: [string, keyof ProductResult][] = [
   ['성장 후 평가액', 'finalValue'],
   ['매매차익', 'capitalGain'],
-  ['분배금 세금', 'distributionTax'],
+  ['분배금 세금(배당소득세)', 'distributionTax'],
   ['매도 세금', 'saleTax'],
   ['세후 금액', 'afterTax'],
 ];
@@ -74,7 +73,9 @@ function yearsBetween(startDate: string, endDate: string): string {
 }
 
 interface FormState {
+  calculationMode: 'amount' | 'target';
   giftMethod: 'annuity' | 'lumpSum';
+  targetAmount: number;
   monthlyAmount: number;
   giftYears: string;
   startDate: string;
@@ -116,7 +117,9 @@ export function Simulator() {
   const [handoff] = useState(() => loadToSimulator());
   const defaultStartDate = handoff?.startDate ?? nextMonthFirst();
   const [form, setForm] = useState<FormState>(() => ({
+    calculationMode: 'amount',
     giftMethod: 'annuity',
+    targetAmount: 40_000_000,
     monthlyAmount: handoff?.monthlyAmount ?? 200_000,
     giftYears: handoff ? yearsBetween(handoff.startDate, handoff.endDate) : '10',
     startDate: defaultStartDate,
@@ -151,12 +154,24 @@ export function Simulator() {
   }), [childBirthDate, endDate, form]);
   const calculation = useMemo(() => {
     const errors = validateSimulateInput(input);
-    return { errors, result: errors.length === 0 ? simulate(input) : null };
-  }, [input]);
+    if (errors.length > 0) return { errors, result: null, targetResults: null };
+    if (form.calculationMode === 'amount') {
+      return { errors, result: simulate(input), targetResults: null };
+    }
+    const targetResults = Object.fromEntries(productTypes.map((type) => [
+      type,
+      solveTargetAmount(input, type, form.targetAmount),
+    ])) as Record<ProductType, SolveTargetResult>;
+    return { errors, result: null, targetResults };
+  }, [form.calculationMode, form.targetAmount, input]);
 
   const makeContract = () => {
+    const monthlyAmount = form.calculationMode === 'target'
+      ? calculation.targetResults?.domesticEquityEtf.requiredAmount
+      : form.monthlyAmount;
+    if (monthlyAmount === null || monthlyAmount === undefined) return;
     saveToContract({
-      monthlyAmount: form.monthlyAmount,
+      monthlyAmount,
       startDate: form.startDate,
       endDate,
       paymentDay: form.paymentDay,
@@ -167,6 +182,10 @@ export function Simulator() {
   const allAfterTaxEqual = calculation.result
     ? new Set(productTypes.map((type) => calculation.result!.byProduct[type].afterTax)).size === 1
     : false;
+  const hasResults = calculation.result !== null || calculation.targetResults !== null;
+  const financialIncomeWarning = calculation.result?.financialIncomeWarning
+    || Object.values(calculation.targetResults ?? {}).some((result) =>
+      result.simulated?.financialIncomeWarning);
 
   return (
     <main className="container simulator">
@@ -176,13 +195,22 @@ export function Simulator() {
       <p className="trust-note">입력한 가정으로 증여 단계와 상품 유형별 세후 금액을 계산합니다.</p>
 
       <section className="card simulator-form" aria-labelledby="simulator-basic-title">
+        <fieldset className="simulator-mode">
+          <legend>계산 모드</legend>
+          <label><input type="radio" name="sim-calculation-mode" checked={form.calculationMode === 'amount'} onChange={() => update('calculationMode', 'amount')} /><span>금액으로 계산</span></label>
+          <label><input type="radio" name="sim-calculation-mode" checked={form.calculationMode === 'target'} onChange={() => update('calculationMode', 'target')} /><span>목표로 역산</span></label>
+        </fieldset>
         <h2 id="simulator-basic-title">기본 조건</h2>
         <div className="simulator-basic-grid">
           <div className="simulator-field">
             <label htmlFor="sim-child-age">아이 나이</label>
             <input id="sim-child-age" type="number" inputMode="numeric" min="0" step="1" value={form.childAge} onChange={(event) => update('childAge', event.target.value)} />
           </div>
-          <AmountInput id="sim-monthly-amount" label="매월 증여액" value={form.monthlyAmount} onChange={(value) => update('monthlyAmount', value)} />
+          {form.calculationMode === 'target' ? (
+            <AmountInput id="sim-target-amount" label="목표 금액" value={form.targetAmount} onChange={(value) => update('targetAmount', value)} />
+          ) : (
+            <AmountInput id="sim-monthly-amount" label="매월 증여액" value={form.monthlyAmount} onChange={(value) => update('monthlyAmount', value)} />
+          )}
           <div className="simulator-field">
             <label htmlFor="sim-gift-years">증여 기간</label>
             <div className="simulator-unit-input"><input id="sim-gift-years" type="number" inputMode="numeric" min="0" step="1" value={form.giftYears} onChange={(event) => update('giftYears', event.target.value)} /><span>년</span></div>
@@ -199,8 +227,8 @@ export function Simulator() {
           id="sim-growth"
           aria-labelledby="simulator-growth-label"
           type="range"
-          min="-10"
-          max="10"
+          min="-20"
+          max="20"
           step="0.5"
           value={form.priceGrowthRate}
           onChange={(event) => update('priceGrowthRate', event.target.value)}
@@ -212,7 +240,7 @@ export function Simulator() {
           <h2 id="simulator-errors-title">입력값을 확인해 주세요</h2>
           <ul>{calculation.errors.map((error) => <li key={error}>{error}</li>)}</ul>
         </section>
-      ) : calculation.result && (
+      ) : calculation.result ? (
         <section className="card simulator-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
           <h2 id="simulator-summary-title">상품별 세후 금액</h2>
           <dl>
@@ -221,6 +249,24 @@ export function Simulator() {
             ))}
           </dl>
           {allAfterTaxEqual && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
+        </section>
+      ) : calculation.targetResults && (
+        <section className="card simulator-summary simulator-target-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
+          <h2 id="simulator-summary-title">상품별 필요 금액</h2>
+          <p className="simulator-target-heading">세후 {won(form.targetAmount)}을 만들려면</p>
+          <dl>
+            {productTypes.map((type) => {
+              const requiredAmount = calculation.targetResults![type].requiredAmount;
+              return (
+                <div key={type}>
+                  <dt>{productNames[type]}</dt>
+                  <dd>{requiredAmount === null
+                    ? '이 수익률로는 목표에 도달할 수 없습니다'
+                    : `${won(requiredAmount)}${form.giftMethod === 'annuity' ? '/월' : ''}`}</dd>
+                </div>
+              );
+            })}
+          </dl>
         </section>
       )}
 
@@ -247,7 +293,7 @@ export function Simulator() {
             </div>
           ) : (
             <div className="simulator-advanced-grid">
-              <AmountInput id="sim-lump-sum" label="증여 금액" value={form.lumpSumAmount} onChange={(value) => update('lumpSumAmount', value)} />
+              {form.calculationMode === 'amount' && <AmountInput id="sim-lump-sum" label="증여 금액" value={form.lumpSumAmount} onChange={(value) => update('lumpSumAmount', value)} />}
               <div className="simulator-field">
                 <label htmlFor="sim-gift-date">증여일</label>
                 <input id="sim-gift-date" type="date" value={form.giftDate} onChange={(event) => update('giftDate', event.target.value)} />
@@ -258,7 +304,7 @@ export function Simulator() {
             <div className="simulator-field">
               <label htmlFor="sim-distribution">연 분배율(%)</label>
               <input id="sim-distribution" type="number" inputMode="decimal" min="0" max="100" step="0.1" value={form.distributionRate} onChange={(event) => update('distributionRate', event.target.value)} />
-              <p className="simulator-help">ETF가 매년 지급하는 분배금 비율입니다.</p>
+              <p className="simulator-help">ETF가 보유 자산의 수익을 매년 지급하는 비율입니다. 개별 주식의 배당금과 구분해 분배금이라 부릅니다.</p>
             </div>
             <div className="simulator-field">
               <label htmlFor="sim-withdrawal-age">인출 시점(아이 나이)</label>
@@ -268,31 +314,50 @@ export function Simulator() {
         </div>
       </details>
 
-      {calculation.result && (
+      {hasResults && (
         <>
-          <section className="simulator-gift-line" aria-label="증여 단계">
+          {calculation.result && <section className="simulator-gift-line" aria-label="증여 단계">
             <h2>증여 단계</h2>
             <p>증여 원금 {won(calculation.result.giftPrincipal)} <span>·</span> 평가액 {won(calculation.result.giftValuation)} <span>·</span> 예상 증여세 {won(calculation.result.giftTax.payable)}</p>
-          </section>
+          </section>}
 
-          <details className="card simulator-details simulator-breakdown">
-            <summary>상세 내역</summary>
-            <div className="simulator-details-body">
-              <dl className="simulator-deduction">
+          {/* 세후 금액이 왜 갈리는지가 여기 있으므로 접지 않고 펼쳐 둔다. */}
+          <section className="card simulator-breakdown" aria-labelledby="simulator-breakdown-title">
+            <h2 id="simulator-breakdown-title">상세 내역</h2>
+            <div className="simulator-breakdown-body">
+              {calculation.result && <dl className="simulator-deduction">
                 <div><dt>공제 한도 판정</dt><dd>{calculation.result.deduction.within ? `한도 이내 (${won(calculation.result.deduction.limit)})` : `한도 초과 ${won(calculation.result.deduction.excess)}`}</dd></div>
-              </dl>
+              </dl>}
+              {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다. */}
+              <p className="simulator-detail-caption">
+                세 항목 모두 ETF이며 개별 종목 투자가 아닙니다. 분배금은 ETF가 보유 자산에서 나온
+                수익을 지급하는 것으로, 개별 주식의 배당금과 구분해 부릅니다. 세법상으로는 둘 다
+                배당소득으로 과세됩니다.
+              </p>
               <div className="table-scroll">
                 <table className="info-table simulator-detail-table">
-                  <caption className="simulator-detail-caption">세 항목 모두 ETF 기준입니다.</caption>
-                  <thead><tr><th scope="col">항목</th>{productTypes.map((type) => <th scope="col" key={type}>{productShortNames[type]}</th>)}</tr></thead>
-                  <tbody>{detailRows.map(([label, key]) => <tr key={key}><th scope="row">{label}</th>{productTypes.map((type) => <td key={type}>{won(calculation.result!.byProduct[type][key])}</td>)}</tr>)}</tbody>
+                  <thead><tr><th scope="col">항목</th>{productTypes.map((type) => <th scope="col" key={type}>{productNames[type]}</th>)}</tr></thead>
+                  <tbody>{calculation.result
+                    ? detailRows.map(([label, key]) => <tr key={key}><th scope="row">{label}</th>{productTypes.map((type) => <td key={type}>{won(calculation.result!.byProduct[type][key])}</td>)}</tr>)
+                    : [
+                      ['필요 금액', (type: ProductType) => calculation.targetResults![type].requiredAmount],
+                      ['증여 원금 합계', (type: ProductType) => calculation.targetResults![type].simulated?.giftPrincipal],
+                      ['증여재산 평가액', (type: ProductType) => calculation.targetResults![type].simulated?.giftValuation],
+                      ['예상 증여세', (type: ProductType) => calculation.targetResults![type].simulated?.giftTax.payable],
+                      ['세후 금액', (type: ProductType) => calculation.targetResults![type].simulated?.byProduct[type].afterTax],
+                    ].map(([label, getValue]) => <tr key={label as string}><th scope="row">{label as string}</th>{productTypes.map((type) => {
+                      const value = (getValue as (type: ProductType) => number | null | undefined)(type);
+                      return <td key={type}>{value === null || value === undefined ? '—' : won(value)}</td>;
+                    })}</tr>)}</tbody>
                 </table>
               </div>
             </div>
-          </details>
+          </section>
 
-          <p className="guide-note simulator-neutral-note">조건이 바뀌면 결과도 달라집니다. 이 계산은 입력한 가정에 따른 산술 결과이며 투자 권유가 아닙니다.</p>
-          {calculation.result.financialIncomeWarning && <p className="warn simulator-warning">국내상장 해외 ETF는 매매차익이 배당소득으로 과세되어 금융소득에 포함됩니다. 연 2,000만 원을 넘으면 종합과세 대상이 될 수 있으며, 이 계산에는 반영되어 있지 않습니다.</p>}
+          <p className="guide-note simulator-neutral-note">{form.calculationMode === 'target'
+            ? '입력한 수익률 가정이 그대로 실현될 경우의 산술 결과이며, 수익을 보장하지 않습니다.'
+            : '조건이 바뀌면 결과도 달라집니다. 이 계산은 입력한 가정에 따른 산술 결과이며 투자 권유가 아닙니다.'}</p>
+          {financialIncomeWarning && <p className="warn simulator-warning">국내 상장 해외 ETF는 매매차익이 배당소득으로 과세되어 금융소득에 포함됩니다. 연 2,000만 원을 넘으면 종합과세 대상이 될 수 있으며, 이 계산에는 반영되어 있지 않습니다.</p>}
 
           <details className="card simulator-details simulator-assumptions">
             <summary>계산의 단순화 가정</summary>
@@ -302,7 +367,12 @@ export function Simulator() {
               <li>부모가 자녀에게 증여하는 경우를 기준으로 계산합니다.</li>
             </ul></div>
           </details>
-          {form.giftMethod === 'annuity' && <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>}
+          {form.giftMethod === 'annuity' && (
+            <div className="simulator-contract-action">
+              <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>
+              {form.calculationMode === 'target' && <p>국내 주식형 ETF 기준 필요 금액을 사용합니다.</p>}
+            </div>
+          )}
         </>
       )}
       <p className="disclaimer">{DISCLAIMER}</p>

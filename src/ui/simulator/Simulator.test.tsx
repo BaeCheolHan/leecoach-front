@@ -20,9 +20,9 @@ describe('Simulator', () => {
     render(<Simulator />);
     const summary = screen.getByTestId('simulator-result-summary');
 
-    expect(within(summary).getByText('국내주식형 ETF')).toBeTruthy();
-    expect(within(summary).getByText('국내상장 해외 ETF')).toBeTruthy();
-    expect(within(summary).getByText('해외상장 ETF')).toBeTruthy();
+    expect(within(summary).getByText('국내 주식형 ETF')).toBeTruthy();
+    expect(within(summary).getByText('국내 상장 해외 ETF')).toBeTruthy();
+    expect(within(summary).getByText('해외 상장 ETF')).toBeTruthy();
     expect(within(summary).getAllByText(/^₩[\d,]+$/)).toHaveLength(3);
     expect(screen.queryByText('조건을 모두 입력하면 결과가 나타납니다.')).toBeNull();
     expect(screen.queryByRole('button', { name: /계산|제출/ })).toBeNull();
@@ -33,8 +33,8 @@ describe('Simulator', () => {
     const slider = screen.getByRole('slider', { name: '연 가격상승률' });
 
     expect(slider).toHaveProperty('value', '0');
-    expect(slider).toHaveProperty('min', '-10');
-    expect(slider).toHaveProperty('max', '10');
+    expect(slider).toHaveProperty('min', '-20');
+    expect(slider).toHaveProperty('max', '20');
     expect(slider).toHaveProperty('step', '0.5');
   });
 
@@ -48,11 +48,14 @@ describe('Simulator', () => {
     expect(new Set(amounts).size).toBeGreaterThan(1);
   });
 
-  it('자세히 설정과 상세 내역은 기본으로 접혀 있다', () => {
+  it('입력 옵션은 접고 상세 내역은 펼친 채로 보여준다', () => {
     render(<Simulator />);
 
     expect(screen.getByText('자세히 설정').closest('details')?.hasAttribute('open')).toBe(false);
-    expect(screen.getByText('상세 내역').closest('details')?.hasAttribute('open')).toBe(false);
+    // 세후 금액이 갈리는 이유가 상세 내역에 있으므로 접지 않는다.
+    expect(screen.getByRole('heading', { name: '상세 내역' })).toBeTruthy();
+    expect(screen.getByText('상세 내역').closest('details')).toBeNull();
+    expect(screen.getByRole('row', { name: /매도 세금/ })).toBeTruthy();
   });
 
   it('상품의 우열을 표현하지 않는다', () => {
@@ -63,7 +66,8 @@ describe('Simulator', () => {
   it('증여 방식 라디오는 하나의 그룹으로 묶인다', async () => {
     render(<Simulator />);
     await userEvent.click(screen.getByText('자세히 설정'));
-    const radios = screen.getAllByRole('radio') as HTMLInputElement[];
+    const details = screen.getByText('자세히 설정').closest('details')!;
+    const radios = within(details).getAllByRole('radio') as HTMLInputElement[];
 
     expect(new Set(radios.map((radio) => radio.name)).size).toBe(1);
     expect(radios.every((radio) => radio.name !== '')).toBe(true);
@@ -90,5 +94,47 @@ describe('Simulator', () => {
 
     expect(screen.queryByRole('button', { name: '이 조건으로 계약서 만들기' })).toBeNull();
     expect(sessionStorage.getItem(CONTRACT_HANDOFF_KEY)).toBeNull();
+  });
+
+  it('기본은 금액으로 계산 모드이며 목표 금액 입력은 보이지 않는다', () => {
+    render(<Simulator />);
+
+    expect(screen.getByRole('radio', { name: '금액으로 계산' })).toHaveProperty('checked', true);
+    expect(screen.queryByLabelText('목표 금액')).toBeNull();
+  });
+
+  it('목표로 역산하면 목표 입력과 필요 금액 결과를 보여준다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+
+    expect(screen.getByLabelText('목표 금액')).toHaveProperty('value', '40,000,000');
+    expect(screen.getByRole('heading', { name: '상품별 필요 금액' })).toBeTruthy();
+    expect(screen.getByText('세후 ₩40,000,000을 만들려면')).toBeTruthy();
+  });
+
+  it('목표 역산 모드에서는 증여 단계 한 줄 요약을 숨긴다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+
+    expect(screen.queryByLabelText('증여 단계')).toBeNull();
+  });
+
+  it('목표 역산 필요 금액은 수익률이 있을 때 세 상품 모두 같지는 않다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+    fireEvent.change(screen.getByRole('slider', { name: '연 가격상승률' }), { target: { value: '5' } });
+
+    const amounts = within(screen.getByTestId('simulator-result-summary'))
+      .getAllByText(/^₩[\d,]+\/월$/)
+      .map((element) => element.textContent);
+    expect(amounts).toHaveLength(3);
+    expect(new Set(amounts).size).toBeGreaterThan(1);
+  });
+
+  it('목표 역산 모드에도 우열 표현이 없다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+
+    expect(screen.queryByText(/추천|유리|베스트/)).toBeNull();
   });
 });

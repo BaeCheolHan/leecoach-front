@@ -1126,6 +1126,53 @@ button {
   font-size: 15px;
 }
 
+.simulator-mode {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  min-width: 0;
+  margin: 0 0 14px;
+  padding: 4px;
+  border: 1px solid #f2f4f6;
+  border-radius: 8px;
+}
+
+.simulator-mode legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.simulator-mode label {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.simulator-mode input {
+  position: absolute;
+  opacity: 0;
+}
+
+.simulator-mode span {
+  display: block;
+  padding: 9px 6px;
+  border-radius: 6px;
+  color: #4e5968;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.simulator-mode input:checked + span {
+  color: #191f28;
+  background: #f2f4f6;
+}
+
+.simulator-mode input:focus-visible + span { outline: 2px solid #3182f6; }
+
 .simulator-summary dl { margin: 0; }
 
 .simulator-summary dl > div {
@@ -1156,6 +1203,17 @@ button {
   font-size: 12px;
   line-height: 1.5;
   word-break: keep-all;
+}
+
+.simulator-target-heading {
+  margin: 0 0 4px;
+  color: #4e5968;
+  font-size: 13px;
+}
+
+.simulator-target-summary dd {
+  max-width: 58%;
+  white-space: normal;
 }
 
 .simulator-growth-heading {
@@ -1352,6 +1410,13 @@ button {
 
 .simulator-contract-cta { margin-top: 2px; }
 
+.simulator-contract-action p {
+  margin: 5px 0 0;
+  color: #8b95a1;
+  font-size: 11px;
+  text-align: center;
+}
+
 @media (max-width: 374px) {
   .simulator .card { padding: 14px; }
   .simulator-details { padding: 0 !important; }
@@ -1361,11 +1426,11 @@ button {
 }
 
 .simulator-detail-caption {
-  caption-side: top;
-  text-align: left;
-  padding: 0 0 8px;
+  margin: 0 0 10px;
   color: #8b95a1;
   font-size: 12px;
+  line-height: 1.6;
+  word-break: keep-all;
 }
 
 /* 상세 표는 금액 문자열이 열 너비를 결정한다 — 여백·자간을 조여 640px 컨테이너 안에 들어오게 한다. */
