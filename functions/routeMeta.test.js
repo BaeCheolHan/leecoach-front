@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { normalizePathname, routeMeta } from './routeMeta.js';
+import { isStaticAssetPath, normalizePathname, routeMeta } from './routeMeta.js';
 
 const expectedMeta = {
   '/simulator': {
@@ -120,5 +120,32 @@ describe('routeMeta', () => {
     for (const meta of Object.values(routeMeta)) {
       expect(meta.ogTitle).toBe(meta.title.replace(/ \| 이코치맘$/, ''));
     }
+  });
+});
+
+describe('isStaticAssetPath', () => {
+  it.each([
+    '/assets/index-abc123.js',
+    '/assets/index-abc.css',
+    '/assets/Simulator-x.js',
+    '/sitemap.xml',
+    '/favicon.svg',
+    '/og.jpg',
+    '/robots.txt',
+  ])('treats %s as a static asset path', (path) => {
+    expect(isStaticAssetPath(path)).toBe(true);
+  });
+
+  it.each(['/', '/guide', '/guide/annuity-gift-report', '/privacy', '/about', '/없는경로'])(
+    'does not treat %s as a static asset path',
+    (path) => {
+      expect(isStaticAssetPath(path)).toBe(false);
+    },
+  );
+
+  it('ignores query strings when matching asset paths', () => {
+    expect(isStaticAssetPath('/assets/index-abc123.js?v=2')).toBe(true);
+    expect(isStaticAssetPath('/sitemap.xml?v=2')).toBe(true);
+    expect(isStaticAssetPath('/guide?ref=foo')).toBe(false);
   });
 });

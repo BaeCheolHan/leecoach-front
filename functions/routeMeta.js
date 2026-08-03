@@ -92,3 +92,14 @@ export function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '');
   return normalized || '/';
 }
+
+const STATIC_ASSET_EXTENSION_RE =
+  /\.(js|mjs|css|map|woff2|woff|ttf|png|jpg|svg|ico|webp|json|xml|txt)$/i;
+
+// 정적 에셋으로 취급할 경로인지 판정한다. `/assets/`(해시 파일명 번들) 또는
+// 확장자가 명백한 정적 파일(루트의 sitemap.xml·favicon.svg 등)이면 true.
+// 쿼리스트링/해시가 붙어도 흔들리지 않도록 먼저 잘라낸다.
+export function isStaticAssetPath(pathname) {
+  const path = pathname.split('?')[0].split('#')[0];
+  return path.startsWith('/assets/') || STATIC_ASSET_EXTENSION_RE.test(path);
+}
