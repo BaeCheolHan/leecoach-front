@@ -623,7 +623,7 @@ export function Simulator() {
             </ul></div>
           </details>
           <section className="related-guides">
-            <h2>다음 단계</h2>
+            <h2>다음에 읽어보세요</h2>
             {relatedGuides.map((article) => (
               <a key={article.path} className="card guide-card" href={article.path}>
                 <h3>{article.title}</h3>
