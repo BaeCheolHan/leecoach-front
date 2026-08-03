@@ -19,13 +19,30 @@ describe('Simulator', () => {
   it('아무 입력 없이도 상품 3종의 세후 금액을 즉시 보여준다', () => {
     render(<Simulator />);
     const summary = screen.getByTestId('simulator-result-summary');
+    const dl = summary.querySelector('dl')!;
 
     expect(within(summary).getByText('국내 주식형 ETF')).toBeTruthy();
     expect(within(summary).getByText('국내 상장 해외 ETF')).toBeTruthy();
     expect(within(summary).getByText('해외 상장 ETF')).toBeTruthy();
-    expect(within(summary).getAllByText(/^₩[\d,]+$/)).toHaveLength(3);
+    expect(within(dl).getAllByText(/^₩[\d,]+$/)).toHaveLength(3);
     expect(screen.queryByText('조건을 모두 입력하면 결과가 나타납니다.')).toBeNull();
     expect(screen.queryByRole('button', { name: /계산|제출/ })).toBeNull();
+  });
+
+  it('초기(수익률 0)에는 히어로 세후 금액이 단일 금액으로 표시된다', () => {
+    render(<Simulator />);
+    const summary = screen.getByTestId('simulator-result-summary');
+
+    expect(within(summary).getByText('인출 시점 세후 금액')).toBeTruthy();
+    expect(within(summary).getByText(/^₩[\d,]+$/, { selector: '.simulator-hero-value' })).toBeTruthy();
+  });
+
+  it('국내 수익률만 입력하면 히어로가 세후 금액 범위로 표시된다', () => {
+    render(<Simulator />);
+    fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '5' } });
+
+    const summary = screen.getByTestId('simulator-result-summary');
+    expect(within(summary).getByText(/^₩[\d,]+ ~ ₩[\d,]+$/, { selector: '.simulator-hero-value' })).toBeTruthy();
   });
 
   it('국내·해외 수익률은 투자 수익률을 제시하지 않고 0에서 시작한다', () => {
@@ -88,7 +105,7 @@ describe('Simulator', () => {
 
   it.each([
     ['아이 나이', '', '아이 나이를 입력해 주세요.'],
-    ['증여 기간', '0', '증여 기간은 1년 이상이어야 합니다.'],
+    ['증여 기간', '0', '증여 기간을 1년 이상 입력해 주세요.'],
     ['국내 수익률', '', '국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
     ['해외 수익률', '', '해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
   ])('%s이(가) 비거나 잘못되면 그 필드를 가리키는 안내를 보여준다', (label, value, expected) => {
@@ -189,8 +206,9 @@ describe('Simulator', () => {
     expect(screen.queryByRole('button', { name: '적용' })).toBeNull();
   });
 
-  it('참고 수익률 기준은 급등 제외가 기본값이다', () => {
+  it('참고 수익률 기준은 급등 제외가 기본값이다', async () => {
     render(<Simulator />);
+    await userEvent.click(screen.getByText(/참고 수익률의 출처와 주의사항/));
 
     expect(screen.getByRole('radio', { name: '급등 제외' })).toHaveProperty('checked', true);
     expect(screen.getByRole('radio', { name: '최근까지' })).toHaveProperty('checked', false);
@@ -218,6 +236,7 @@ describe('Simulator', () => {
 
   it('최근까지 기준으로 바꾸면 config 순서 그대로 칩 수치가 바뀐다', async () => {
     render(<Simulator />);
+    await userEvent.click(screen.getByText(/참고 수익률의 출처와 주의사항/));
 
     await userEvent.click(screen.getByRole('radio', { name: '최근까지' }));
 
@@ -238,11 +257,11 @@ describe('Simulator', () => {
 
   it('세금 차이 힌트는 국내·해외 수익률이 모두 0일 때만 보인다', () => {
     const { rerender } = render(<Simulator />);
-    expect(screen.getByText('수익률을 올려보면 상품별 세금 차이가 나타납니다.')).toBeTruthy();
+    expect(screen.getByText('수익률을 올려보면 상품별 세금 차이가 나타나요.')).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '5' } });
     rerender(<Simulator />);
-    expect(screen.queryByText('수익률을 올려보면 상품별 세금 차이가 나타납니다.')).toBeNull();
+    expect(screen.queryByText('수익률을 올려보면 상품별 세금 차이가 나타나요.')).toBeNull();
   });
 
   it('입력이 유효하지 않은 동안 마지막 결과를 흐리게 유지하고 계약서 CTA는 숨긴다', () => {
@@ -252,8 +271,8 @@ describe('Simulator', () => {
     expect(screen.getByRole('alert')).toBeTruthy();
     const summary = screen.getByTestId('simulator-result-summary');
     expect(summary.className).toContain('simulator-stale');
-    expect(within(summary).getAllByText(/^₩[\d,]+$/)).toHaveLength(3);
-    expect(screen.getByText('아래 결과는 마지막으로 계산된 조건 기준입니다.')).toBeTruthy();
+    expect(within(summary.querySelector('dl')!).getAllByText(/^₩[\d,]+$/)).toHaveLength(3);
+    expect(screen.getByText('아래 결과는 마지막으로 계산된 조건 기준이에요.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: '이 조건으로 계약서 만들기' })).toBeNull();
   });
 
@@ -272,7 +291,7 @@ describe('Simulator', () => {
     await userEvent.click(screen.getByText('자세히 설정'));
     await userEvent.click(screen.getByRole('radio', { name: /현금 일시금/ }));
 
-    expect(screen.getByText('계약서 만들기는 유기정기금 방식에서만 제공됩니다.')).toBeTruthy();
+    expect(screen.getByText('계약서 만들기는 유기정기금 방식에서만 제공돼요.')).toBeTruthy();
   });
 
   it('기존 증여를 입력하면 남은 한도 기준으로 판정한다', async () => {
@@ -286,7 +305,7 @@ describe('Simulator', () => {
 
   it('한도 내 최대 월액을 안내하고, 적용하면 매월 증여액이 바뀐다', async () => {
     render(<Simulator />);
-    const hint = screen.getByText(/이 조건에서는 월 ₩[\d,]+까지 한도 이내입니다/);
+    const hint = screen.getByText(/이 조건에서는 월 ₩[\d,]+까지 한도 이내예요/);
     expect(hint).toBeTruthy();
 
     const maxAmount = hint.textContent!.match(/₩([\d,]+)/)![1];

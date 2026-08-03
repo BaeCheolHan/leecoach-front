@@ -124,7 +124,7 @@ function validateForm(form: FormState): string[] {
   }
 
   if (form.giftMethod === 'annuity') {
-    if (blank(form.giftYears) || number(form.giftYears) < 1) errors.push('증여 기간은 1년 이상이어야 합니다.');
+    if (blank(form.giftYears) || number(form.giftYears) < 1) errors.push('증여 기간을 1년 이상 입력해 주세요.');
     if (form.calculationMode === 'amount' && form.monthlyAmount <= 0) errors.push('매월 증여액을 입력해 주세요.');
   } else if (form.calculationMode === 'amount' && form.lumpSumAmount <= 0) {
     errors.push('증여 금액을 입력해 주세요.');
@@ -269,6 +269,20 @@ export function Simulator() {
   const staleClass = stale ? ' simulator-stale' : '';
   const bothGrowthRatesZero = percent(form.domesticGrowthRate) === 0
     && percent(form.overseasGrowthRate) === 0;
+  /**
+   * 히어로 금액은 상품 우열을 드러내지 않도록 특정 상품명을 쓰지 않는다.
+   * 화면에 표시되는 문자열(반올림 후)이 같으면 단일 금액, 다르면 범위로 보여준다 —
+   * 원시 float로 비교하면 반올림 후 같은 문자열인데 범위로 나오는 모순이 생긴다.
+   */
+  const heroAfterTax = display?.result
+    ? (() => {
+      const rounded = productTypes.map((type) => Math.round(display.result!.byProduct[type].afterTax));
+      const formatted = rounded.map((value) => won(value));
+      if (new Set(formatted).size === 1) return formatted[0];
+      return `${won(Math.min(...rounded))} ~ ${won(Math.max(...rounded))}`;
+    })()
+    : null;
+  const showContractCta = hasResults && form.giftMethod === 'annuity' && !stale;
   // "세금 없이 월 얼마까지?"에 대한 답 — 상품·수익률과 무관한 세법 산술이라 권유가 아니다.
   const availableLimit = display?.result?.deduction.available ?? null;
   const maxMonthly = useMemo(() => {
@@ -283,11 +297,11 @@ export function Simulator() {
   };
 
   return (
-    <main className="container simulator">
+    <main className={`container simulator${showContractCta ? ' simulator--has-cta' : ''}`}>
       <SiteHeader />
       {handoff && <div className="restored-notice" role="status"><p>계약서에서 입력한 조건을 불러왔어요.</p></div>}
       <h1>자녀 증여자산 시뮬레이터</h1>
-      <p className="trust-note">입력한 가정으로 증여 단계와 상품 유형별 세후 금액을 계산합니다.</p>
+      <p className="trust-note">조건을 넣으면 증여세와 상품 유형별 세후 금액을 바로 계산해요.</p>
 
       <section className="card simulator-form" aria-labelledby="simulator-basic-title">
         <fieldset className="simulator-mode">
@@ -303,50 +317,48 @@ export function Simulator() {
             {/* 미성년 판정이 만 나이 기준이라 세는 나이로 넣으면 계산이 1살 어긋난다. */}
             <p className="simulator-help">만 나이로 입력해 주세요.</p>
           </div>
-          {form.calculationMode === 'target' ? (
-            <AmountInput id="sim-target-amount" label="목표 금액" value={form.targetAmount} onChange={(value) => update('targetAmount', value)} />
-          ) : (
-            <AmountInput id="sim-monthly-amount" label="매월 증여액" value={form.monthlyAmount} onChange={(value) => update('monthlyAmount', value)} />
-          )}
           <div className="simulator-field">
             <label htmlFor="sim-gift-years">증여 기간</label>
             <div className="simulator-unit-input"><input id="sim-gift-years" type="number" inputMode="numeric" min="0" step="1" value={form.giftYears} onChange={(event) => update('giftYears', event.target.value)} /><span>년</span></div>
           </div>
-          <fieldset className="simulator-mode simulator-reference-mode">
-            <legend>참고 수익률 기준</legend>
-            <label><input type="radio" name="sim-reference-basis" checked={referenceBasis === 'excluding'} onChange={() => setReferenceBasis('excluding')} /><span>급등 제외</span></label>
-            <label><input type="radio" name="sim-reference-basis" checked={referenceBasis === 'recent'} onChange={() => setReferenceBasis('recent')} /><span>최근까지</span></label>
-          </fieldset>
+          {/* 가장 중요한 입력이라 풀폭으로 키운다. */}
+          <div className="simulator-field-full">
+            {form.calculationMode === 'target' ? (
+              <AmountInput id="sim-target-amount" label="목표 금액" value={form.targetAmount} onChange={(value) => update('targetAmount', value)} />
+            ) : (
+              <AmountInput id="sim-monthly-amount" label="매월 증여액" value={form.monthlyAmount} onChange={(value) => update('monthlyAmount', value)} />
+            )}
+          </div>
           {/* 수익률도 다른 조건과 같은 숫자 입력으로 둔다. 슬라이더는 ±20% 범위에서 1스텝이
               3.9px라 원하는 값을 집을 수 없었다. 기본값 0은 수익을 제시하지 않기 위함이다. */}
           <div className="simulator-field">
             <label htmlFor="sim-domestic-growth">국내 수익률</label>
             <div className="simulator-unit-input"><input id="sim-domestic-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.domesticGrowthRate} onChange={(event) => update('domesticGrowthRate', event.target.value)} /><span>%</span></div>
-            <div className="preset-row simulator-reference-presets">
-              {INDEX_REFERENCE_RETURNS.filter((index) => index.scope === 'domestic').map((index) => {
-                const value = ratePercent(index[referenceBasis].rate);
-                const isSelected = form.domesticGrowthRate.trim() !== '' && Number(form.domesticGrowthRate) === Number(value);
-                return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
-              })}
-            </div>
           </div>
           <div className="simulator-field">
             <label htmlFor="sim-overseas-growth">해외 수익률</label>
             <div className="simulator-unit-input"><input id="sim-overseas-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.overseasGrowthRate} onChange={(event) => update('overseasGrowthRate', event.target.value)} /><span>%</span></div>
-            <div className="preset-row simulator-reference-presets">
-              {INDEX_REFERENCE_RETURNS.filter((index) => index.scope === 'overseas').map((index) => {
-                const value = ratePercent(index[referenceBasis].rate);
-                const isSelected = form.overseasGrowthRate.trim() !== '' && Number(form.overseasGrowthRate) === Number(value);
-                return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
-              })}
-            </div>
-            {/* 환율 안내가 상세 내역에만 있으면 입력 시점에 못 본다. 참고 지수도 달러 기준이다. */}
-            <p className="simulator-help">원화 기준으로 입력해 주세요. 참고 수익률에는 환율 변동이 빠져 있습니다.</p>
           </div>
+          {/* 국내·해외 칩을 한 줄로 모아 세로로 쌓이며 낭비되던 높이를 없앤다. */}
+          <div className="preset-row simulator-reference-presets simulator-field-full">
+            {INDEX_REFERENCE_RETURNS.map((index) => {
+              const value = ratePercent(index[referenceBasis].rate);
+              const currentRate = index.scope === 'domestic' ? form.domesticGrowthRate : form.overseasGrowthRate;
+              const isSelected = currentRate.trim() !== '' && Number(currentRate) === Number(value);
+              return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
+            })}
+          </div>
+          {/* 환율 안내가 상세 내역에만 있으면 입력 시점에 못 본다. 참고 지수도 달러 기준이다. */}
+          <p className="simulator-help simulator-field-full">원화 기준으로 입력해 주세요. 참고 수익률에는 환율 변동이 빠져 있어요.</p>
         </div>
         <details className="simulator-reference-details">
           <summary>⚠️ 참고 수익률의 출처와 주의사항</summary>
           <div className="simulator-reference-content">
+            <fieldset className="simulator-mode simulator-reference-mode">
+              <legend>참고 수익률 기준</legend>
+              <label><input type="radio" name="sim-reference-basis" checked={referenceBasis === 'excluding'} onChange={() => setReferenceBasis('excluding')} /><span>급등 제외</span></label>
+              <label><input type="radio" name="sim-reference-basis" checked={referenceBasis === 'recent'} onChange={() => setReferenceBasis('recent')} /><span>최근까지</span></label>
+            </fieldset>
             <ul className="simulator-reference-list">
               {INDEX_REFERENCE_RETURNS.map((index) => {
                 const reference = index[referenceBasis];
@@ -367,18 +379,21 @@ export function Simulator() {
         <section className="card simulator-errors" role="alert" aria-labelledby="simulator-errors-title">
           <h2 id="simulator-errors-title">입력값을 확인해 주세요</h2>
           <ul>{calculation.errors.map((error) => <li key={error}>{error}</li>)}</ul>
-          {stale && <p className="simulator-stale-note">아래 결과는 마지막으로 계산된 조건 기준입니다.</p>}
+          {stale && <p className="simulator-stale-note">아래 결과는 마지막으로 계산된 조건 기준이에요.</p>}
         </section>
       )}
       {display?.result ? (
         <section className={`card simulator-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
-          <h2 id="simulator-summary-title">상품별 세후 금액</h2>
+          <p className="simulator-hero-label">인출 시점 세후 금액</p>
+          <p className="simulator-hero-value">{heroAfterTax}</p>
+          <p className="simulator-hero-sub">예상 증여세 {won(display.result.giftTax.payable)} 별도</p>
+          <h2 id="simulator-summary-title">상품 유형별 비교</h2>
           <dl>
             {productTypes.map((type) => (
               <div key={type}><dt>{productNames[type]}</dt><dd>{won(display.result!.byProduct[type].afterTax)}</dd></div>
             ))}
           </dl>
-          {allAfterTaxEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
+          {allAfterTaxEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타나요.</p>}
         </section>
       ) : display?.targetResults && (
         <section className={`card simulator-summary simulator-target-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
@@ -391,13 +406,13 @@ export function Simulator() {
                 <div key={type}>
                   <dt>{productNames[type]}</dt>
                   <dd>{requiredAmount === null
-                    ? '이 수익률로는 목표에 도달할 수 없습니다'
+                    ? '이 수익률로는 목표에 도달할 수 없어요'
                     : `${won(requiredAmount)}${form.giftMethod === 'annuity' ? '/월' : ''}`}</dd>
                 </div>
               );
             })}
           </dl>
-          {allRequiredEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
+          {allRequiredEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타나요.</p>}
         </section>
       )}
 
@@ -438,18 +453,18 @@ export function Simulator() {
               label="10년 내 기존 증여"
               value={form.priorGifts}
               onChange={(value) => update('priorGifts', value)}
-              help="같은 증여자(부모)가 최근 10년 안에 이 아이에게 증여한 금액입니다. 공제 한도에서 차감합니다."
+              help="같은 증여자(부모)가 최근 10년 안에 이 아이에게 증여한 금액이에요. 공제 한도에서 차감해요."
             />
             {/* 단위는 기본 조건과 같이 입력창 안에 둔다 — 라벨에 괄호로 넣으면 표기가 섞인다. */}
             <div className="simulator-field">
               <label htmlFor="sim-distribution">연 분배율</label>
               <div className="simulator-unit-input"><input id="sim-distribution" type="number" inputMode="decimal" min="0" max="100" step="any" value={form.distributionRate} onChange={(event) => update('distributionRate', event.target.value)} /><span>%</span></div>
-              <p className="simulator-help">ETF가 보유 자산의 수익을 매년 지급하는 비율입니다. 개별 주식의 배당금과 구분해 분배금이라 부릅니다.</p>
+              <p className="simulator-help">ETF가 보유 자산의 수익을 매년 지급하는 비율이에요. 개별 주식의 배당금과 구분해 분배금이라 불러요.</p>
             </div>
             <div className="simulator-field">
               <label htmlFor="sim-withdrawal-age">인출 시점</label>
               <div className="simulator-unit-input"><input id="sim-withdrawal-age" type="number" inputMode="numeric" min="0" step="1" value={withdrawalAge} onChange={(event) => update('withdrawalAge', event.target.value)} /><span>세</span></div>
-              <p className="simulator-help">아이가 이 나이가 될 때 전액 인출한다고 봅니다.</p>
+              <p className="simulator-help">아이가 이 나이가 될 때 전액 인출한다고 봐요.</p>
             </div>
           </div>
         </div>
@@ -472,39 +487,28 @@ export function Simulator() {
                   <div><dt>공제 한도 판정</dt><dd className={display.result.deduction.within ? undefined : 'simulator-deduction-excess'}>{display.result.deduction.within ? `한도 이내 (${won(display.result.deduction.available)})` : `한도 초과 ${won(display.result.deduction.excess)}`}</dd></div>
                 </dl>
                 {!stale && form.priorGifts > 0 && (
-                  <p className="simulator-help">공제 한도 {won(display.result.deduction.limit)}에서 기존 증여를 차감해 남은 한도 {won(display.result.deduction.available)} 기준입니다.</p>
+                  <p className="simulator-help">공제 한도 {won(display.result.deduction.limit)}에서 기존 증여를 차감해 남은 한도 {won(display.result.deduction.available)} 기준이에요.</p>
                 )}
                 {!display.result.deduction.within && (
-                  <p className="simulator-help">증여재산 평가액이 남은 공제 한도 {won(display.result.deduction.available)}을 넘어, 넘는 금액에 증여세가 계산됩니다.</p>
+                  <p className="simulator-help">증여재산 평가액이 남은 공제 한도 {won(display.result.deduction.available)}을 넘어, 넘는 금액에 증여세가 계산돼요.</p>
                 )}
                 {!stale && form.giftMethod === 'annuity' && maxMonthly !== null && (maxMonthly > 0 ? (
                   <p className="simulator-limit-hint">
-                    이 조건에서는 월 {won(maxMonthly)}까지 한도 이내입니다.
+                    이 조건에서는 월 {won(maxMonthly)}까지 한도 이내예요.
                     {form.monthlyAmount !== maxMonthly && <button type="button" onClick={() => update('monthlyAmount', maxMonthly)}>이 금액 적용</button>}
                   </p>
                 ) : (
-                  <p className="simulator-limit-hint">남은 공제 한도가 부족해 한도 이내 월 지급액이 없습니다.</p>
+                  <p className="simulator-limit-hint">남은 공제 한도가 부족해 한도 이내 월 지급액이 없어요.</p>
                 ))}
                 {!stale && form.giftMethod === 'lumpSum' && (display.result.deduction.available > 0 ? (
                   <p className="simulator-limit-hint">
-                    이번에 {won(display.result.deduction.available)}까지 한도 이내입니다.
+                    이번에 {won(display.result.deduction.available)}까지 한도 이내예요.
                     {form.lumpSumAmount !== display.result.deduction.available && <button type="button" onClick={() => update('lumpSumAmount', display.result!.deduction.available)}>이 금액 적용</button>}
                   </p>
                 ) : (
-                  <p className="simulator-limit-hint">기존 증여로 남은 공제 한도가 없습니다.</p>
+                  <p className="simulator-limit-hint">기존 증여로 남은 공제 한도가 없어요.</p>
                 ))}
               </div>}
-              {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다. */}
-              <p className="simulator-detail-caption">
-                세 항목 모두 ETF이며 개별 종목 투자가 아닙니다. 분배금은 ETF가 보유 자산에서 나온
-                수익을 지급하는 것으로, 개별 주식의 배당금과 구분해 부릅니다. 세법상으로는 둘 다
-                배당소득으로 과세됩니다.
-              </p>
-              <p className="simulator-detail-caption">
-                해외 상장 ETF의 양도차익은 취득·양도 시점의 환율로 각각 원화 환산해 계산합니다.
-                주가가 그대로여도 환율이 오르면 양도차익이 생겨 세금이 붙습니다. 이 계산기는 환율을
-                따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
-              </p>
               <div className="table-scroll">
                 <table className="info-table simulator-detail-table">
                   <thead><tr><th scope="col">항목</th>{productTypes.map((type) => <th scope="col" key={type}>{productNames[type]}</th>)}</tr></thead>
@@ -522,27 +526,38 @@ export function Simulator() {
                     })}</tr>)}</tbody>
                 </table>
               </div>
+              {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다. */}
+              <p className="simulator-detail-caption">
+                세 항목 모두 ETF이며 개별 종목 투자가 아니에요. 분배금은 ETF가 보유 자산에서 나온
+                수익을 지급하는 것으로, 개별 주식의 배당금과 구분해 불러요. 세법상으로는 둘 다
+                배당소득으로 과세돼요.
+              </p>
+              <p className="simulator-detail-caption">
+                해외 상장 ETF의 양도차익은 취득·양도 시점의 환율로 각각 원화 환산해 계산해요.
+                주가가 그대로여도 환율이 오르면 양도차익이 생겨 세금이 붙어요. 이 계산기는 환율을
+                따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
+              </p>
             </div>
           </section>
 
           <p className="guide-note simulator-neutral-note">{form.calculationMode === 'target'
-            ? '입력한 수익률 가정이 그대로 실현될 경우의 산술 결과이며, 수익을 보장하지 않습니다.'
-            : '조건이 바뀌면 결과도 달라집니다. 이 계산은 입력한 가정에 따른 산술 결과이며 투자 권유가 아닙니다.'}</p>
-          {financialIncomeWarning && <p className="warn simulator-warning">국내 상장 해외 ETF는 매매차익이 배당소득으로 과세되어 금융소득에 포함됩니다. 연 2,000만 원을 넘으면 종합과세 대상이 될 수 있으며, 이 계산에는 반영되어 있지 않습니다.</p>}
+            ? '입력한 수익률 가정이 그대로 실현될 경우의 산술 결과이며, 수익을 보장하지 않아요.'
+            : '조건이 바뀌면 결과도 달라져요. 이 계산은 입력한 가정에 따른 산술 결과이며 투자 권유가 아니에요.'}</p>
+          {financialIncomeWarning && <p className="warn simulator-warning">국내 상장 해외 ETF는 매매차익이 배당소득으로 과세되어 금융소득에 포함돼요. 연 2,000만 원을 넘으면 종합과세 대상이 될 수 있고, 이 계산에는 반영되어 있지 않아요.</p>}
 
           <details className="card simulator-details simulator-assumptions">
             <summary>계산의 단순화 가정</summary>
             <div className="simulator-details-body"><ul>
-              <li>분배금은 세후 전액 재투자한다고 가정합니다.</li>
-              <li>증여세는 별도 납부하는 것으로 보고 투자 원금에서 빼지 않았습니다.</li>
-              <li>부모가 자녀에게 증여하는 경우를 기준으로 계산합니다.</li>
+              <li>분배금은 세후 전액 재투자한다고 가정해요.</li>
+              <li>증여세는 별도 납부하는 것으로 보고 투자 원금에서 빼지 않았어요.</li>
+              <li>부모가 자녀에게 증여하는 경우를 기준으로 계산해요.</li>
               <li>
-                기존 증여는 '자세히 설정'에 입력한 금액만 공제 한도에서 차감합니다.
-                과세표준 합산과 기납부세액공제는 반영하지 않습니다.
+                기존 증여는 '자세히 설정'에 입력한 금액만 공제 한도에서 차감해요.
+                과세표준 합산과 기납부세액공제는 반영하지 않아요.
               </li>
               <li>
-                <b>환율은 따로 계산하지 않습니다.</b> 모든 금액이 원화 기준이므로, 해외 상장 ETF를
-                볼 때는 가격상승률에 환율 변동까지 포함한 원화 기준 수치를 넣어야 합니다.
+                <b>환율은 따로 계산하지 않아요.</b> 모든 금액이 원화 기준이므로, 해외 상장 ETF를
+                볼 때는 가격상승률에 환율 변동까지 포함한 원화 기준 수치를 넣어야 해요.
               </li>
             </ul></div>
           </details>
@@ -556,14 +571,14 @@ export function Simulator() {
               </a>
             ))}
           </section>
-          {form.giftMethod === 'annuity' ? !stale && (
+          {form.giftMethod === 'annuity' ? showContractCta && (
             <div className="simulator-contract-action">
               <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>
-              {form.calculationMode === 'target' && <p>국내 주식형 ETF 기준 필요 금액을 사용합니다.</p>}
+              {form.calculationMode === 'target' && <p>국내 주식형 ETF 기준 필요 금액을 사용해요.</p>}
             </div>
           ) : (
             // 방식을 바꾸는 순간 버튼이 말없이 사라지면 고장으로 보인다 — 이유를 남긴다.
-            <p className="simulator-contract-note">계약서 만들기는 유기정기금 방식에서만 제공됩니다.</p>
+            <p className="simulator-contract-note">계약서 만들기는 유기정기금 방식에서만 제공돼요.</p>
           )}
         </>
       )}

@@ -1128,6 +1128,11 @@ button {
   overflow-x: hidden;
 }
 
+/* 신뢰 문구가 한 줄로 줄어든 만큼 제목 아래 여백도 함께 좁혀 첫 폴드를 확보한다. */
+.simulator > h1 {
+  margin: 6px 0 2px;
+}
+
 .simulator .card {
   min-width: 0;
   margin-bottom: 10px;
@@ -1153,7 +1158,10 @@ button {
   border-radius: 8px;
 }
 
-.simulator-mode legend {
+/* "기본 조건" 제목도 함께 숨긴다 — 카드 경계가 이미 그룹을 보여주고,
+   첫 폴드에서 결과 카드가 보이려면 세로 공간이 부족하다. aria 이름으로는 유지. */
+.simulator-mode legend,
+.simulator-form h2 {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1230,6 +1238,11 @@ button {
   white-space: nowrap;
 }
 
+/* 결과 카드 상단 히어로 숫자 — 첫 폴드 안에서 가장 궁금한 숫자를 바로 보여준다. */
+.simulator-hero-label { margin: 0 0 2px; color: #8b95a1; font-size: 13px; }
+.simulator-hero-value { margin: 0; color: #191f28; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; word-break: keep-all; }
+.simulator-hero-sub { margin: 4px 0 14px; color: #4e5968; font-size: 13px; }
+
 .simulator-equal-hint {
   margin: 8px 0 0;
   color: #8b95a1;
@@ -1257,6 +1270,9 @@ button {
 }
 
 .simulator-field { min-width: 0; }
+
+/* 그리드 안에서 특정 항목만 2열을 다 차지하게 한다 — 가장 중요한 금액 입력, 칩 한 줄, 환율 안내용. */
+.simulator-field-full { grid-column: 1 / -1; min-width: 0; }
 
 .simulator-field label {
   display: block;
@@ -1304,14 +1320,13 @@ button {
   pointer-events: none;
 }
 
+/* 출처 접기 안으로 옮겨졌다 — 더는 그리드 전제가 없으므로 grid-column을 걷어낸다. */
 .simulator-reference-mode {
-  grid-column: 1 / -1;
-  margin: 2px 0 0;
+  margin: 0 0 10px;
 }
 
 .simulator-reference-mode legend {
   position: static;
-  grid-column: 1 / -1;
   width: auto;
   height: auto;
   margin: 0 0 2px;
@@ -1322,15 +1337,20 @@ button {
   font-weight: 500;
 }
 
+/* 칩 3개를 한 줄에 — 감기면 세로 공간을 먹어 결과가 첫 폴드 밖으로 밀린다. */
 .simulator-reference-presets {
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
   margin: 6px 0 0;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .simulator-reference-presets button {
   min-height: 44px;
-  padding: 8px 12px;
+  padding: 8px 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -1544,7 +1564,23 @@ button {
   line-height: 1.7;
 }
 
-.simulator-contract-cta { margin-top: 2px; }
+/* CTA 바가 렌더될 때만 하단 여백을 둬서 고정 바가 면책 문구·푸터를 가리지 않게 한다. */
+.simulator--has-cta { padding-bottom: 110px; }
+
+.simulator-contract-action {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 640px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}
 
 .simulator-contract-note {
   margin: 4px 0 12px;
