@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ADULT_AGE, DISCLAIMER, INDEX_REFERENCE_RETURNS } from '../../config';
 import {
   simulate,
@@ -217,6 +217,13 @@ export function Simulator() {
     return { errors, result: null, targetResults };
   }, [form, input]);
 
+  // 입력이 잠시 비는 동안 결과가 통째로 사라지면 레이아웃이 크게 튄다.
+  // 마지막 유효 결과를 흐리게 유지하고, 에러 카드만 위에 얹는다.
+  const lastValidCalculation = useRef<typeof calculation | null>(null);
+  if (calculation.errors.length === 0) lastValidCalculation.current = calculation;
+  const display = calculation.errors.length === 0 ? calculation : lastValidCalculation.current;
+  const stale = calculation.errors.length > 0 && display !== null;
+
   const makeContract = () => {
     const monthlyAmount = form.calculationMode === 'target'
       ? calculation.targetResults?.domesticEquityEtf.requiredAmount
@@ -232,16 +239,17 @@ export function Simulator() {
   };
 
   // 수익률 0이면 세금이 생기지 않아 세 상품이 같아진다. 고장으로 오해하지 않게 안내한다.
-  const allAfterTaxEqual = calculation.result
-    ? new Set(productTypes.map((type) => calculation.result!.byProduct[type].afterTax)).size === 1
+  const allAfterTaxEqual = display?.result
+    ? new Set(productTypes.map((type) => display.result!.byProduct[type].afterTax)).size === 1
     : false;
-  const allRequiredEqual = calculation.targetResults
-    ? new Set(productTypes.map((type) => calculation.targetResults![type].requiredAmount)).size === 1
+  const allRequiredEqual = display?.targetResults
+    ? new Set(productTypes.map((type) => display.targetResults![type].requiredAmount)).size === 1
     : false;
-  const hasResults = calculation.result !== null || calculation.targetResults !== null;
-  const financialIncomeWarning = calculation.result?.financialIncomeWarning
-    || Object.values(calculation.targetResults ?? {}).some((result) =>
+  const hasResults = display?.result != null || display?.targetResults != null;
+  const financialIncomeWarning = display?.result?.financialIncomeWarning
+    || Object.values(display?.targetResults ?? {}).some((result) =>
       result.simulated?.financialIncomeWarning);
+  const staleClass = stale ? ' simulator-stale' : '';
   const bothGrowthRatesZero = percent(form.domesticGrowthRate) === 0
     && percent(form.overseasGrowthRate) === 0;
   const applyReferenceRate = (scope: 'domestic' | 'overseas', rate: number) => {
@@ -266,6 +274,8 @@ export function Simulator() {
           <div className="simulator-field">
             <label htmlFor="sim-child-age">아이 나이</label>
             <input id="sim-child-age" type="number" inputMode="numeric" min="0" step="1" value={form.childAge} onChange={(event) => update('childAge', event.target.value)} />
+            {/* 미성년 판정이 만 나이 기준이라 세는 나이로 넣으면 계산이 1살 어긋난다. */}
+            <p className="simulator-help">만 나이로 입력해 주세요.</p>
           </div>
           {form.calculationMode === 'target' ? (
             <AmountInput id="sim-target-amount" label="목표 금액" value={form.targetAmount} onChange={(value) => update('targetAmount', value)} />
@@ -304,6 +314,8 @@ export function Simulator() {
                 return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
               })}
             </div>
+            {/* 환율 안내가 상세 내역에만 있으면 입력 시점에 못 본다. 참고 지수도 달러 기준이다. */}
+            <p className="simulator-help">원화 기준으로 입력해 주세요. 참고 수익률에는 환율 변동이 빠져 있습니다.</p>
           </div>
         </div>
         <details className="simulator-reference-details">
@@ -325,28 +337,30 @@ export function Simulator() {
         </details>
       </section>
 
-      {calculation.errors.length > 0 ? (
-        <section className="card simulator-errors" aria-labelledby="simulator-errors-title">
+      {calculation.errors.length > 0 && (
+        <section className="card simulator-errors" role="alert" aria-labelledby="simulator-errors-title">
           <h2 id="simulator-errors-title">입력값을 확인해 주세요</h2>
           <ul>{calculation.errors.map((error) => <li key={error}>{error}</li>)}</ul>
+          {stale && <p className="simulator-stale-note">아래 결과는 마지막으로 계산된 조건 기준입니다.</p>}
         </section>
-      ) : calculation.result ? (
-        <section className="card simulator-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
+      )}
+      {display?.result ? (
+        <section className={`card simulator-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
           <h2 id="simulator-summary-title">상품별 세후 금액</h2>
           <dl>
             {productTypes.map((type) => (
-              <div key={type}><dt>{productNames[type]}</dt><dd>{won(calculation.result!.byProduct[type].afterTax)}</dd></div>
+              <div key={type}><dt>{productNames[type]}</dt><dd>{won(display.result!.byProduct[type].afterTax)}</dd></div>
             ))}
           </dl>
           {allAfterTaxEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타납니다.</p>}
         </section>
-      ) : calculation.targetResults && (
-        <section className="card simulator-summary simulator-target-summary" data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title">
+      ) : display?.targetResults && (
+        <section className={`card simulator-summary simulator-target-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
           <h2 id="simulator-summary-title">상품별 필요 금액</h2>
           <p className="simulator-target-heading">세후 {won(form.targetAmount)}을 만들려면</p>
           <dl>
             {productTypes.map((type) => {
-              const requiredAmount = calculation.targetResults![type].requiredAmount;
+              const requiredAmount = display.targetResults![type].requiredAmount;
               return (
                 <div key={type}>
                   <dt>{productNames[type]}</dt>
@@ -410,18 +424,24 @@ export function Simulator() {
 
       {hasResults && (
         <>
-          {calculation.result && <section className="simulator-gift-line" aria-label="증여 단계">
+          {display?.result && <section className={`simulator-gift-line${staleClass}`} aria-label="증여 단계">
             <h2>증여 단계</h2>
-            <p>증여 원금 {won(calculation.result.giftPrincipal)} <span>·</span> 평가액 {won(calculation.result.giftValuation)} <span>·</span> 예상 증여세 {won(calculation.result.giftTax.payable)}</p>
+            {/* 예상 증여세는 이 화면에서 가장 궁금해할 숫자라 홀로 강조한다. */}
+            <p>증여 원금 {won(display.result.giftPrincipal)} <span>·</span> 평가액 {won(display.result.giftValuation)} <span>·</span> 예상 증여세 <b>{won(display.result.giftTax.payable)}</b></p>
           </section>}
 
           {/* 세후 금액이 왜 갈리는지가 여기 있으므로 접지 않고 펼쳐 둔다. */}
-          <section className="card simulator-breakdown" aria-labelledby="simulator-breakdown-title">
+          <section className={`card simulator-breakdown${staleClass}`} aria-labelledby="simulator-breakdown-title">
             <h2 id="simulator-breakdown-title">상세 내역</h2>
             <div className="simulator-breakdown-body">
-              {calculation.result && <dl className="simulator-deduction">
-                <div><dt>공제 한도 판정</dt><dd>{calculation.result.deduction.within ? `한도 이내 (${won(calculation.result.deduction.limit)})` : `한도 초과 ${won(calculation.result.deduction.excess)}`}</dd></div>
-              </dl>}
+              {display?.result && <div className="simulator-deduction">
+                <dl>
+                  <div><dt>공제 한도 판정</dt><dd className={display.result.deduction.within ? undefined : 'simulator-deduction-excess'}>{display.result.deduction.within ? `한도 이내 (${won(display.result.deduction.limit)})` : `한도 초과 ${won(display.result.deduction.excess)}`}</dd></div>
+                </dl>
+                {!display.result.deduction.within && (
+                  <p className="simulator-help">증여재산 평가액이 공제 한도 {won(display.result.deduction.limit)}을 넘어, 넘는 금액에 증여세가 계산됩니다.</p>
+                )}
+              </div>}
               {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다. */}
               <p className="simulator-detail-caption">
                 세 항목 모두 ETF이며 개별 종목 투자가 아닙니다. 분배금은 ETF가 보유 자산에서 나온
@@ -436,14 +456,14 @@ export function Simulator() {
               <div className="table-scroll">
                 <table className="info-table simulator-detail-table">
                   <thead><tr><th scope="col">항목</th>{productTypes.map((type) => <th scope="col" key={type}>{productNames[type]}</th>)}</tr></thead>
-                  <tbody>{calculation.result
-                    ? detailRows.map(([label, key]) => <tr key={key}><th scope="row">{label}</th>{productTypes.map((type) => <td key={type}>{won(calculation.result!.byProduct[type][key])}</td>)}</tr>)
+                  <tbody>{display?.result
+                    ? detailRows.map(([label, key]) => <tr key={key}><th scope="row">{label}</th>{productTypes.map((type) => <td key={type}>{won(display.result!.byProduct[type][key])}</td>)}</tr>)
                     : [
-                      ['필요 금액', (type: ProductType) => calculation.targetResults![type].requiredAmount],
-                      ['증여 원금 합계', (type: ProductType) => calculation.targetResults![type].simulated?.giftPrincipal],
-                      ['증여재산 평가액', (type: ProductType) => calculation.targetResults![type].simulated?.giftValuation],
-                      ['예상 증여세', (type: ProductType) => calculation.targetResults![type].simulated?.giftTax.payable],
-                      ['세후 금액', (type: ProductType) => calculation.targetResults![type].simulated?.byProduct[type].afterTax],
+                      ['필요 금액', (type: ProductType) => display?.targetResults?.[type].requiredAmount],
+                      ['증여 원금 합계', (type: ProductType) => display?.targetResults?.[type].simulated?.giftPrincipal],
+                      ['증여재산 평가액', (type: ProductType) => display?.targetResults?.[type].simulated?.giftValuation],
+                      ['예상 증여세', (type: ProductType) => display?.targetResults?.[type].simulated?.giftTax.payable],
+                      ['세후 금액', (type: ProductType) => display?.targetResults?.[type].simulated?.byProduct[type].afterTax],
                     ].map(([label, getValue]) => <tr key={label as string}><th scope="row">{label as string}</th>{productTypes.map((type) => {
                       const value = (getValue as (type: ProductType) => number | null | undefined)(type);
                       return <td key={type}>{value === null || value === undefined ? '—' : won(value)}</td>;
@@ -470,11 +490,14 @@ export function Simulator() {
               </li>
             </ul></div>
           </details>
-          {form.giftMethod === 'annuity' && (
+          {form.giftMethod === 'annuity' ? !stale && (
             <div className="simulator-contract-action">
               <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>
               {form.calculationMode === 'target' && <p>국내 주식형 ETF 기준 필요 금액을 사용합니다.</p>}
             </div>
+          ) : (
+            // 방식을 바꾸는 순간 버튼이 말없이 사라지면 고장으로 보인다 — 이유를 남긴다.
+            <p className="simulator-contract-note">계약서 만들기는 유기정기금 방식에서만 제공됩니다.</p>
           )}
         </>
       )}

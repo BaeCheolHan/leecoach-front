@@ -244,4 +244,24 @@ describe('Simulator', () => {
     rerender(<Simulator />);
     expect(screen.queryByText('수익률을 올려보면 상품별 세금 차이가 나타납니다.')).toBeNull();
   });
+
+  it('입력이 유효하지 않은 동안 마지막 결과를 흐리게 유지하고 계약서 CTA는 숨긴다', () => {
+    render(<Simulator />);
+    fireEvent.change(screen.getByLabelText('아이 나이'), { target: { value: '' } });
+
+    expect(screen.getByRole('alert')).toBeTruthy();
+    const summary = screen.getByTestId('simulator-result-summary');
+    expect(summary.className).toContain('simulator-stale');
+    expect(within(summary).getAllByText(/^₩[\d,]+$/)).toHaveLength(3);
+    expect(screen.getByText('아래 결과는 마지막으로 계산된 조건 기준입니다.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: '이 조건으로 계약서 만들기' })).toBeNull();
+  });
+
+  it('일시금 선택 시 계약서 미제공 이유를 안내한다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByText('자세히 설정'));
+    await userEvent.click(screen.getByRole('radio', { name: /현금 일시금/ }));
+
+    expect(screen.getByText('계약서 만들기는 유기정기금 방식에서만 제공됩니다.')).toBeTruthy();
+  });
 });

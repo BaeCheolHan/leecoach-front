@@ -1206,8 +1206,6 @@ button {
   background: #f2f4f6;
 }
 
-.simulator-mode input:focus-visible + span { outline: 2px solid #3182f6; }
-
 .simulator-summary dl { margin: 0; }
 
 .simulator-summary dl > div {
@@ -1437,6 +1435,16 @@ button {
 
 .simulator-errors li { color: #f04452; }
 
+.simulator-stale-note {
+  margin: 8px 0 0;
+  color: #8b95a1;
+  font-size: 12px;
+  word-break: keep-all;
+}
+
+/* 입력이 유효하지 않은 동안 마지막 결과를 지우지 않고 흐리게만 둔다 — 레이아웃 점프 방지 */
+.simulator-stale { opacity: 0.45; }
+
 .simulator-gift-line {
   padding: 10px 2px 14px;
 }
@@ -1456,10 +1464,12 @@ button {
 }
 
 .simulator-gift-line span { color: #b0b8c1; }
+.simulator-gift-line b { color: #191f28; }
 
 .simulator-deduction { margin: 12px 0; }
+.simulator-deduction dl { margin: 0; }
 
-.simulator-deduction > div {
+.simulator-deduction dl > div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1473,10 +1483,24 @@ button {
   text-align: right;
 }
 
+.simulator-deduction dd.simulator-deduction-excess { color: #f04452; }
+
 .simulator-breakdown .table-scroll { margin: 0; }
 .simulator-breakdown table { min-width: 620px; }
 .simulator-breakdown th:first-child { text-align: left; }
 .simulator-breakdown td { text-align: right; white-space: nowrap; }
+
+/* 항목 열 고정 — 가로 스크롤 중에도 어떤 행인지 보이게. 배경이 없으면 지나가는 셀이 비친다. */
+.simulator-breakdown thead th:first-child,
+.simulator-breakdown tbody th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  box-shadow: inset -1px 0 0 #f2f4f6;
+}
+
+.simulator-breakdown thead th:first-child { background: #f9fafb; }
 
 .simulator-neutral-note,
 .simulator-warning {
@@ -1498,6 +1522,14 @@ button {
 }
 
 .simulator-contract-cta { margin-top: 2px; }
+
+.simulator-contract-note {
+  margin: 4px 0 12px;
+  color: #8b95a1;
+  font-size: 12px;
+  text-align: center;
+  word-break: keep-all;
+}
 
 .simulator-contract-action p {
   margin: 5px 0 0;
