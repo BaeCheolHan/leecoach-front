@@ -1218,7 +1218,7 @@ button {
 
 .simulator-summary dl > div {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
   padding: 8px 0;
@@ -1228,6 +1228,8 @@ button {
 
 .simulator-summary dl > div:last-child { border-bottom: 0; }
 .simulator-summary dt { min-width: 0; color: #4e5968; }
+.simulator-product-name { display: block; }
+.simulator-product-desc { display: block; margin-top: 2px; color: #8b95a1; font-size: 12px; word-break: keep-all; }
 
 .simulator-summary dd {
   flex: 0 0 auto;
@@ -1497,6 +1499,15 @@ button {
   font-size: 14px;
   line-height: 1.7;
   word-break: keep-all;
+}
+
+/* 위 .simulator-gift-line p보다 구체적이어야 한다 — 그냥 두면 부연 설명이
+   증여 원금·평가액 줄과 같은 진하기로 보여 종속 문장임이 드러나지 않는다. */
+.simulator-gift-line .simulator-help {
+  margin: 4px 0 0;
+  color: #8b95a1;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .simulator-gift-line span { color: #b0b8c1; }

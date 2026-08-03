@@ -32,6 +32,12 @@ const productNames: Record<ProductType, string> = {
   domesticForeignEtf: '국내 상장 해외 ETF',
   overseasEtf: '해외 상장 ETF',
 };
+// 상품명만으로는 무엇을 사는 건지 와닿지 않아 결과 카드에서 한 줄로 풀어 설명한다.
+const productDescs: Record<ProductType, string> = {
+  domesticEquityEtf: '코스피 등 국내 지수를 따르는 ETF',
+  domesticForeignEtf: '한국 거래소에서 사는 해외 지수 ETF',
+  overseasEtf: '미국 등 현지 거래소에서 직접 사는 ETF',
+};
 const detailRows: [string, keyof ProductResult][] = [
   ['성장 후 평가액', 'finalValue'],
   ['매매차익', 'capitalGain'],
@@ -185,7 +191,9 @@ export function Simulator() {
     calculationMode: 'amount',
     giftMethod: 'annuity',
     targetAmount: 40_000_000,
-    monthlyAmount: handoff?.monthlyAmount ?? 200_000,
+    // 월 19만·10년 기본 조건이면 평가액 약 1,965만으로 공제 한도(미성년 2,000만) 이내 —
+    // 첫인상이 빨간 '한도 초과'가 아니게 한다(사용자 결정 2026-08-03).
+    monthlyAmount: handoff?.monthlyAmount ?? 190_000,
     giftYears: handoff ? yearsBetween(handoff.startDate, handoff.endDate) : '10',
     startDate: defaultStartDate,
     paymentDay: handoff?.paymentDay ?? 1,
@@ -340,8 +348,8 @@ export function Simulator() {
       <section className="card simulator-form" aria-labelledby="simulator-basic-title">
         <fieldset className="simulator-mode">
           <legend>계산 모드</legend>
-          <label><input type="radio" name="sim-calculation-mode" checked={form.calculationMode === 'amount'} onChange={() => update('calculationMode', 'amount')} /><span>금액으로 계산</span></label>
-          <label><input type="radio" name="sim-calculation-mode" checked={form.calculationMode === 'target'} onChange={() => update('calculationMode', 'target')} /><span>목표로 역산</span></label>
+          <label><input type="radio" name="sim-calculation-mode" checked={form.calculationMode === 'amount'} onChange={() => update('calculationMode', 'amount')} /><span>얼마가 될까?</span></label>
+          <label><input type="radio" name="sim-calculation-mode" checked={form.calculationMode === 'target'} onChange={() => update('calculationMode', 'target')} /><span>얼마씩 줘야 할까?</span></label>
         </fieldset>
         <h2 id="simulator-basic-title">기본 조건</h2>
         <div className="simulator-basic-grid">
@@ -432,7 +440,7 @@ export function Simulator() {
           <h2 id="simulator-summary-title">상품 유형별 비교</h2>
           <dl>
             {productTypes.map((type) => (
-              <div key={type}><dt>{productNames[type]}</dt><dd>{won(display.result!.byProduct[type].afterTax)}</dd></div>
+              <div key={type}><dt><span className="simulator-product-name">{productNames[type]}</span><span className="simulator-product-desc">{productDescs[type]}</span></dt><dd>{won(display.result!.byProduct[type].afterTax)}</dd></div>
             ))}
           </dl>
           {allAfterTaxEqual && bothGrowthRatesZero && <p className="simulator-equal-hint">수익률을 올려보면 상품별 세금 차이가 나타나요.</p>}
@@ -447,7 +455,7 @@ export function Simulator() {
               const requiredAmount = display.targetResults![type].requiredAmount;
               return (
                 <div key={type}>
-                  <dt>{productNames[type]}</dt>
+                  <dt><span className="simulator-product-name">{productNames[type]}</span><span className="simulator-product-desc">{productDescs[type]}</span></dt>
                   <dd>{requiredAmount === null
                     ? '이 수익률로는 목표에 도달할 수 없어요'
                     : `${won(requiredAmount)}${form.giftMethod === 'annuity' ? '/월' : ''}`}</dd>
@@ -465,8 +473,8 @@ export function Simulator() {
         <div className="simulator-details-body">
           <fieldset className="simulator-method">
             <legend>증여 방식</legend>
-            <label><input type="radio" name="sim-gift-method" checked={form.giftMethod === 'annuity'} onChange={() => update('giftMethod', 'annuity')} /> 유기정기금</label>
-            <label><input type="radio" name="sim-gift-method" checked={form.giftMethod === 'lumpSum'} onChange={() => update('giftMethod', 'lumpSum')} /> 현금 일시금</label>
+            <label><input type="radio" name="sim-gift-method" checked={form.giftMethod === 'annuity'} onChange={() => update('giftMethod', 'annuity')} /> 매달 나눠 증여 (유기정기금)</label>
+            <label><input type="radio" name="sim-gift-method" checked={form.giftMethod === 'lumpSum'} onChange={() => update('giftMethod', 'lumpSum')} /> 한 번에 증여 (일시금)</label>
           </fieldset>
           {form.giftMethod === 'annuity' ? (
             <div className="simulator-advanced-grid">
@@ -519,6 +527,8 @@ export function Simulator() {
             <h2>증여 단계</h2>
             {/* 예상 증여세는 이 화면에서 가장 궁금해할 숫자라 홀로 강조한다. */}
             <p>증여 원금 {won(display.result.giftPrincipal)} <span>·</span> 평가액 {won(display.result.giftValuation)} <span>·</span> 예상 증여세 <b>{won(display.result.giftTax.payable)}</b></p>
+            {/* 일시금은 원금=평가액이라 굳이 부연하지 않는다. 유기정기금만 할인 계산이 끼어든다. */}
+            {form.giftMethod === 'annuity' && <p className="simulator-help">평가액은 앞으로 줄 돈을 세법대로 할인해 계산한 증여세 기준 금액이에요.</p>}
           </section>}
 
           {/* 세후 금액이 왜 갈리는지가 여기 있으므로 접지 않고 펼쳐 둔다. */}

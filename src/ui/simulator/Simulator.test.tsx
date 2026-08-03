@@ -29,6 +29,13 @@ describe('Simulator', () => {
     expect(screen.queryByRole('button', { name: /계산|제출/ })).toBeNull();
   });
 
+  it('기본 조건(월 19만·10년)은 공제 한도 이내로 시작한다 — 첫인상이 빨간 초과 경고가 아니어야 한다', () => {
+    render(<Simulator />);
+
+    expect(screen.getByText(/^한도 이내/)).toBeTruthy();
+    expect(screen.queryByText(/^한도 초과/)).toBeNull();
+  });
+
   it('두 수익률을 0으로 두면 히어로 세후 금액이 단일 금액으로 표시된다', () => {
     render(<Simulator />);
     fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '0' } });
@@ -167,7 +174,7 @@ describe('Simulator', () => {
   it('일시금 선택 시 유기정기금 전용 계약서 CTA를 보여주지 않는다', async () => {
     render(<Simulator />);
     await userEvent.click(screen.getByText('자세히 설정'));
-    await userEvent.click(screen.getByRole('radio', { name: /현금 일시금/ }));
+    await userEvent.click(screen.getByRole('radio', { name: /일시금/ }));
 
     expect(screen.queryByRole('button', { name: '이 조건으로 계약서 만들기' })).toBeNull();
     expect(sessionStorage.getItem(CONTRACT_HANDOFF_KEY)).toBeNull();
@@ -176,13 +183,13 @@ describe('Simulator', () => {
   it('기본은 금액으로 계산 모드이며 목표 금액 입력은 보이지 않는다', () => {
     render(<Simulator />);
 
-    expect(screen.getByRole('radio', { name: '금액으로 계산' })).toHaveProperty('checked', true);
+    expect(screen.getByRole('radio', { name: '얼마가 될까?' })).toHaveProperty('checked', true);
     expect(screen.queryByLabelText('목표 금액')).toBeNull();
   });
 
   it('목표로 역산하면 목표 입력과 필요 금액 결과를 보여준다', async () => {
     render(<Simulator />);
-    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+    await userEvent.click(screen.getByRole('radio', { name: '얼마씩 줘야 할까?' }));
 
     expect(screen.getByLabelText('목표 금액')).toHaveProperty('value', '40,000,000');
     expect(screen.getByRole('heading', { name: '상품별 필요 금액' })).toBeTruthy();
@@ -193,14 +200,14 @@ describe('Simulator', () => {
 
   it('목표 역산 모드에서는 증여 단계 한 줄 요약을 숨긴다', async () => {
     render(<Simulator />);
-    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+    await userEvent.click(screen.getByRole('radio', { name: '얼마씩 줘야 할까?' }));
 
     expect(screen.queryByLabelText('증여 단계')).toBeNull();
   });
 
   it('목표 역산 필요 금액은 수익률이 있을 때 세 상품 모두 같지는 않다', async () => {
     render(<Simulator />);
-    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+    await userEvent.click(screen.getByRole('radio', { name: '얼마씩 줘야 할까?' }));
     fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '5' } });
     fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '5' } });
 
@@ -213,7 +220,7 @@ describe('Simulator', () => {
 
   it('목표 역산 모드에도 우열 표현이 없다', async () => {
     render(<Simulator />);
-    await userEvent.click(screen.getByRole('radio', { name: '목표로 역산' }));
+    await userEvent.click(screen.getByRole('radio', { name: '얼마씩 줘야 할까?' }));
 
     expect(screen.queryByText(/추천|유리|베스트/)).toBeNull();
   });
@@ -313,7 +320,7 @@ describe('Simulator', () => {
   it('일시금 선택 시 계약서 미제공 이유를 안내한다', async () => {
     render(<Simulator />);
     await userEvent.click(screen.getByText('자세히 설정'));
-    await userEvent.click(screen.getByRole('radio', { name: /현금 일시금/ }));
+    await userEvent.click(screen.getByRole('radio', { name: /일시금/ }));
 
     expect(screen.getByText('계약서 만들기는 유기정기금 방식에서만 제공돼요.')).toBeTruthy();
   });
