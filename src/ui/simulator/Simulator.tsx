@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { ADULT_AGE, DISCLAIMER, INDEX_REFERENCE_RETURNS } from '../../config';
+import { ADULT_AGE, DISCLAIMER, INDEX_REFERENCE_RETURNS, TAX_LAW_AS_OF } from '../../config';
 import {
   simulate,
   validateSimulateInput,
@@ -12,7 +12,7 @@ import { maxAnnuityMonthlyWithinLimit } from '../../domain/limitPlanner';
 import { solveTargetAmount, type SolveTargetResult } from '../../domain/solveTarget';
 import { loadToSimulator, saveToContract } from '../../storage/simHandoff';
 import { ARTICLES } from '../guide/articles';
-import { koreanAmount, presetEndDate } from '../format';
+import { formatKoreanDate, koreanAmount, presetEndDate } from '../format';
 import { SiteHeader } from '../SiteHeader';
 import { usePageMeta } from '../usePageMeta';
 import { SiteFooter } from '../SiteFooter';
@@ -610,10 +610,10 @@ export function Simulator() {
                   따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
                 </p>
                 <p className="simulator-detail-caption">
-                  국내 상장 해외 ETF의 매도 세금은 실제보다 많게 나올 수 있어요. 세법은 매매차익과
-                  과세표준기준가격 기준으로 계산한 금액 중 적은 금액에 세금을 매기는데, 과세표준기준가격은
-                  운용사가 매일 고시하는 값이라 앞으로의 값을 미리 알 수 없어요. 그래서 이 계산기는
-                  매매차익만으로 계산했고, 실제 세금은 화면에 나온 금액과 같거나 더 적어요.
+                  국내 상장 해외 ETF는 매매차익과 과세표준기준가격이 오른 만큼 중 적은 금액에 세금을
+                  매겨요. 보유한 해외 주식에서 난 손익은 그대로 과세 대상에 들어가서, 과세표준기준가격이
+                  시장 가격을 거의 따라가요. 그래서 매매차익만으로 계산해도 실제와 크게 다르지 않고,
+                  실제 세금은 화면에 나온 금액과 같거나 조금 적어요.
                 </p>
               </details>
             </div>
@@ -643,7 +643,7 @@ export function Simulator() {
                 인출 연도에 다른 해외주식 양도소득이 없다고 보고, 해외 상장 ETF의 연 250만 원
                 기본공제를 일괄 매도 1회에 전액 적용해요.
               </li>
-              <li>국내 상장 해외 ETF의 매도 세금은 매매차익 기준으로 계산해, 실제보다 많게 잡힐 수 있어요.</li>
+              <li>국내 상장 해외 ETF의 매도 세금은 매매차익 기준으로 계산해요. 과세표준기준가격 기준보다 조금 많게 잡힐 수 있어요.</li>
             </ul></div>
           </details>
           <section className="related-guides">
@@ -668,6 +668,9 @@ export function Simulator() {
         </>
       )}
       <p className="disclaimer">{DISCLAIMER}</p>
+      <p className="disclaimer simulator-tax-law-note">
+        {formatKoreanDate(TAX_LAW_AS_OF)} 기준 세법으로 계산했어요. 이후 세법이 바뀌면 결과가 달라질 수 있어요.
+      </p>
       <SiteFooter />
     </main>
   );

@@ -2,6 +2,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { TAX_LAW_AS_OF } from '../../config';
+import { formatKoreanDate } from '../format';
 import { CONTRACT_HANDOFF_KEY, SIMULATOR_HANDOFF_KEY } from '../../storage/simHandoff';
 import { Simulator } from './Simulator';
 
@@ -346,6 +348,11 @@ describe('Simulator', () => {
     expect(screen.getByText(/한도 이내 \(/)).toBeTruthy();
     // 이미 최대액이면 적용 버튼은 사라진다
     expect(screen.queryByRole('button', { name: '이 금액 적용' })).toBeNull();
+  });
+
+  it('세법 기준일을 화면에 표시한다', () => {
+    render(<Simulator />);
+    expect(screen.getByText(new RegExp(`${formatKoreanDate(TAX_LAW_AS_OF)} 기준 세법으로 계산했어요`))).toBeTruthy();
   });
 
   it('결과 아래에 다음 단계 가이드 2편을 연결한다', () => {

@@ -27,6 +27,12 @@ export function presetEndDate(startDate: string, years: number): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
 
+/** 'YYYY-MM-DD' → '연도년 월일' 한국어 표기 (예: '2026-08-04' → '2026년 8월 4일') */
+export function formatKoreanDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return `${year}년 ${month}월 ${day}일`;
+}
+
 /** 원 단위 금액을 억/만 단위 한글 표기로 변환 (예: 5000000 → "500만원") */
 export function koreanAmount(n: number): string {
   if (!Number.isFinite(n) || n <= 0) return '';

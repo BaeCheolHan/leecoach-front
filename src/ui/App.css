@@ -977,6 +977,10 @@ button {
   margin: 20px 0 0;
 }
 
+.simulator-tax-law-note {
+  margin-top: 4px;
+}
+
 /* 모바일 --------------------------------------------------------------- */
 
 @media (max-width: 479px) {
