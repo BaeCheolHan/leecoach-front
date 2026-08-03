@@ -349,7 +349,7 @@ export function Simulator() {
             })}
           </div>
           {/* 환율 안내가 상세 내역에만 있으면 입력 시점에 못 본다. 참고 지수도 달러 기준이다. */}
-          <p className="simulator-help simulator-field-full">원화 기준으로 입력해 주세요. 참고 수익률에는 환율 변동이 빠져 있어요.</p>
+          <p className="simulator-help simulator-field-full">원화 기준이에요. 참고 수익률엔 환율 변동이 빠져 있어요.</p>
         </div>
         <details className="simulator-reference-details">
           <summary>참고 수익률 기준 바꾸기 · 출처 보기</summary>
@@ -453,13 +453,13 @@ export function Simulator() {
               label="10년 내 기존 증여"
               value={form.priorGifts}
               onChange={(value) => update('priorGifts', value)}
-              help="같은 증여자(부모)가 최근 10년 안에 이 아이에게 증여한 금액이에요. 공제 한도에서 차감해요."
+              help="최근 10년 안에 부모가 이 아이에게 증여한 금액이에요."
             />
             {/* 단위는 기본 조건과 같이 입력창 안에 둔다 — 라벨에 괄호로 넣으면 표기가 섞인다. */}
             <div className="simulator-field">
               <label htmlFor="sim-distribution">연 분배율</label>
               <div className="simulator-unit-input"><input id="sim-distribution" type="number" inputMode="decimal" min="0" max="100" step="any" value={form.distributionRate} onChange={(event) => update('distributionRate', event.target.value)} /><span>%</span></div>
-              <p className="simulator-help">ETF가 보유 자산의 수익을 매년 지급하는 비율이에요. 개별 주식의 배당금과 구분해 분배금이라 불러요.</p>
+              <p className="simulator-help">ETF가 수익을 매년 나눠 주는 비율이에요. 모르면 0을 두세요.</p>
             </div>
             <div className="simulator-field">
               <label htmlFor="sim-withdrawal-age">인출 시점</label>
@@ -526,17 +526,21 @@ export function Simulator() {
                     })}</tr>)}</tbody>
                 </table>
               </div>
-              {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다. */}
-              <p className="simulator-detail-caption">
-                세 항목 모두 ETF이며 개별 종목 투자가 아니에요. 분배금은 ETF가 보유 자산에서 나온
-                수익을 지급하는 것으로, 개별 주식의 배당금과 구분해 불러요. 세법상으로는 둘 다
-                배당소득으로 과세돼요.
-              </p>
-              <p className="simulator-detail-caption">
-                해외 상장 ETF의 양도차익은 취득·양도 시점의 환율로 각각 원화 환산해 계산해요.
-                주가가 그대로여도 환율이 오르면 양도차익이 생겨 세금이 붙어요. 이 계산기는 환율을
-                따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
-              </p>
+              {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다.
+                  분배금·환율 설명은 표의 '분배금 세금' 행을 이해시키는 곁가지라 접어 화면 밀도를 낮춘다. */}
+              <details className="simulator-caption-details">
+                <summary>용어와 환율 안내</summary>
+                <p className="simulator-detail-caption">
+                  세 항목 모두 ETF이며 개별 종목 투자가 아니에요. 분배금은 ETF가 보유 자산에서 나온
+                  수익을 지급하는 것으로, 개별 주식의 배당금과 구분해 불러요. 세법상으로는 둘 다
+                  배당소득으로 과세돼요.
+                </p>
+                <p className="simulator-detail-caption">
+                  해외 상장 ETF의 양도차익은 취득·양도 시점의 환율로 각각 원화 환산해 계산해요.
+                  주가가 그대로여도 환율이 오르면 양도차익이 생겨 세금이 붙어요. 이 계산기는 환율을
+                  따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
+                </p>
+              </details>
             </div>
           </section>
 

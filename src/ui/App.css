@@ -1223,7 +1223,7 @@ button {
   gap: 12px;
   padding: 8px 0;
   border-bottom: 1px solid #f2f4f6;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .simulator-summary dl > div:last-child { border-bottom: 0; }
@@ -1246,7 +1246,7 @@ button {
 .simulator-equal-hint {
   margin: 8px 0 0;
   color: #8b95a1;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   word-break: keep-all;
 }
@@ -1278,7 +1278,7 @@ button {
   display: block;
   margin: 0 0 5px;
   color: #4e5968;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
 }
 
@@ -1299,10 +1299,10 @@ button {
 
 .simulator-field .amount-hint,
 .simulator-help {
-  min-height: 16px;
+  min-height: 18px;
   margin: 3px 0 0;
   color: #8b95a1;
-  font-size: 11px;
+  font-size: 13px;
   line-height: 1.4;
   word-break: keep-all;
 }
@@ -1448,7 +1448,7 @@ button {
 .simulator-stale-note {
   margin: 8px 0 0;
   color: #8b95a1;
-  font-size: 12px;
+  font-size: 13px;
   word-break: keep-all;
 }
 
@@ -1468,7 +1468,7 @@ button {
 .simulator-gift-line p {
   margin: 0;
   color: #333d4b;
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
   word-break: keep-all;
 }
@@ -1576,7 +1576,7 @@ button {
 .simulator-contract-note {
   margin: 4px 0 12px;
   color: #8b95a1;
-  font-size: 12px;
+  font-size: 13px;
   text-align: center;
   word-break: keep-all;
 }
@@ -1584,7 +1584,7 @@ button {
 .simulator-contract-action p {
   margin: 0 0 6px;
   color: #8b95a1;
-  font-size: 11px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -1599,18 +1599,33 @@ button {
 .simulator-detail-caption {
   margin: 0 0 10px;
   color: #8b95a1;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
   word-break: keep-all;
 }
 
-/* 상세 표는 금액 문자열이 열 너비를 결정한다 — 여백·자간을 조여 640px 컨테이너 안에 들어오게 한다. */
+/* 용어·환율 안내를 접어 표 아래 화면 밀도를 낮춘다. 캡션 문단 자체 스타일은 위 규칙을 그대로 쓴다. */
+.simulator-caption-details {
+  margin: 0 0 10px;
+}
+
+.simulator-caption-details summary {
+  margin: 0 0 8px;
+  color: #8b95a1;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  word-break: keep-all;
+}
+
+/* 상세 표는 금액 문자열이 열 너비를 결정한다 — 여백·자간을 조여 640px 컨테이너 안에 들어오게 한다.
+   폰트를 13px로 올린 만큼 너비 증가는 table-scroll의 가로 스크롤이 처리한다. */
 /* .card tbody td(0,1,2)를 이기려면 .card 스코프가 필요하다. */
 .card .simulator-detail-table { min-width: 0; }
 .card .simulator-detail-table thead th,
 .card .simulator-detail-table tbody th,
 .card .simulator-detail-table tbody td {
   padding: 10px 6px;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: -0.02em;
 }
