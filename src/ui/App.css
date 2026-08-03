@@ -1641,6 +1641,14 @@ button {
   word-break: keep-all;
 }
 
+.simulator-detail-note {
+  margin-left: 2px;
+  color: #8b95a1;
+  font-size: 10px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
 /* 용어·환율 안내를 접어 표 아래 화면 밀도를 낮춘다. 캡션 문단 자체 스타일은 위 규칙을 그대로 쓴다. */
 .simulator-caption-details {
   margin: 0 0 10px;

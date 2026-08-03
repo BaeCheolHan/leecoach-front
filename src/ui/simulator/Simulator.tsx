@@ -576,7 +576,10 @@ export function Simulator() {
                 <table className="info-table simulator-detail-table">
                   <thead><tr><th scope="col">항목</th>{productTypes.map((type) => <th scope="col" key={type}>{productNames[type]}</th>)}</tr></thead>
                   <tbody>{display?.result
-                    ? detailRows.map(([label, key]) => <tr key={key}><th scope="row">{label}</th>{productTypes.map((type) => <td key={type}>{won(display.result!.byProduct[type][key])}</td>)}</tr>)
+                    ? detailRows.map(([label, key]) => <tr key={key}><th scope="row">{label}</th>{productTypes.map((type) => {
+                      const isForeignEtfSaleTaxCap = key === 'saleTax' && type === 'domesticForeignEtf';
+                      return <td key={type}>{won(display.result!.byProduct[type][key])}{isForeignEtfSaleTaxCap && <span className="simulator-detail-note"> 최대</span>}</td>;
+                    })}</tr>)
                     : [
                       ['필요 금액', (type: ProductType) => display?.targetResults?.[type].requiredAmount],
                       ['증여 원금 합계', (type: ProductType) => display?.targetResults?.[type].simulated?.giftPrincipal],
@@ -606,6 +609,12 @@ export function Simulator() {
                   주가가 그대로여도 환율이 오르면 양도차익이 생겨 세금이 붙어요. 이 계산기는 환율을
                   따로 다루지 않으니 가격상승률을 원화 기준으로 넣어 주세요.
                 </p>
+                <p className="simulator-detail-caption">
+                  국내 상장 해외 ETF의 매도 세금은 실제보다 많게 나올 수 있어요. 세법은 매매차익과
+                  과세표준기준가격 기준으로 계산한 금액 중 적은 금액에 세금을 매기는데, 과세표준기준가격은
+                  운용사가 매일 고시하는 값이라 앞으로의 값을 미리 알 수 없어요. 그래서 이 계산기는
+                  매매차익만으로 계산했고, 실제 세금은 화면에 나온 금액과 같거나 더 적어요.
+                </p>
               </details>
             </div>
           </section>
@@ -634,6 +643,7 @@ export function Simulator() {
                 인출 연도에 다른 해외주식 양도소득이 없다고 보고, 해외 상장 ETF의 연 250만 원
                 기본공제를 일괄 매도 1회에 전액 적용해요.
               </li>
+              <li>국내 상장 해외 ETF의 매도 세금은 매매차익 기준으로 계산해, 실제보다 많게 잡힐 수 있어요.</li>
             </ul></div>
           </details>
           <section className="related-guides">
