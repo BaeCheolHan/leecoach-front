@@ -106,8 +106,8 @@ describe('Simulator', () => {
   it.each([
     ['아이 나이', '', '아이 나이를 입력해 주세요.'],
     ['증여 기간', '0', '증여 기간을 1년 이상 입력해 주세요.'],
-    ['국내 수익률', '', '국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
-    ['해외 수익률', '', '해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.'],
+    ['국내 수익률', '', '국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산해요.'],
+    ['해외 수익률', '', '해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산해요.'],
   ])('%s이(가) 비거나 잘못되면 그 필드를 가리키는 안내를 보여준다', (label, value, expected) => {
     render(<Simulator />);
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -208,7 +208,7 @@ describe('Simulator', () => {
 
   it('참고 수익률 기준은 급등 제외가 기본값이다', async () => {
     render(<Simulator />);
-    await userEvent.click(screen.getByText(/참고 수익률의 출처와 주의사항/));
+    await userEvent.click(screen.getByText(/참고 수익률 기준 바꾸기/));
 
     expect(screen.getByRole('radio', { name: '급등 제외' })).toHaveProperty('checked', true);
     expect(screen.getByRole('radio', { name: '최근까지' })).toHaveProperty('checked', false);
@@ -236,7 +236,7 @@ describe('Simulator', () => {
 
   it('최근까지 기준으로 바꾸면 config 순서 그대로 칩 수치가 바뀐다', async () => {
     render(<Simulator />);
-    await userEvent.click(screen.getByText(/참고 수익률의 출처와 주의사항/));
+    await userEvent.click(screen.getByText(/참고 수익률 기준 바꾸기/));
 
     await userEvent.click(screen.getByRole('radio', { name: '최근까지' }));
 

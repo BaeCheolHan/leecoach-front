@@ -115,8 +115,8 @@ function validateForm(form: FormState): string[] {
   const blank = (value: string) => value.trim() === '';
 
   if (blank(form.childAge) || number(form.childAge) < 0) errors.push('아이 나이를 입력해 주세요.');
-  if (blank(form.domesticGrowthRate)) errors.push('국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.');
-  if (blank(form.overseasGrowthRate)) errors.push('해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산합니다.');
+  if (blank(form.domesticGrowthRate)) errors.push('국내 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산해요.');
+  if (blank(form.overseasGrowthRate)) errors.push('해외 수익률을 입력해 주세요. 0을 넣으면 수익이 없는 경우로 계산해요.');
   if (blank(form.distributionRate)) errors.push('연 분배율을 입력해 주세요. 모르면 0을 넣으세요.');
 
   if (form.calculationMode === 'target') {
@@ -352,7 +352,7 @@ export function Simulator() {
           <p className="simulator-help simulator-field-full">원화 기준으로 입력해 주세요. 참고 수익률에는 환율 변동이 빠져 있어요.</p>
         </div>
         <details className="simulator-reference-details">
-          <summary>⚠️ 참고 수익률의 출처와 주의사항</summary>
+          <summary>참고 수익률 기준 바꾸기 · 출처 보기</summary>
           <div className="simulator-reference-content">
             <fieldset className="simulator-mode simulator-reference-mode">
               <legend>참고 수익률 기준</legend>
@@ -368,8 +368,8 @@ export function Simulator() {
             </ul>
             <div className="simulator-reference-warning">
               <p><strong>⚠️ 이 수치를 그대로 믿지 마세요.</strong></p>
-              <p>코스피는 2025년 +75%, 2026년 들어 두 달 만에 +40% 오르며 사상 첫 6,000선을 돌파했습니다. 나스닥도 최근 10년이 기술주 상승장으로 부풀려져 있습니다. 두 지수 모두 최근 급등을 포함한 수치와 제외한 수치를 나란히 실은 이유입니다.</p>
-              <p>지수마다 측정 기간과 출처가 다르므로 행끼리 직접 비교할 수 없습니다. 과거 수익률은 미래를 보장하지 않으며, 어느 기간을 기준으로 삼느냐에 따라 결론이 뒤집힙니다.</p>
+              <p>코스피는 2025년 +75%, 2026년 들어 두 달 만에 +40% 오르며 사상 첫 6,000선을 돌파했어요. 나스닥도 최근 10년이 기술주 상승장으로 부풀려져 있어요. 두 지수 모두 최근 급등을 포함한 수치와 제외한 수치를 나란히 실은 이유예요.</p>
+              <p>지수마다 측정 기간과 출처가 다르므로 행끼리 직접 비교할 수 없어요. 과거 수익률은 미래를 보장하지 않고, 어느 기간을 기준으로 삼느냐에 따라 결론이 뒤집혀요.</p>
             </div>
           </div>
         </details>
@@ -573,8 +573,8 @@ export function Simulator() {
           </section>
           {form.giftMethod === 'annuity' ? showContractCta && (
             <div className="simulator-contract-action">
-              <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>
               {form.calculationMode === 'target' && <p>국내 주식형 ETF 기준 필요 금액을 사용해요.</p>}
+              <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>
             </div>
           ) : (
             // 방식을 바꾸는 순간 버튼이 말없이 사라지면 고장으로 보인다 — 이유를 남긴다.

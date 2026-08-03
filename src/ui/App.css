@@ -1320,21 +1320,11 @@ button {
   pointer-events: none;
 }
 
-/* 출처 접기 안으로 옮겨졌다 — 더는 그리드 전제가 없으므로 grid-column을 걷어낸다. */
+/* 출처 접기 안으로 옮겨졌다 — 더는 그리드 전제가 없으므로 grid-column을 걷어낸다.
+   legend는 .simulator-mode legend 규칙대로 계속 시각적으로 숨긴다(접근성 이름은 유지) —
+   여기서 다시 보이게 하면 테두리 선 위에 글자가 겹쳐 보인다. */
 .simulator-reference-mode {
   margin: 0 0 10px;
-}
-
-.simulator-reference-mode legend {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 0 0 2px;
-  overflow: visible;
-  clip: auto;
-  color: #4e5968;
-  font-size: 12px;
-  font-weight: 500;
 }
 
 /* 칩 3개를 한 줄에 — 감기면 세로 공간을 먹어 결과가 첫 폴드 밖으로 밀린다. */
@@ -1564,8 +1554,9 @@ button {
   line-height: 1.7;
 }
 
-/* CTA 바가 렌더될 때만 하단 여백을 둬서 고정 바가 면책 문구·푸터를 가리지 않게 한다. */
-.simulator--has-cta { padding-bottom: 110px; }
+/* CTA 바가 렌더될 때만 하단 여백을 둬서 고정 바가 면책 문구·푸터를 가리지 않게 한다.
+   safe-area 기기에서는 CTA 바 자체가 그만큼 더 높아지므로 예약 여백도 같이 늘려야 한다. */
+.simulator--has-cta { padding-bottom: calc(110px + env(safe-area-inset-bottom)); }
 
 .simulator-contract-action {
   position: fixed;
@@ -1591,7 +1582,7 @@ button {
 }
 
 .simulator-contract-action p {
-  margin: 5px 0 0;
+  margin: 0 0 6px;
   color: #8b95a1;
   font-size: 11px;
   text-align: center;
