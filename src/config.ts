@@ -40,15 +40,17 @@ export const INDEX_REFERENCE_RETURNS = [
     recent:    { rate: 0.09,  period: '2006~2026', basis: '토탈리턴', source: '지수 레벨로 산출' },
     excluding: { rate: 0.082, period: '2002~2022', basis: '토탈리턴(배당 1.7% 포함)', source: '삼성증권' },
   },
+  // '급등 제외' 세트는 기간(2002~2022)·기준(토탈리턴)을 통일 — 코스피만 배당을 얹고
+  // 미국 지수는 뺀 채 나란히 보여주면 코스피가 20년간 미국을 이긴 것처럼 오독된다 (2026-08-03).
   {
     name: 'S&P 500', scope: 'overseas',
     recent:    { rate: 0.103, period: '1996~2026.5', basis: '배당 재투자', source: 'dqydj' },
-    excluding: { rate: 0.076, period: '2002~2022', basis: '가격지수', source: '삼성증권' },
+    excluding: { rate: 0.097, period: '2002~2022', basis: '토탈리턴(배당 재투자)', source: 'dqydj' },
   },
   {
     name: '나스닥', scope: 'overseas',
     recent:    { rate: 0.221, period: '2016~2026.6', basis: '토탈리턴', source: 'financecharts' },
-    excluding: { rate: 0.105, period: '최근 30년', basis: '명목', source: 'Bitget' },
+    excluding: { rate: 0.119, period: '2002~2022', basis: '토탈리턴(배당 재투자)', source: 'dqydj' },
   },
 ] as const;
 /** 운영 도메인 (canonical·JSON-LD 용) */

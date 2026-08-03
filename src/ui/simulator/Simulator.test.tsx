@@ -228,10 +228,10 @@ describe('Simulator', () => {
   it('해외 칩은 해외 수익률만 바꾼다', async () => {
     render(<Simulator />);
 
-    await userEvent.click(screen.getByRole('button', { name: 'S&P 500 7.6%' }));
+    await userEvent.click(screen.getByRole('button', { name: 'S&P 500 9.7%' }));
 
     expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '0');
-    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '7.6');
+    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '9.7');
   });
 
   it('최근까지 기준으로 바꾸면 config 순서 그대로 칩 수치가 바뀐다', async () => {
