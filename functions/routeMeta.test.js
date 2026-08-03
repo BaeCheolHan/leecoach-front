@@ -31,6 +31,12 @@ const expectedMeta = {
       '세뱃돈과 용돈은 어디까지 비과세일까? 쓰면 용돈, 모으면 증여 — 아이 돈 관리에서 가장 헷갈리는 비과세의 경계를 정리했습니다.',
     ogTitle: '세뱃돈과 용돈은 증여인가요? — 비과세의 경계',
   },
+  '/guide/child-benefit-account': {
+    title: '아동수당도 증여세 신고해야 하나요? — 아이 계좌로 받는 3단계 방어 전략 | 이코치맘',
+    description:
+      '아동수당은 증여세 신고 대상일까? 비과세 원리와 부모 이체로 생기는 오해, 아이 명의 계좌·자금 분리·장기 보유의 3단계 관리 전략을 정리했습니다.',
+    ogTitle: '아동수당도 증여세 신고해야 하나요? — 아이 계좌로 받는 3단계 방어 전략',
+  },
   '/guide/annuity-gift-report': {
     title: '자녀에게 매달 증여하고 세금 0원 만들기 — 유기정기금 증여 신고 가이드 | 이코치맘',
     description:
@@ -102,9 +108,9 @@ describe('routeMeta', () => {
     expect(routeMeta).toEqual(expectedMeta);
   });
 
-  it('contains all eleven guide routes and the three top-level content routes', () => {
-    expect(Object.keys(routeMeta)).toHaveLength(14);
-    expect(Object.keys(routeMeta).filter((path) => path.startsWith('/guide'))).toHaveLength(11);
+  it('contains all twelve guide routes and the three top-level content routes', () => {
+    expect(Object.keys(routeMeta)).toHaveLength(15);
+    expect(Object.keys(routeMeta).filter((path) => path.startsWith('/guide'))).toHaveLength(12);
     expect(routeMeta['/about']).toBeDefined();
     expect(routeMeta['/privacy']).toBeDefined();
     expect(routeMeta['/simulator']).toBeDefined();

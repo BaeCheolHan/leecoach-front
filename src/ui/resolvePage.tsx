@@ -24,6 +24,9 @@ export const PAGES: Record<string, ComponentType> = {
     import('./guide/MarriageBirthDeduction').then((m) => ({ default: m.MarriageBirthDeduction })),
   ),
   '/guide/tax-free-money': lazy(() => import('./guide/TaxFreeMoney').then((m) => ({ default: m.TaxFreeMoney }))),
+  '/guide/child-benefit-account': lazy(() =>
+    import('./guide/ChildBenefitAccount').then((m) => ({ default: m.ChildBenefitAccount })),
+  ),
   '/guide/grandparent-gift': lazy(() =>
     import('./guide/GrandparentGift').then((m) => ({ default: m.GrandparentGift })),
   ),
