@@ -4,6 +4,8 @@ export type Relation = '부' | '모' | '자' | '손' | '조부' | '조모' | '�
 
 export interface DeductionJudgement {
   limit: number;
+  /** 기존 증여(10년 통산)를 차감하고 이번 증여에 실제로 쓸 수 있는 한도 */
+  available: number;
   within: boolean;
   excess: number;
   minorApplied: boolean;
@@ -33,14 +35,20 @@ export function deductionLimit(relation: Relation, minor: boolean): number {
   }
 }
 
+/**
+ * priorGifts: 최근 10년 내 같은 증여자에게 받은 다른 증여액(상증세법 §53의 공제 한도 통산).
+ * 한도 차감까지만 반영한다 — 과세표준 합산(§47③)과 기납부세액공제는 다루지 않는다.
+ */
 export function judgeDeduction(
-  totalDiscounted: number, relation: Relation, minor: boolean,
+  totalDiscounted: number, relation: Relation, minor: boolean, priorGifts = 0,
 ): DeductionJudgement {
   const limit = deductionLimit(relation, minor);
-  const within = totalDiscounted <= limit;
-  const excess = within ? 0 : totalDiscounted - limit;
+  const available = Math.max(0, limit - priorGifts);
+  const within = totalDiscounted <= available;
+  const excess = within ? 0 : totalDiscounted - available;
   return {
     limit,
+    available,
     within,
     excess,
     minorApplied: minor && (relation === '자' || relation === '손'),

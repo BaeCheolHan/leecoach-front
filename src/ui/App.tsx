@@ -3,7 +3,7 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema, type FormValues } from './schema';
 import { loadDraft, saveDraft } from '../storage/draft';
-import { loadToContract } from '../storage/simHandoff';
+import { loadToContract, type ToContract } from '../storage/simHandoff';
 import { InAppBrowserNotice } from './InAppBrowserNotice';
 import { SiteHeader } from './SiteHeader';
 import { SiteFooter } from './SiteFooter';
@@ -16,11 +16,21 @@ const Step3Result = lazy(() => import('./steps/Step3Result').then((m) => ({ defa
 const STEP1_FIELDS = ['donor', 'donee'] as const;
 const STEP2_FIELDS = ['terms'] as const;
 
+// sessionStorage 값은 유효한 JSON이어도 형태가 어긋날 수 있다({} 등).
+// 화면에서 monthlyAmount.toLocaleString()을 그대로 호출하므로 형태를 검증해야 크래시를 막는다.
+function isValidContractHandoff(handoff: ToContract | null): handoff is ToContract {
+  return handoff !== null
+    && Number.isFinite(handoff.monthlyAmount)
+    && typeof handoff.startDate === 'string' && handoff.startDate !== ''
+    && typeof handoff.endDate === 'string' && handoff.endDate !== '';
+}
+
 export default function App() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [initial] = useState(() => {
     const draft = loadDraft();
-    const handoff = loadToContract();
+    const rawHandoff = loadToContract();
+    const handoff = isValidContractHandoff(rawHandoff) ? rawHandoff : null;
     const empty: FormValues = {
       donor: { name: '', rrn: '', address: '', phone: '' },
       donee: { name: '', rrn: '', address: '', phone: '', relation: undefined as never },
@@ -31,9 +41,12 @@ export default function App() {
     const values = draft ?? empty;
     return {
       draft,
+      handoff,
       values: handoff ? { ...values, terms: { ...values.terms, ...handoff } } : values,
     };
   });
+  // 시뮬레이터에서 넘어온 조건 안내 — 값은 2단계에 있어 안내가 없으면 넘어왔는지 알 수 없다.
+  const [showHandoff, setShowHandoff] = useState(() => initial.handoff !== null);
   // 의미 있는 내용이 복원됐을 때만 안내 (빈 초안 저장분은 제외)
   const [showRestored, setShowRestored] = useState(
     () => !!(initial.draft && (initial.draft.donor?.name || initial.draft.donee?.name || initial.draft.terms?.monthlyAmount)),
@@ -104,6 +117,18 @@ export default function App() {
           <a className="first-timer" href="/guide/annuity-gift-report">
             유기정기금 증여가 처음이신가요? <b>가이드 먼저 보기 →</b>
           </a>
+        )}
+        {step === 1 && showHandoff && initial.handoff && (
+          <div className="restored-notice" role="status">
+            <p>
+              시뮬레이터에서 계산한 조건(월 ₩{initial.handoff.monthlyAmount.toLocaleString('ko-KR')} ·{' '}
+              {initial.handoff.startDate} ~ {initial.handoff.endDate})을 가져왔어요. 인적사항만
+              입력하면 됩니다.
+            </p>
+            <button type="button" aria-label="안내 닫기" onClick={() => setShowHandoff(false)}>
+              ✕
+            </button>
+          </div>
         )}
         {step === 1 && showRestored && (
           <div className="restored-notice" role="status">

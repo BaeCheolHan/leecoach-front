@@ -22,6 +22,8 @@ export interface SimulateInput {
   lumpSumAmount?: number;
   giftDate?: string;
   childBirthDate: string;
+  /** 최근 10년 내 같은 증여자에게 받은 다른 증여액 — 공제 한도에서 차감 (미입력 시 0) */
+  priorGifts?: number;
   /** 국내 주식형 ETF에 적용할 연 가격상승률 */
   domesticGrowthRate: number;
   /** 해외 지수를 추종하는 ETF에 적용할 연 가격상승률 (국내 상장·해외 상장 공통) */
@@ -93,6 +95,9 @@ export function validateSimulateInput(input: SimulateInput): string[] {
   if (!isNonNegative(input.distributionRate) || input.distributionRate > 1) {
     errors.push('분배율은 0% 이상 100% 이하여야 합니다');
   }
+  if (input.priorGifts !== undefined && !isNonNegative(input.priorGifts)) {
+    errors.push('기존 증여액은 0 이상이어야 합니다');
+  }
 
   let giftEndDate: string | undefined;
   if (input.giftMethod === 'annuity') {
@@ -151,7 +156,7 @@ export function simulate(input: SimulateInput): SimulateResult {
   }
 
   const minor = isMinor(input.childBirthDate, giftStartDate);
-  const deduction = judgeDeduction(giftValuation, '자', minor);
+  const deduction = judgeDeduction(giftValuation, '자', minor, input.priorGifts ?? 0);
   const rawProducts = {} as Record<ProductType, RawProductResult>;
   const startYear = Number(giftStartDate.slice(0, 4));
   const endYear = Math.max(...contributions.keys());

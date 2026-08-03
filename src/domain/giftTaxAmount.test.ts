@@ -5,6 +5,7 @@ import { giftTaxAmount } from './giftTaxAmount';
 
 const judgement = (excess: number, overrides: Partial<DeductionJudgement> = {}): DeductionJudgement => ({
   limit: 20_000_000,
+  available: 20_000_000,
   within: false,
   excess,
   minorApplied: true,

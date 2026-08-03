@@ -7,8 +7,10 @@ import {
   type ProductType,
   type SimulateInput,
 } from '../../domain/simulate';
+import { maxAnnuityMonthlyWithinLimit } from '../../domain/limitPlanner';
 import { solveTargetAmount, type SolveTargetResult } from '../../domain/solveTarget';
 import { loadToSimulator, saveToContract } from '../../storage/simHandoff';
+import { ARTICLES } from '../guide/articles';
 import { koreanAmount, presetEndDate } from '../format';
 import { SiteHeader } from '../SiteHeader';
 import { usePageMeta } from '../usePageMeta';
@@ -37,6 +39,16 @@ const detailRows: [string, keyof ProductResult][] = [
   ['매도 세금', 'saleTax'],
   ['세후 금액', 'afterTax'],
 ];
+
+/**
+ * 계산 다음 행동으로 이어지는 무료 가이드 2편 고정 (2단계 기획 §4 C2 — 사용자 결정).
+ * 유료 매뉴얼 홍보는 도구 페이지에 두지 않는다.
+ */
+const RELATED_GUIDE_PATHS = ['/guide/annuity-gift-report', '/guide/minor-stock-account'];
+// 계산 다음 행동이 신고이므로 신고 가이드가 먼저 — ARTICLES 순서가 아니라 이 배열 순서를 따른다.
+const relatedGuides = RELATED_GUIDE_PATHS
+  .map((path) => ARTICLES.find((article) => article.path === path))
+  .filter((article) => article !== undefined);
 
 const won = (value: number) => `₩${Math.round(value).toLocaleString('ko-KR')}`;
 /** 비율(0.082) → 화면·입력용 퍼센트 문자열. 그냥 ×100 하면 8.200000000000001이 노출된다. */
@@ -86,6 +98,7 @@ interface FormState {
   lumpSumAmount: number;
   giftDate: string;
   childAge: string;
+  priorGifts: number;
   domesticGrowthRate: string;
   overseasGrowthRate: string;
   distributionRate: string;
@@ -120,11 +133,12 @@ function validateForm(form: FormState): string[] {
   return errors;
 }
 
-function AmountInput({ id, label, value, onChange }: {
+function AmountInput({ id, label, value, onChange, help }: {
   id: string;
   label: string;
   value: number;
   onChange: (value: number) => void;
+  help?: string;
 }) {
   return (
     <div className="simulator-field">
@@ -140,6 +154,7 @@ function AmountInput({ id, label, value, onChange }: {
         }}
       />
       {value > 0 && <p className="amount-hint">{koreanAmount(value)}</p>}
+      {help && <p className="simulator-help">{help}</p>}
     </div>
   );
 }
@@ -160,6 +175,7 @@ export function Simulator() {
     lumpSumAmount: 24_000_000,
     giftDate: defaultStartDate,
     childAge: handoff?.childBirthDate ? ageFromBirthDate(handoff.childBirthDate) : '5',
+    priorGifts: 0,
     domesticGrowthRate: '0',
     overseasGrowthRate: '0',
     distributionRate: '0',
@@ -196,6 +212,7 @@ export function Simulator() {
     lumpSumAmount: form.lumpSumAmount,
     giftDate: form.giftDate,
     childBirthDate,
+    priorGifts: form.priorGifts,
     domesticGrowthRate: percent(form.domesticGrowthRate),
     overseasGrowthRate: percent(form.overseasGrowthRate),
     distributionRate: percent(form.distributionRate),
@@ -252,6 +269,15 @@ export function Simulator() {
   const staleClass = stale ? ' simulator-stale' : '';
   const bothGrowthRatesZero = percent(form.domesticGrowthRate) === 0
     && percent(form.overseasGrowthRate) === 0;
+  // "세금 없이 월 얼마까지?"에 대한 답 — 상품·수익률과 무관한 세법 산술이라 권유가 아니다.
+  const availableLimit = display?.result?.deduction.available ?? null;
+  const maxMonthly = useMemo(() => {
+    if (form.giftMethod !== 'annuity' || availableLimit === null || !form.startDate || !endDate) return null;
+    return maxAnnuityMonthlyWithinLimit(
+      { startDate: form.startDate, endDate, paymentDay: form.paymentDay },
+      availableLimit,
+    );
+  }, [availableLimit, endDate, form.giftMethod, form.paymentDay, form.startDate]);
   const applyReferenceRate = (scope: 'domestic' | 'overseas', rate: number) => {
     update(scope === 'domestic' ? 'domesticGrowthRate' : 'overseasGrowthRate', ratePercent(rate));
   };
@@ -407,6 +433,13 @@ export function Simulator() {
             </div>
           )}
           <div className="simulator-advanced-grid">
+            <AmountInput
+              id="sim-prior-gifts"
+              label="10년 내 기존 증여"
+              value={form.priorGifts}
+              onChange={(value) => update('priorGifts', value)}
+              help="같은 증여자(부모)가 최근 10년 안에 이 아이에게 증여한 금액입니다. 공제 한도에서 차감합니다."
+            />
             {/* 단위는 기본 조건과 같이 입력창 안에 둔다 — 라벨에 괄호로 넣으면 표기가 섞인다. */}
             <div className="simulator-field">
               <label htmlFor="sim-distribution">연 분배율</label>
@@ -436,11 +469,30 @@ export function Simulator() {
             <div className="simulator-breakdown-body">
               {display?.result && <div className="simulator-deduction">
                 <dl>
-                  <div><dt>공제 한도 판정</dt><dd className={display.result.deduction.within ? undefined : 'simulator-deduction-excess'}>{display.result.deduction.within ? `한도 이내 (${won(display.result.deduction.limit)})` : `한도 초과 ${won(display.result.deduction.excess)}`}</dd></div>
+                  <div><dt>공제 한도 판정</dt><dd className={display.result.deduction.within ? undefined : 'simulator-deduction-excess'}>{display.result.deduction.within ? `한도 이내 (${won(display.result.deduction.available)})` : `한도 초과 ${won(display.result.deduction.excess)}`}</dd></div>
                 </dl>
-                {!display.result.deduction.within && (
-                  <p className="simulator-help">증여재산 평가액이 공제 한도 {won(display.result.deduction.limit)}을 넘어, 넘는 금액에 증여세가 계산됩니다.</p>
+                {!stale && form.priorGifts > 0 && (
+                  <p className="simulator-help">공제 한도 {won(display.result.deduction.limit)}에서 기존 증여를 차감해 남은 한도 {won(display.result.deduction.available)} 기준입니다.</p>
                 )}
+                {!display.result.deduction.within && (
+                  <p className="simulator-help">증여재산 평가액이 남은 공제 한도 {won(display.result.deduction.available)}을 넘어, 넘는 금액에 증여세가 계산됩니다.</p>
+                )}
+                {!stale && form.giftMethod === 'annuity' && maxMonthly !== null && (maxMonthly > 0 ? (
+                  <p className="simulator-limit-hint">
+                    이 조건에서는 월 {won(maxMonthly)}까지 한도 이내입니다.
+                    {form.monthlyAmount !== maxMonthly && <button type="button" onClick={() => update('monthlyAmount', maxMonthly)}>이 금액 적용</button>}
+                  </p>
+                ) : (
+                  <p className="simulator-limit-hint">남은 공제 한도가 부족해 한도 이내 월 지급액이 없습니다.</p>
+                ))}
+                {!stale && form.giftMethod === 'lumpSum' && (display.result.deduction.available > 0 ? (
+                  <p className="simulator-limit-hint">
+                    이번에 {won(display.result.deduction.available)}까지 한도 이내입니다.
+                    {form.lumpSumAmount !== display.result.deduction.available && <button type="button" onClick={() => update('lumpSumAmount', display.result!.deduction.available)}>이 금액 적용</button>}
+                  </p>
+                ) : (
+                  <p className="simulator-limit-hint">기존 증여로 남은 공제 한도가 없습니다.</p>
+                ))}
               </div>}
               {/* 설명은 table-scroll 밖에 둔다 — 안에 넣으면 표 너비를 따라가 가로로 잘린다. */}
               <p className="simulator-detail-caption">
@@ -485,11 +537,25 @@ export function Simulator() {
               <li>증여세는 별도 납부하는 것으로 보고 투자 원금에서 빼지 않았습니다.</li>
               <li>부모가 자녀에게 증여하는 경우를 기준으로 계산합니다.</li>
               <li>
+                기존 증여는 '자세히 설정'에 입력한 금액만 공제 한도에서 차감합니다.
+                과세표준 합산과 기납부세액공제는 반영하지 않습니다.
+              </li>
+              <li>
                 <b>환율은 따로 계산하지 않습니다.</b> 모든 금액이 원화 기준이므로, 해외 상장 ETF를
                 볼 때는 가격상승률에 환율 변동까지 포함한 원화 기준 수치를 넣어야 합니다.
               </li>
             </ul></div>
           </details>
+          <section className="related-guides">
+            <h2>다음 단계</h2>
+            {relatedGuides.map((article) => (
+              <a key={article.path} className="card guide-card" href={article.path}>
+                <h3>{article.title}</h3>
+                <p>{article.summary}</p>
+                <span className="guide-more">읽어보기 →</span>
+              </a>
+            ))}
+          </section>
           {form.giftMethod === 'annuity' ? !stale && (
             <div className="simulator-contract-action">
               <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>

@@ -195,6 +195,29 @@ describe('simulate', () => {
   });
 });
 
+describe('기존 증여(10년 통산) 차감', () => {
+  it('기존 증여액만큼 남은 한도가 줄어 초과·증여세가 커진다', () => {
+    const base = simulate(lumpSumInput({ lumpSumAmount: 15_000_000 }));
+    const withPrior = simulate(lumpSumInput({ lumpSumAmount: 15_000_000, priorGifts: 10_000_000 }));
+
+    expect(base.deduction.within).toBe(true);
+    expect(withPrior.deduction.available).toBe(10_000_000);
+    expect(withPrior.deduction.within).toBe(false);
+    expect(withPrior.deduction.excess).toBe(5_000_000);
+    expect(withPrior.giftTax.payable).toBeGreaterThan(0);
+  });
+
+  it('기존 증여 미입력은 0으로 본다', () => {
+    expect(simulate(lumpSumInput()).deduction.available)
+      .toBe(simulate(lumpSumInput({ priorGifts: 0 })).deduction.available);
+  });
+
+  it('음수 기존 증여는 검증 오류', () => {
+    expect(validateSimulateInput(lumpSumInput({ priorGifts: -1 })))
+      .toContain('기존 증여액은 0 이상이어야 합니다');
+  });
+});
+
 describe('validateSimulateInput', () => {
   it('인출 연도 직전 해 말에 증여가 끝나는 경계는 허용한다', () => {
     expect(validateSimulateInput(annuityInput())).toEqual([]);

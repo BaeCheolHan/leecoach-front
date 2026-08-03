@@ -257,11 +257,50 @@ describe('Simulator', () => {
     expect(screen.queryByRole('button', { name: '이 조건으로 계약서 만들기' })).toBeNull();
   });
 
+  it('stale 상태에서는 기존 증여 차감 설명을 표시하지 않는다 — 현재 입력과 이전 결과가 섞인 거짓 문장 방지', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByText('자세히 설정'));
+    await userEvent.type(screen.getByLabelText('10년 내 기존 증여'), '5000000');
+    expect(screen.getByText(/기존 증여를 차감해 남은 한도/)).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('아이 나이'), { target: { value: '' } });
+    expect(screen.queryByText(/기존 증여를 차감해 남은 한도/)).toBeNull();
+  });
+
   it('일시금 선택 시 계약서 미제공 이유를 안내한다', async () => {
     render(<Simulator />);
     await userEvent.click(screen.getByText('자세히 설정'));
     await userEvent.click(screen.getByRole('radio', { name: /현금 일시금/ }));
 
     expect(screen.getByText('계약서 만들기는 유기정기금 방식에서만 제공됩니다.')).toBeTruthy();
+  });
+
+  it('기존 증여를 입력하면 남은 한도 기준으로 판정한다', async () => {
+    render(<Simulator />);
+    await userEvent.click(screen.getByText('자세히 설정'));
+    await userEvent.type(screen.getByLabelText('10년 내 기존 증여'), '5000000');
+
+    expect(screen.getByText(/기존 증여를 차감해 남은 한도 ₩15,000,000 기준/)).toBeTruthy();
+    expect(screen.getByText(/한도 초과/)).toBeTruthy();
+  });
+
+  it('한도 내 최대 월액을 안내하고, 적용하면 매월 증여액이 바뀐다', async () => {
+    render(<Simulator />);
+    const hint = screen.getByText(/이 조건에서는 월 ₩[\d,]+까지 한도 이내입니다/);
+    expect(hint).toBeTruthy();
+
+    const maxAmount = hint.textContent!.match(/₩([\d,]+)/)![1];
+    await userEvent.click(screen.getByRole('button', { name: '이 금액 적용' }));
+
+    expect(screen.getByLabelText('매월 증여액')).toHaveProperty('value', maxAmount);
+    expect(screen.getByText(/한도 이내 \(/)).toBeTruthy();
+    // 이미 최대액이면 적용 버튼은 사라진다
+    expect(screen.queryByRole('button', { name: '이 금액 적용' })).toBeNull();
+  });
+
+  it('결과 아래에 다음 단계 가이드 2편을 연결한다', () => {
+    render(<Simulator />);
+    expect(screen.getByRole('link', { name: /유기정기금 증여 신고 가이드/ })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /미성년 자녀 주식계좌 만들기/ })).toBeTruthy();
   });
 });

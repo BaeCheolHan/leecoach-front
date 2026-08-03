@@ -1485,6 +1485,29 @@ button {
 
 .simulator-deduction dd.simulator-deduction-excess { color: #f04452; }
 
+/* 한도 내 최대액 안내 — 세법 산술 정보이지 추천이 아니므로 강조색을 쓰지 않는다. */
+.simulator-limit-hint {
+  margin: 8px 0 0;
+  color: #4e5968;
+  font-size: 13px;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.simulator-limit-hint button {
+  margin-left: 6px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #f2f8ff;
+  color: #3182f6;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.simulator-limit-hint button:active { background: #d9eaff; }
+
 .simulator-breakdown .table-scroll { margin: 0; }
 .simulator-breakdown table { min-width: 620px; }
 .simulator-breakdown th:first-child { text-align: left; }

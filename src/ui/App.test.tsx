@@ -76,4 +76,19 @@ describe('App 스텝 흐름', () => {
     expect(screen.getByLabelText('매월 지급일')).toHaveProperty('value', '15');
     expect(sessionStorage.getItem(CONTRACT_HANDOFF_KEY)).toBeNull();
   });
+
+  it('시뮬레이터 핸드오프가 있으면 가져온 조건을 안내한다 — 값이 2단계에 있어 안내 없이는 알 수 없다', () => {
+    sessionStorage.setItem(CONTRACT_HANDOFF_KEY, JSON.stringify({
+      startDate: '2026-09-01', endDate: '2036-08-31', paymentDay: 1, monthlyAmount: 200000,
+    }));
+    render(<App />);
+    expect(screen.getByText(/시뮬레이터에서 계산한 조건/)).toBeTruthy();
+    expect(screen.getByText(/₩200,000/)).toBeTruthy();
+    expect(screen.getByText(/2026-09-01 ~ 2036-08-31/)).toBeTruthy();
+  });
+
+  it('핸드오프가 없으면 시뮬레이터 안내를 표시하지 않는다', () => {
+    render(<App />);
+    expect(screen.queryByText(/시뮬레이터에서 계산한 조건/)).toBeNull();
+  });
 });

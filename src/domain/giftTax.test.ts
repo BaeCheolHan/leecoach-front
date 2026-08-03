@@ -20,7 +20,7 @@ describe('deductionLimit', () => {
 describe('judgeDeduction', () => {
   it('한도 이내: 미성년 자녀에게 평가액 1,999만원', () => {
     expect(judgeDeduction(19_990_000, '자', true)).toEqual({
-      limit: 20_000_000, within: true, excess: 0, minorApplied: true, underTaxMin: false,
+      limit: 20_000_000, available: 20_000_000, within: true, excess: 0, minorApplied: true, underTaxMin: false,
     });
   });
   it('한도 정확히 도달은 이내로 본다', () => {
@@ -28,8 +28,29 @@ describe('judgeDeduction', () => {
   });
   it('한도 초과: 초과액을 계산한다', () => {
     expect(judgeDeduction(23_000_000, '자', true)).toEqual({
-      limit: 20_000_000, within: false, excess: 3_000_000, minorApplied: true, underTaxMin: false,
+      limit: 20_000_000, available: 20_000_000, within: false, excess: 3_000_000, minorApplied: true, underTaxMin: false,
     });
+  });
+});
+
+describe('judgeDeduction — 기존 증여(10년 통산) 차감', () => {
+  it('기존 증여액만큼 남은 한도가 줄어든다', () => {
+    const j = judgeDeduction(16_000_000, '자', true, 5_000_000);
+    expect(j.available).toBe(15_000_000);
+    expect(j.within).toBe(false);
+    expect(j.excess).toBe(1_000_000);
+  });
+  it('남은 한도와 정확히 같으면 이내', () => {
+    expect(judgeDeduction(15_000_000, '자', true, 5_000_000).within).toBe(true);
+  });
+  it('기존 증여가 한도 이상이면 남은 한도 0 — 평가액 전액이 초과', () => {
+    const j = judgeDeduction(1_000_000, '자', true, 25_000_000);
+    expect(j.available).toBe(0);
+    expect(j.within).toBe(false);
+    expect(j.excess).toBe(1_000_000);
+  });
+  it('기존 증여 미입력(기본 0)이면 남은 한도 = 전체 한도', () => {
+    expect(judgeDeduction(19_990_000, '자', true).available).toBe(20_000_000);
   });
 });
 
