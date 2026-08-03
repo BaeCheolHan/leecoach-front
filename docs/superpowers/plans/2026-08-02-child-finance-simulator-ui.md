@@ -1,7 +1,5 @@
 # Child Finance Simulator UI Implementation Plan
 
-> **For Codex:** REQUIRED SUB-SKILL: Use superpowers:test-driven-development task-by-task and superpowers:verification-before-completion before reporting.
-
 **Goal:** 완성된 증여자산 계산 도메인 위에 입력·비교 결과 UI와 계약서 도구 간 안전한 양방향 승계를 추가한다.
 
 **Architecture:** `/simulator`는 lazy 로드되는 독립 단일 페이지이며, 폼 상태를 `SimulateInput`으로 변환해 검증 후 `useMemo`에서 즉시 계산한다. 도구 간 값은 개인정보를 제외한 허용 필드만 별도 `sessionStorage` 키에 일회성으로 저장한다.
