@@ -1355,6 +1355,16 @@ button {
   border-top: 1px solid #f2f4f6;
 }
 
+.simulator-derived-note {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #f2f4f6;
+  color: #4e5968;
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
 .simulator-reference-details summary {
   min-height: 44px;
   padding: 12px 0 0;

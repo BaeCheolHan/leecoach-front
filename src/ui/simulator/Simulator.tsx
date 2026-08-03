@@ -57,6 +57,23 @@ const percent = (value: string) => value.trim() === '' ? Number.NaN : Number(val
 const number = (value: string) => value.trim() === '' ? Number.NaN : Number(value);
 const pad = (value: number) => String(value).padStart(2, '0');
 const localDate = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+/** 'YYYY-MM-DD' → 'YYYY년 M월'. 값이 없거나 형식이 아니면 빈 문자열. */
+const yearMonthLabel = (dateStr: string): string => {
+  const [year, month] = dateStr.split('-').map(Number);
+  return Number.isFinite(year) && Number.isFinite(month) ? `${year}년 ${month}월` : '';
+};
+
+/**
+ * 수익률 기본값은 0(수익 없음)이 아니라 급등 제외 참고값으로 시작한다 — 사용자가
+ * 아무 조건도 만지지 않아도 현실적인 결과를 먼저 보게 하려는 결정(2026-08-03).
+ * 코스피·S&P 500 칩의 isSelected 비교(값 일치)와 자연히 맞물려 두 칩이 선택 상태로 보인다.
+ */
+const referenceRateFor = (name: string): string => {
+  const index = INDEX_REFERENCE_RETURNS.find((entry) => entry.name === name);
+  return index ? ratePercent(index.excluding.rate) : '0';
+};
+const DEFAULT_DOMESTIC_GROWTH_RATE = referenceRateFor('코스피');
+const DEFAULT_OVERSEAS_GROWTH_RATE = referenceRateFor('S&P 500');
 
 function nextMonthFirst(): string {
   const date = new Date();
@@ -176,8 +193,8 @@ export function Simulator() {
     giftDate: defaultStartDate,
     childAge: handoff?.childBirthDate ? ageFromBirthDate(handoff.childBirthDate) : '5',
     priorGifts: 0,
-    domesticGrowthRate: '0',
-    overseasGrowthRate: '0',
+    domesticGrowthRate: DEFAULT_DOMESTIC_GROWTH_RATE,
+    overseasGrowthRate: DEFAULT_OVERSEAS_GROWTH_RATE,
     distributionRate: '0',
     withdrawalAge: '',
   }));
@@ -203,6 +220,23 @@ export function Simulator() {
   const withdrawalAge = form.withdrawalAge === ''
     ? String(Math.max(ADULT_AGE, minWithdrawalAge))
     : form.withdrawalAge;
+  /**
+   * 조건 입력값을 문장으로 되짚어 준다 — 각 필드는 흩어져 있어 "결국 언제부터 언제까지,
+   * 몇 살에 인출하는 계산인지"를 한눈에 확인할 곳이 없었다. 날짜·나이 중 하나라도
+   * 무효(NaN 등)면 잘못된 문장을 보여주는 대신 렌더하지 않는다.
+   */
+  const derivedNote = (() => {
+    const withdrawalAgeNumber = number(withdrawalAge);
+    if (!Number.isFinite(withdrawalAgeNumber)) return null;
+    if (form.giftMethod === 'annuity') {
+      const startLabel = yearMonthLabel(form.startDate);
+      if (!startLabel || !Number.isFinite(minWithdrawalAge) || minWithdrawalAge <= 0) return null;
+      return `${startLabel}부터 만 ${minWithdrawalAge}세까지 매월 증여하고, 만 ${withdrawalAgeNumber}세에 인출한다고 가정해요.`;
+    }
+    const giftDateLabel = yearMonthLabel(form.giftDate);
+    if (!giftDateLabel) return null;
+    return `${giftDateLabel}에 한 번에 증여하고, 만 ${withdrawalAgeNumber}세에 인출한다고 가정해요.`;
+  })();
   const input = useMemo<SimulateInput>(() => ({
     giftMethod: form.giftMethod,
     monthlyAmount: form.monthlyAmount,
@@ -330,7 +364,7 @@ export function Simulator() {
             )}
           </div>
           {/* 수익률도 다른 조건과 같은 숫자 입력으로 둔다. 슬라이더는 ±20% 범위에서 1스텝이
-              3.9px라 원하는 값을 집을 수 없었다. 기본값 0은 수익을 제시하지 않기 위함이다. */}
+              3.9px라 원하는 값을 집을 수 없었다. 기본값은 급등 제외 참고값(코스피·S&P 500)이다. */}
           <div className="simulator-field">
             <label htmlFor="sim-domestic-growth">국내 수익률</label>
             <div className="simulator-unit-input"><input id="sim-domestic-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.domesticGrowthRate} onChange={(event) => update('domesticGrowthRate', event.target.value)} /><span>%</span></div>
@@ -373,6 +407,7 @@ export function Simulator() {
             </div>
           </div>
         </details>
+        {derivedNote && <p className="simulator-derived-note">{derivedNote}</p>}
       </section>
 
       {calculation.errors.length > 0 && (
@@ -562,6 +597,10 @@ export function Simulator() {
               <li>
                 <b>환율은 따로 계산하지 않아요.</b> 모든 금액이 원화 기준이므로, 해외 상장 ETF를
                 볼 때는 가격상승률에 환율 변동까지 포함한 원화 기준 수치를 넣어야 해요.
+              </li>
+              <li>
+                인출 연도에 다른 해외주식 양도소득이 없다고 보고, 해외 상장 ETF의 연 250만 원
+                기본공제를 일괄 매도 1회에 전액 적용해요.
               </li>
             </ul></div>
           </details>

@@ -29,8 +29,10 @@ describe('Simulator', () => {
     expect(screen.queryByRole('button', { name: /계산|제출/ })).toBeNull();
   });
 
-  it('초기(수익률 0)에는 히어로 세후 금액이 단일 금액으로 표시된다', () => {
+  it('두 수익률을 0으로 두면 히어로 세후 금액이 단일 금액으로 표시된다', () => {
     render(<Simulator />);
+    fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '0' } });
+    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '0' } });
     const summary = screen.getByTestId('simulator-result-summary');
 
     expect(within(summary).getByText('인출 시점 세후 금액')).toBeTruthy();
@@ -45,12 +47,16 @@ describe('Simulator', () => {
     expect(within(summary).getByText(/^₩[\d,]+ ~ ₩[\d,]+$/, { selector: '.simulator-hero-value' })).toBeTruthy();
   });
 
-  it('국내·해외 수익률은 투자 수익률을 제시하지 않고 0에서 시작한다', () => {
+  it('수익률 기본값은 급등 제외 참고값이고 해당 칩이 선택 상태다', () => {
     render(<Simulator />);
     const growthInputs = ['국내 수익률', '해외 수익률']
       .map((label) => screen.getByLabelText(label) as HTMLInputElement);
 
-    expect(growthInputs.every((input) => input.value === '0')).toBe(true);
+    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '8.2');
+    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '9.7');
+    expect(screen.getByRole('button', { name: '코스피 8.2%' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'S&P 500 9.7%' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: /^나스닥/ }).getAttribute('aria-pressed')).toBe('false');
     // 다른 조건과 같은 숫자 입력이어야 원하는 값을 정확히 넣을 수 있다.
     expect(growthInputs.every((input) => input.type === 'number')).toBe(true);
     expect(growthInputs.every((input) => input.min === '-30')).toBe(true);
@@ -84,6 +90,14 @@ describe('Simulator', () => {
     expect(screen.getByRole('heading', { name: '상세 내역' })).toBeTruthy();
     expect(screen.getByText('상세 내역').closest('details')).toBeNull();
     expect(screen.getByRole('row', { name: /매도 세금/ })).toBeTruthy();
+  });
+
+  it('기본 조건(5세, 증여 10년)에서 파생 조건 요약 문장을 보여준다', () => {
+    render(<Simulator />);
+
+    // 연도는 실행 시점에 따라 달라지므로 나이 부분만 단언한다.
+    expect(screen.getByText(/만 15세까지/)).toBeTruthy();
+    expect(screen.getByText(/만 19세에 인출/)).toBeTruthy();
   });
 
   // 아래 두 묶음은 "사용자가 실제로 넣을 값"을 전수로 밟는다.
@@ -221,7 +235,7 @@ describe('Simulator', () => {
     await userEvent.click(chip);
 
     expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '8.2');
-    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '0');
+    expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '9.7');
     expect(chip.getAttribute('aria-pressed')).toBe('true');
   });
 
@@ -230,7 +244,7 @@ describe('Simulator', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'S&P 500 9.7%' }));
 
-    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '0');
+    expect(screen.getByLabelText('국내 수익률')).toHaveProperty('value', '8.2');
     expect(screen.getByLabelText('해외 수익률')).toHaveProperty('value', '9.7');
   });
 
@@ -256,11 +270,15 @@ describe('Simulator', () => {
   });
 
   it('세금 차이 힌트는 국내·해외 수익률이 모두 0일 때만 보인다', () => {
-    const { rerender } = render(<Simulator />);
+    render(<Simulator />);
+    expect(screen.queryByText('수익률을 올려보면 상품별 세금 차이가 나타나요.')).toBeNull();
+
+    fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '0' } });
+    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '0' } });
     expect(screen.getByText('수익률을 올려보면 상품별 세금 차이가 나타나요.')).toBeTruthy();
 
-    fireEvent.change(screen.getByLabelText('해외 수익률'), { target: { value: '5' } });
-    rerender(<Simulator />);
+    // 하나만 0이 아니면 다시 숨는다 — '모두 0일 때만'이 &&이지 ||가 아님을 확인한다.
+    fireEvent.change(screen.getByLabelText('국내 수익률'), { target: { value: '5' } });
     expect(screen.queryByText('수익률을 올려보면 상품별 세금 차이가 나타나요.')).toBeNull();
   });
 
