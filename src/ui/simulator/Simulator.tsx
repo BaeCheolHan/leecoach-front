@@ -364,7 +364,10 @@ export function Simulator() {
             )}
           </div>
           {/* 수익률도 다른 조건과 같은 숫자 입력으로 둔다. 슬라이더는 ±20% 범위에서 1스텝이
-              3.9px라 원하는 값을 집을 수 없었다. 기본값은 급등 제외 참고값(코스피·S&P 500)이다. */}
+              3.9px라 원하는 값을 집을 수 없었다. 기본값은 급등 제외 참고값(코스피·S&P 500)이다.
+              기본값이 채워진 입력창이 계산된 값처럼 보이고 칩이 라디오처럼 읽혀 직접 입력
+              가능하다는 게 드러나지 않는다는 리뷰가 있어, 질문형 그룹 라벨을 앞에 둔다. */}
+          <p className="simulator-group-label simulator-field-full">연 수익률을 얼마로 가정할까요?</p>
           <div className="simulator-field">
             <label htmlFor="sim-domestic-growth">국내 수익률</label>
             <div className="simulator-unit-input"><input id="sim-domestic-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.domesticGrowthRate} onChange={(event) => update('domesticGrowthRate', event.target.value)} /><span>%</span></div>
@@ -373,8 +376,11 @@ export function Simulator() {
             <label htmlFor="sim-overseas-growth">해외 수익률</label>
             <div className="simulator-unit-input"><input id="sim-overseas-growth" type="number" inputMode="decimal" min="-30" max="30" step="any" value={form.overseasGrowthRate} onChange={(event) => update('overseasGrowthRate', event.target.value)} /><span>%</span></div>
           </div>
-          {/* 국내·해외 칩을 한 줄로 모아 세로로 쌓이며 낭비되던 높이를 없앤다. */}
+          {/* 국내·해외 칩을 한 줄로 모아 세로로 쌓이며 낭비되던 높이를 없앤다.
+              첫 자식 "참고값" 라벨은 칩이 라디오 선택지가 아니라 눌러서 값을 채우는
+              참고 버튼임을 알려준다. */}
           <div className="preset-row simulator-reference-presets simulator-field-full">
+            <span>참고값</span>
             {INDEX_REFERENCE_RETURNS.map((index) => {
               const value = ratePercent(index[referenceBasis].rate);
               const currentRate = index.scope === 'domestic' ? form.domesticGrowthRate : form.overseasGrowthRate;
@@ -382,8 +388,9 @@ export function Simulator() {
               return <button key={index.name} type="button" aria-pressed={isSelected} onClick={() => applyReferenceRate(index.scope, index[referenceBasis].rate)}>{index.name} {value}%</button>;
             })}
           </div>
-          {/* 환율 안내가 상세 내역에만 있으면 입력 시점에 못 본다. 참고 지수도 달러 기준이다. */}
-          <p className="simulator-help simulator-field-full">원화 기준이에요. 참고 수익률엔 환율 변동이 빠져 있어요.</p>
+          {/* 환율 안내가 상세 내역에만 있으면 입력 시점에 못 본다. 참고 지수도 달러 기준이다.
+              직접 입력 가능성을 먼저 말해 칩이 유일한 입력 경로처럼 보이지 않게 한다. */}
+          <p className="simulator-help simulator-field-full">직접 입력해도 되고, 참고값을 눌러 채워도 돼요. 원화 기준이에요(참고값엔 환율 변동 미포함).</p>
         </div>
         <details className="simulator-reference-details">
           <summary>참고 수익률 기준 바꾸기 · 출처 보기</summary>
@@ -407,7 +414,6 @@ export function Simulator() {
             </div>
           </div>
         </details>
-        {derivedNote && <p className="simulator-derived-note">{derivedNote}</p>}
       </section>
 
       {calculation.errors.length > 0 && (
@@ -422,6 +428,7 @@ export function Simulator() {
           <p className="simulator-hero-label">인출 시점 세후 금액</p>
           <p className="simulator-hero-value">{heroAfterTax}</p>
           <p className="simulator-hero-sub">예상 증여세 {won(display.result.giftTax.payable)} 별도</p>
+          {derivedNote && <p className="simulator-derived-note">{derivedNote}</p>}
           <h2 id="simulator-summary-title">상품 유형별 비교</h2>
           <dl>
             {productTypes.map((type) => (
@@ -434,6 +441,7 @@ export function Simulator() {
         <section className={`card simulator-summary simulator-target-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
           <h2 id="simulator-summary-title">상품별 필요 금액</h2>
           <p className="simulator-target-heading">세후 {won(form.targetAmount)}을 만들려면</p>
+          {derivedNote && <p className="simulator-derived-note">{derivedNote}</p>}
           <dl>
             {productTypes.map((type) => {
               const requiredAmount = display.targetResults![type].requiredAmount;

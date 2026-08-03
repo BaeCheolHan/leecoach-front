@@ -1241,7 +1241,8 @@ button {
 /* 결과 카드 상단 히어로 숫자 — 첫 폴드 안에서 가장 궁금한 숫자를 바로 보여준다. */
 .simulator-hero-label { margin: 0 0 2px; color: #8b95a1; font-size: 13px; }
 .simulator-hero-value { margin: 0; color: #191f28; font-size: 26px; font-weight: 800; letter-spacing: -0.02em; word-break: keep-all; }
-.simulator-hero-sub { margin: 4px 0 14px; color: #4e5968; font-size: 13px; }
+/* derived-note가 뒤이어 붙어 14px 여백을 스스로 갖는다 — 겹치지 않게 여기 아래 마진을 줄인다. */
+.simulator-hero-sub { margin: 4px 0 4px; color: #4e5968; font-size: 13px; }
 
 .simulator-equal-hint {
   margin: 8px 0 0;
@@ -1270,6 +1271,16 @@ button {
 }
 
 .simulator-field { min-width: 0; }
+
+/* 질문형 그룹 라벨 — 아래 입력쌍이 "채워야 할 가정"임을 밝혀 기본값을 계산된 값으로
+   오해하지 않게 한다. */
+.simulator-group-label {
+  margin: 4px 0 0;
+  color: #333d4b;
+  font-size: 14px;
+  font-weight: 700;
+  word-break: keep-all;
+}
 
 /* 그리드 안에서 특정 항목만 2열을 다 차지하게 한다 — 가장 중요한 금액 입력, 칩 한 줄, 환율 안내용. */
 .simulator-field-full { grid-column: 1 / -1; min-width: 0; }
@@ -1337,6 +1348,11 @@ button {
   -webkit-overflow-scrolling: touch;
 }
 
+/* 가로 스크롤 행이라 "참고값" 라벨이 좁은 화면에서 찌그러지지 않게 고정 너비를 지킨다.
+   부모가 align-items: stretch라 44px 높이의 칩과 나란히 있으면 라벨(13px)이 위로
+   붙어 보인다 — align-self로 세로 중앙에 맞춘다. */
+.simulator-reference-presets span { flex-shrink: 0; align-self: center; }
+
 .simulator-reference-presets button {
   min-height: 44px;
   padding: 8px 11px;
@@ -1355,11 +1371,11 @@ button {
   border-top: 1px solid #f2f4f6;
 }
 
+/* 결과 카드로 옮겨온 뒤에는 폼 카드의 구분선 톤이 아니라 히어로 서브라인과 같은
+   맥락으로 보여야 한다 — border-top을 없애고 hero-sub와 같은 회색조로 맞춘다. */
 .simulator-derived-note {
-  margin: 10px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid #f2f4f6;
-  color: #4e5968;
+  margin: 0 0 14px;
+  color: #8b95a1;
   font-size: 13px;
   line-height: 1.4;
   word-break: keep-all;

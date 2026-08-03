@@ -62,6 +62,10 @@ describe('Simulator', () => {
     expect(growthInputs.every((input) => input.min === '-30')).toBe(true);
     expect(growthInputs.every((input) => input.max === '30')).toBe(true);
     expect(screen.queryByRole('slider')).toBeNull();
+    // 기본값이 계산된 값이 아니라 채워야 할 가정임을 알리는 질문형 그룹 라벨.
+    expect(screen.getByText('연 수익률을 얼마로 가정할까요?')).toBeTruthy();
+    // 칩이 라디오 선택지가 아니라 참고용 버튼임을 알리는 라벨.
+    expect(screen.getByText('참고값')).toBeTruthy();
   });
 
   it('소수점 수익률도 그대로 입력된다', () => {
@@ -183,6 +187,8 @@ describe('Simulator', () => {
     expect(screen.getByLabelText('목표 금액')).toHaveProperty('value', '40,000,000');
     expect(screen.getByRole('heading', { name: '상품별 필요 금액' })).toBeTruthy();
     expect(screen.getByText('세후 ₩40,000,000을 만들려면')).toBeTruthy();
+    // 목표 역산 모드에서도 파생 조건 요약이 결과 카드 안에 보여야 한다.
+    expect(screen.getByText(/만 19세에 인출/)).toBeTruthy();
   });
 
   it('목표 역산 모드에서는 증여 단계 한 줄 요약을 숨긴다', async () => {
