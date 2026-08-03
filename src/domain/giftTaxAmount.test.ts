@@ -10,6 +10,7 @@ const judgement = (excess: number, overrides: Partial<DeductionJudgement> = {}):
   excess,
   minorApplied: true,
   underTaxMin: false,
+  priorExceedsLimit: false,
   ...overrides,
 });
 

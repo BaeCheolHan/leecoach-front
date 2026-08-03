@@ -20,7 +20,7 @@ describe('deductionLimit', () => {
 describe('judgeDeduction', () => {
   it('한도 이내: 미성년 자녀에게 평가액 1,999만원', () => {
     expect(judgeDeduction(19_990_000, '자', true)).toEqual({
-      limit: 20_000_000, available: 20_000_000, within: true, excess: 0, minorApplied: true, underTaxMin: false,
+      limit: 20_000_000, available: 20_000_000, within: true, excess: 0, minorApplied: true, underTaxMin: false, priorExceedsLimit: false,
     });
   });
   it('한도 정확히 도달은 이내로 본다', () => {
@@ -28,7 +28,7 @@ describe('judgeDeduction', () => {
   });
   it('한도 초과: 초과액을 계산한다', () => {
     expect(judgeDeduction(23_000_000, '자', true)).toEqual({
-      limit: 20_000_000, available: 20_000_000, within: false, excess: 3_000_000, minorApplied: true, underTaxMin: false,
+      limit: 20_000_000, available: 20_000_000, within: false, excess: 3_000_000, minorApplied: true, underTaxMin: false, priorExceedsLimit: false,
     });
   });
 });
@@ -66,5 +66,17 @@ describe('과세최저한 (상증세법 §55② — 과세표준 50만원 미만
   });
   it('한도 이내면 underTaxMin은 false (이미 비과세)', () => {
     expect(judgeDeduction(19_000_000, '자', true).underTaxMin).toBe(false);
+  });
+});
+
+describe('judgeDeduction — 기존 증여가 공제 한도를 초과하는 경우 (priorExceedsLimit)', () => {
+  it('기존 증여가 한도 미만이면 false', () => {
+    expect(judgeDeduction(1_000_000, '자', true, 15_000_000).priorExceedsLimit).toBe(false);
+  });
+  it('기존 증여가 정확히 한도와 같으면 false', () => {
+    expect(judgeDeduction(1_000_000, '자', true, 20_000_000).priorExceedsLimit).toBe(false);
+  });
+  it('기존 증여가 한도를 초과하면 true', () => {
+    expect(judgeDeduction(1_000_000, '자', true, 20_000_001).priorExceedsLimit).toBe(true);
   });
 });

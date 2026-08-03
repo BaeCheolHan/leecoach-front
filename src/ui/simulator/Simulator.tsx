@@ -6,6 +6,7 @@ import {
   type ProductResult,
   type ProductType,
   type SimulateInput,
+  type SimulateResult,
 } from '../../domain/simulate';
 import { maxAnnuityMonthlyWithinLimit } from '../../domain/limitPlanner';
 import { solveTargetAmount, type SolveTargetResult } from '../../domain/solveTarget';
@@ -57,6 +58,12 @@ const relatedGuides = RELATED_GUIDE_PATHS
   .filter((article) => article !== undefined);
 
 const won = (value: number) => `₩${Math.round(value).toLocaleString('ko-KR')}`;
+/**
+ * 기존 증여가 공제 한도를 넘으면 법정 계산이 과세가액 합산(§47②)·기납부세액공제 구조로
+ * 가는데 신고 여부·납부세액을 몰라 세액을 정확히 낼 수 없다. 금액 대신 안내로 대체한다.
+ */
+const giftTaxDisplay = (result: Pick<SimulateResult, 'giftTax' | 'deduction'>) =>
+  result.deduction.priorExceedsLimit ? '세무사 확인 필요' : won(result.giftTax.payable);
 /** 비율(0.082) → 화면·입력용 퍼센트 문자열. 그냥 ×100 하면 8.200000000000001이 노출된다. */
 const ratePercent = (rate: number) => String(Math.round(rate * 1000) / 10);
 const percent = (value: string) => value.trim() === '' ? Number.NaN : Number(value) / 100;
@@ -308,6 +315,9 @@ export function Simulator() {
   const financialIncomeWarning = display?.result?.financialIncomeWarning
     || Object.values(display?.targetResults ?? {}).some((result) =>
       result.simulated?.financialIncomeWarning);
+  const priorExceedsLimit = display?.result?.deduction.priorExceedsLimit
+    || Object.values(display?.targetResults ?? {}).some((result) =>
+      result.simulated?.deduction.priorExceedsLimit);
   const staleClass = stale ? ' simulator-stale' : '';
   const bothGrowthRatesZero = percent(form.domesticGrowthRate) === 0
     && percent(form.overseasGrowthRate) === 0;
@@ -435,7 +445,7 @@ export function Simulator() {
         <section className={`card simulator-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
           <p className="simulator-hero-label">인출 시점 세후 금액</p>
           <p className="simulator-hero-value">{heroAfterTax}</p>
-          <p className="simulator-hero-sub">예상 증여세 {won(display.result.giftTax.payable)} 별도</p>
+          <p className="simulator-hero-sub">예상 증여세 {giftTaxDisplay(display.result)} 별도</p>
           {derivedNote && <p className="simulator-derived-note">{derivedNote}</p>}
           <h2 id="simulator-summary-title">상품 유형별 비교</h2>
           <dl>
@@ -504,7 +514,7 @@ export function Simulator() {
               label="10년 내 기존 증여"
               value={form.priorGifts}
               onChange={(value) => update('priorGifts', value)}
-              help="최근 10년 안에 부모가 이 아이에게 증여한 금액이에요."
+              help="최근 10년 안에 부모 두 분이 합쳐서 이 아이에게 준 금액을 넣어 주세요. 아버지·어머니 증여는 하나로 봅니다."
             />
             {/* 단위는 기본 조건과 같이 입력창 안에 둔다 — 라벨에 괄호로 넣으면 표기가 섞인다. */}
             <div className="simulator-field">
@@ -526,7 +536,7 @@ export function Simulator() {
           {display?.result && <section className={`simulator-gift-line${staleClass}`} aria-label="증여 단계">
             <h2>증여 단계</h2>
             {/* 예상 증여세는 이 화면에서 가장 궁금해할 숫자라 홀로 강조한다. */}
-            <p>증여 원금 {won(display.result.giftPrincipal)} <span>·</span> 평가액 {won(display.result.giftValuation)} <span>·</span> 예상 증여세 <b>{won(display.result.giftTax.payable)}</b></p>
+            <p>증여 원금 {won(display.result.giftPrincipal)} <span>·</span> 평가액 {won(display.result.giftValuation)} <span>·</span> 예상 증여세 <b>{giftTaxDisplay(display.result)}</b></p>
             {/* 일시금은 원금=평가액이라 굳이 부연하지 않는다. 유기정기금만 할인 계산이 끼어든다. */}
             {form.giftMethod === 'annuity' && <p className="simulator-help">평가액은 앞으로 줄 돈을 세법대로 할인해 계산한 증여세 기준 금액이에요.</p>}
           </section>}
@@ -571,11 +581,14 @@ export function Simulator() {
                       ['필요 금액', (type: ProductType) => display?.targetResults?.[type].requiredAmount],
                       ['증여 원금 합계', (type: ProductType) => display?.targetResults?.[type].simulated?.giftPrincipal],
                       ['증여재산 평가액', (type: ProductType) => display?.targetResults?.[type].simulated?.giftValuation],
-                      ['예상 증여세', (type: ProductType) => display?.targetResults?.[type].simulated?.giftTax.payable],
+                      ['예상 증여세', (type: ProductType) => {
+                        const simulated = display?.targetResults?.[type].simulated;
+                        return simulated ? giftTaxDisplay(simulated) : undefined;
+                      }],
                       ['세후 금액', (type: ProductType) => display?.targetResults?.[type].simulated?.byProduct[type].afterTax],
                     ].map(([label, getValue]) => <tr key={label as string}><th scope="row">{label as string}</th>{productTypes.map((type) => {
-                      const value = (getValue as (type: ProductType) => number | null | undefined)(type);
-                      return <td key={type}>{value === null || value === undefined ? '—' : won(value)}</td>;
+                      const value = (getValue as (type: ProductType) => number | string | null | undefined)(type);
+                      return <td key={type}>{value === null || value === undefined ? '—' : (typeof value === 'string' ? value : won(value))}</td>;
                     })}</tr>)}</tbody>
                 </table>
               </div>
@@ -601,6 +614,7 @@ export function Simulator() {
             ? '입력한 수익률 가정이 그대로 실현될 경우의 산술 결과이며, 수익을 보장하지 않아요.'
             : '조건이 바뀌면 결과도 달라져요. 이 계산은 입력한 가정에 따른 산술 결과이며 투자 권유가 아니에요.'}</p>
           {financialIncomeWarning && <p className="warn simulator-warning">국내 상장 해외 ETF는 매매차익이 배당소득으로 과세되어 금융소득에 포함돼요. 연 2,000만 원을 넘으면 종합과세 대상이 될 수 있고, 이 계산에는 반영되어 있지 않아요.</p>}
+          {priorExceedsLimit && <p className="warn simulator-warning">이미 증여한 금액이 공제 한도를 넘어, 이 계산기로는 증여세를 정확히 낼 수 없어요. 법에서는 지난 증여를 합쳐 세율을 매기고 이미 낸 세금을 빼주는데, 지난 증여를 신고했는지와 그때 낸 세액에 따라 결과가 달라지거든요. 세무사와 상담해 주세요.</p>}
 
           <details className="card simulator-details simulator-assumptions">
             <summary>계산의 단순화 가정</summary>

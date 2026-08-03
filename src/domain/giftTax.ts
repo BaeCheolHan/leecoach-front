@@ -11,6 +11,12 @@ export interface DeductionJudgement {
   minorApplied: boolean;
   /** 한도는 초과했지만 과세표준(초과액)이 과세최저한 미만이라 증여세가 부과되지 않는 경우 */
   underTaxMin: boolean;
+  /**
+   * 기존 증여가 공제 한도를 넘은 경우. 이때는 법정 계산이 과세가액 합산(§47②) +
+   * 기납부세액공제 구조로 가는데, 기존 증여의 신고 여부와 납부세액을 알 수 없어
+   * 정확한 세액을 낼 수 없다. 금액 대신 안내로 대체해야 한다.
+   */
+  priorExceedsLimit: boolean;
 }
 
 /**
@@ -36,8 +42,11 @@ export function deductionLimit(relation: Relation, minor: boolean): number {
 }
 
 /**
- * priorGifts: 최근 10년 내 같은 증여자에게 받은 다른 증여액(상증세법 §53의 공제 한도 통산).
- * 한도 차감까지만 반영한다 — 과세표준 합산(§47③)과 기납부세액공제는 다루지 않는다.
+ * priorGifts: 최근 10년 내 증여자로부터 받은 다른 증여액(상증세법 §53의 공제 한도 통산).
+ * 증여자가 직계존속이면 그 배우자를 포함한다(§47②) — 아버지·어머니 증여는 하나로 합산한다.
+ * 한도 차감까지만 반영한다 — 과세가액 합산(§47②)과 기납부세액공제는 다루지 않는다.
+ * 기존 증여가 한도를 넘으면(priorExceedsLimit) 법정 계산이 합산·기납부세액공제 구조로
+ * 넘어가 신고 여부·납부세액을 모르는 채로는 세액을 정확히 낼 수 없다.
  */
 export function judgeDeduction(
   totalDiscounted: number, relation: Relation, minor: boolean, priorGifts = 0,
@@ -53,5 +62,6 @@ export function judgeDeduction(
     excess,
     minorApplied: minor && (relation === '자' || relation === '손'),
     underTaxMin: !within && excess < TAX_MIN_THRESHOLD,
+    priorExceedsLimit: priorGifts > limit,
   };
 }
