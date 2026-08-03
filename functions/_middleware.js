@@ -43,13 +43,13 @@ export async function onRequest(context) {
   // 못 잡음, 새로고침도 캐시라 안 풀림). 에셋 경로인데 HTML이 왔다면 진짜 404로
   // 바꾸고 캐시를 금지해, 배포가 끝난 뒤 재요청하면 정상 에셋을 받도록 한다.
   if (isStaticAssetPath(path)) {
-    return new Response('Not Found', {
+    return finalize(new Response('Not Found', {
       status: 404,
       headers: {
         'content-type': 'text/plain; charset=utf-8',
         'cache-control': 'no-store',
       },
-    });
+    }));
   }
 
   const meta = routeMeta[path];
