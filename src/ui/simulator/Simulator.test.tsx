@@ -360,4 +360,18 @@ describe('Simulator', () => {
     expect(screen.getByRole('link', { name: /유기정기금 증여 신고 가이드/ })).toBeTruthy();
     expect(screen.getByRole('link', { name: /미성년 자녀 주식계좌 만들기/ })).toBeTruthy();
   });
+
+  it('스크롤하기 전에는 고정 계약서 CTA 바를 화면 밖에 숨기고, 스크롤을 시작하면 나타난다', () => {
+    const originalScrollY = window.scrollY;
+    render(<Simulator />);
+    const cta = screen.getByRole('button', { name: '이 조건으로 계약서 만들기' }).closest('.simulator-contract-action')!;
+
+    expect(cta.className).toContain('simulator-contract-action--offscreen');
+
+    Object.defineProperty(window, 'scrollY', { value: 300, configurable: true });
+    fireEvent.scroll(window);
+    expect(cta.className).not.toContain('simulator-contract-action--offscreen');
+
+    Object.defineProperty(window, 'scrollY', { value: originalScrollY, configurable: true });
+  });
 });

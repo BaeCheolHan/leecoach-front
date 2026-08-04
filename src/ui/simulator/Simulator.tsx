@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ADULT_AGE, DISCLAIMER, INDEX_REFERENCE_RETURNS, TAX_LAW_AS_OF } from '../../config';
 import {
   simulate,
@@ -192,6 +192,15 @@ function AmountInput({ id, label, value, onChange, help }: {
 export function Simulator() {
   usePageMeta(META);
   const [handoff] = useState(() => loadToSimulator());
+  // 스크롤 전에는 CTA 바를 숨긴다 — 첫 폴드에서 히어로 숫자를 바가 가리지 않도록.
+  // 문턱 120px: 히어로 값 하단(~814px)이 바 상단(~722px) 위로 올라오는 스크롤량(>92px)보다 크게.
+  const [ctaVisible, setCtaVisible] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setCtaVisible(window.scrollY > 120);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const [referenceBasis, setReferenceBasis] = useState<'excluding' | 'recent'>('excluding');
   const defaultStartDate = handoff?.startDate ?? nextMonthFirst();
   const [form, setForm] = useState<FormState>(() => ({
@@ -445,7 +454,9 @@ export function Simulator() {
         <section className={`card simulator-summary${staleClass}`} data-testid="simulator-result-summary" aria-labelledby="simulator-summary-title" aria-live="polite">
           <p className="simulator-hero-label">인출 시점 세후 금액</p>
           <p className="simulator-hero-value">{heroAfterTax}</p>
-          <p className="simulator-hero-sub">예상 증여세 {giftTaxDisplay(display.result)} 별도</p>
+          <p className="simulator-hero-sub">{display.result.deduction.priorExceedsLimit
+            ? '증여세는 세무사 확인이 필요해요'
+            : <>예상 증여세 {won(display.result.giftTax.payable)} 별도</>}</p>
           {derivedNote && <p className="simulator-derived-note">{derivedNote}</p>}
           <h2 id="simulator-summary-title">상품 유형별 비교</h2>
           <dl>
@@ -657,7 +668,7 @@ export function Simulator() {
             ))}
           </section>
           {form.giftMethod === 'annuity' ? showContractCta && (
-            <div className="simulator-contract-action">
+            <div className={`simulator-contract-action${ctaVisible ? '' : ' simulator-contract-action--offscreen'}`}>
               {form.calculationMode === 'target' && <p>국내 주식형 ETF 기준 필요 금액을 사용해요.</p>}
               <button type="button" className="btn-primary simulator-contract-cta" onClick={makeContract}>이 조건으로 계약서 만들기</button>
             </div>

@@ -1612,6 +1612,14 @@ button {
   backdrop-filter: blur(8px);
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
   z-index: 10;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* 스크롤 시작 전에는 바를 화면 아래로 숨긴다 — 가운데 정렬(X: -50%)은 유지하고 Y만 내린다. */
+.simulator-contract-action--offscreen {
+  transform: translate(-50%, 110%);
+  opacity: 0;
+  pointer-events: none;
 }
 
 .simulator-contract-note {
