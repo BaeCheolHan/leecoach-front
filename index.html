@@ -24,9 +24,101 @@
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // 배포 직후 몇 분간 HTML은 새 배포본을 받았는데 그 HTML이 참조하는 해시 에셋
+      // (/assets/*.js, /assets/*.css)이 아직 엣지에 전파되지 않아 404가 나는 경우가 있다.
+      // 진입 스크립트가 404면 React가 한 줄도 실행되지 않아 #root가 빈 채로 남는다
+      // (흰 화면). 여기서 리소스 로드 실패를 감지해 자동으로 새로고침한다.
+      //
+      // src/ui/RootErrorBoundary.tsx의 'chunk-reload-attempted'와는 별개 문제/별개 키다:
+      // 그쪽은 React가 이미 부팅된 뒤 lazy 라우트 청크 로드 실패를 잡고, 이건 진입 번들
+      // 자체가 아예 실행되지 못하는 경우를 잡는다.
+      (function () {
+        var COUNTER_KEY = 'entry-asset-reload-attempts';
+        var MAX_ATTEMPTS = 3;
+        var DELAYS_MS = [1000, 2500, 5000];
+        // 진입 스크립트(.js)와 스타일시트(.css)는 각각 별도의 error 이벤트를 낸다 — 같은
+        // 배포 실패로 인한 것이므로 이번 페이지 로드에서 한 번만 반응해야 한다. 이 플래그가
+        // 없으면 실패 1회당 카운터가 2씩 올라 재시도 예산이 절반으로 줄어든다.
+        var handledThisLoad = false;
+
+        function isEntryAssetError(target) {
+          if (!target || !target.tagName) return false;
+          if (target.tagName === 'SCRIPT') {
+            return typeof target.src === 'string' && target.src.indexOf('/assets/') !== -1;
+          }
+          if (target.tagName === 'LINK') {
+            return (
+              target.rel === 'stylesheet' &&
+              typeof target.href === 'string' &&
+              target.href.indexOf('/assets/') !== -1
+            );
+          }
+          return false;
+        }
+
+        function showRetryFallback() {
+          var root = document.getElementById('root');
+          if (!root) return;
+          root.innerHTML =
+            '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;color:#333;">' +
+            '<p style="margin:0;font-size:16px;">페이지를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>' +
+            '<button type="button" id="__boot_retry_btn" style="padding:10px 20px;font-size:14px;border-radius:8px;border:none;background:#3182f6;color:#fff;cursor:pointer;">다시 시도</button>' +
+            '</div>';
+          var btn = document.getElementById('__boot_retry_btn');
+          if (btn) {
+            btn.addEventListener('click', function () {
+              sessionStorage.removeItem(COUNTER_KEY);
+              window.location.reload();
+            });
+          }
+        }
+
+        window.addEventListener(
+          'error',
+          function (event) {
+            if (!isEntryAssetError(event.target)) return;
+            if (handledThisLoad) return;
+            handledThisLoad = true;
+
+            var attempts = 0;
+            try {
+              attempts = parseInt(sessionStorage.getItem(COUNTER_KEY), 10) || 0;
+            } catch (e) {
+              /* sessionStorage 접근 불가(사생활 보호 모드 등) — 재시도 없이 폴백만 표시 */
+              showRetryFallback();
+              return;
+            }
+
+            if (attempts >= MAX_ATTEMPTS) {
+              showRetryFallback();
+              return;
+            }
+
+            attempts += 1;
+            try {
+              sessionStorage.setItem(COUNTER_KEY, String(attempts));
+            } catch (e) {
+              /* no-op */
+            }
+            var delay = DELAYS_MS[attempts - 1] || DELAYS_MS[DELAYS_MS.length - 1];
+            setTimeout(function () {
+              window.location.reload();
+            }, delay);
+          },
+          true,
+        );
+      })();
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div
+        style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#666;"
+      >
+        불러오는 중…
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
