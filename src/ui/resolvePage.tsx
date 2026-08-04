@@ -3,6 +3,7 @@ import { lazy, type ComponentType } from 'react';
 /** 경로 → lazy 페이지 컴포넌트. 라우터 없이 pathname으로 분기 (_redirects가 SPA 폴백 제공) */
 export const PAGES: Record<string, ComponentType> = {
   '/': lazy(() => import('./App')),
+  '/contract/done': lazy(() => import('./ContractDone').then((m) => ({ default: m.ContractDone }))),
   '/about': lazy(() => import('./About').then((m) => ({ default: m.About }))),
   '/privacy': lazy(() => import('./Privacy').then((m) => ({ default: m.Privacy }))),
   '/guide': lazy(() => import('./guide/GuideIndex').then((m) => ({ default: m.GuideIndex }))),

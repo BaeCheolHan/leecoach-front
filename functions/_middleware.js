@@ -1,4 +1,4 @@
-import { isStaticAssetPath, normalizePathname, routeMeta } from './routeMeta.js';
+import { isNoIndexPath, isStaticAssetPath, normalizePathname, routeMeta } from './routeMeta.js';
 
 export async function onRequest(context) {
   const path = normalizePathname(new URL(context.request.url).pathname);
@@ -31,43 +31,52 @@ export async function onRequest(context) {
   }
 
   const meta = routeMeta[path];
+  const noindex = isNoIndexPath(path);
 
-  if (!meta) {
+  if (!meta && !noindex) {
     return res;
   }
 
   const url = `https://leecoachmom.com${path}`;
 
-  return new HTMLRewriter()
-    .on('title', {
-      element(element) {
-        element.setInnerContent(meta.title);
-      },
-    })
-    .on('meta[name="description"]', {
-      element(element) {
-        element.setAttribute('content', meta.description);
-      },
-    })
-    .on('meta[property="og:title"]', {
-      element(element) {
-        element.setAttribute('content', meta.ogTitle);
-      },
-    })
-    .on('meta[property="og:description"]', {
-      element(element) {
-        element.setAttribute('content', meta.description);
-      },
-    })
-    .on('meta[property="og:url"]', {
-      element(element) {
-        element.setAttribute('content', url);
-      },
-    })
-    .on('link[rel="canonical"]', {
-      element(element) {
-        element.setAttribute('href', url);
-      },
-    })
-    .transform(res);
+  const rewriter = new HTMLRewriter();
+  if (meta) {
+    rewriter
+      .on('title', {
+        element(element) {
+          element.setInnerContent(meta.title);
+        },
+      })
+      .on('meta[name="description"]', {
+        element(element) {
+          element.setAttribute('content', meta.description);
+        },
+      })
+      .on('meta[property="og:title"]', {
+        element(element) {
+          element.setAttribute('content', meta.ogTitle);
+        },
+      })
+      .on('meta[property="og:description"]', {
+        element(element) {
+          element.setAttribute('content', meta.description);
+        },
+      })
+      .on('meta[property="og:url"]', {
+        element(element) {
+          element.setAttribute('content', url);
+        },
+      })
+      .on('link[rel="canonical"]', {
+        element(element) {
+          element.setAttribute('href', url);
+        },
+      });
+  }
+
+  const transformed = rewriter.transform(res);
+  if (noindex) {
+    transformed.headers.set('X-Robots-Tag', 'noindex');
+  }
+  return transformed;
 }

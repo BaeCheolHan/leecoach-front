@@ -1,13 +1,15 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { Step3Result } from './steps/Step3Result';
 import type { FormValues } from './schema';
+import { savePdfFiles } from '../pdf/download';
 
 // jsdom에서는 canvas·PDF 렌더가 불가하므로 PDF 생성 계층만 대체 (파일명 로직 등은 원본 유지)
 vi.mock('../pdf/download', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../pdf/download')>()),
   renderPdfBlob: vi.fn(async () => new Blob(['pdf'], { type: 'application/pdf' })),
+  savePdfFiles: vi.fn(async () => {}),
 }));
 vi.mock('../pdf/seal', () => ({ drawSeal: vi.fn(() => 'data:image/png;base64,') }));
 vi.mock('../pdf/fonts', () => ({ registerFonts: vi.fn() }));
@@ -55,5 +57,82 @@ describe('Step3Result', () => {
   it('관계가 기타가 아니면 증여재산공제 미적용 경고를 표시하지 않는다', () => {
     render(<Step3Result values={values} onBack={() => {}} />);
     expect(screen.queryByText(/증여재산공제가 적용되지 않습니다/)).toBeNull();
+  });
+
+  describe('저장 후 완료 페이지 이동', () => {
+    const originalLocation = window.location;
+    let assign: ReturnType<typeof vi.fn>;
+
+    beforeEach(() => {
+      assign = vi.fn();
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: { ...originalLocation, assign },
+      });
+    });
+
+    afterEach(() => {
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        value: originalLocation,
+      });
+      vi.mocked(savePdfFiles).mockReset().mockImplementation(async () => {});
+    });
+
+    const waitReady = async () => {
+      await waitFor(() => {
+        expect((screen.getByRole('button', { name: '증여계약서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+      });
+    };
+
+    it('모두 다운로드로 둘 다 받으면 완료 페이지로 실제 이동한다(pushState 아님)', async () => {
+      render(<Step3Result values={values} onBack={() => {}} />);
+      await waitReady();
+
+      fireEvent.click(screen.getByRole('button', { name: '모두 다운로드' }));
+
+      await waitFor(() => expect(assign).toHaveBeenCalledWith('/contract/done'), { timeout: 2000 });
+    });
+
+    // 한 장만 받고 나머지를 받으려는 사용자를 완료 페이지로 끌고 가면 남은 서류를 못 받는다.
+    it('계약서만 받은 상태에서는 이동하지 않는다', async () => {
+      render(<Step3Result values={values} onBack={() => {}} />);
+      await waitReady();
+
+      fireEvent.click(screen.getByRole('button', { name: '증여계약서 PDF' }));
+
+      await waitFor(() => {
+        expect((screen.getByRole('button', { name: '평가명세서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+      });
+      expect(assign).not.toHaveBeenCalled();
+    });
+
+    it('계약서에 이어 명세서까지 받으면 그때 이동한다', async () => {
+      render(<Step3Result values={values} onBack={() => {}} />);
+      await waitReady();
+
+      fireEvent.click(screen.getByRole('button', { name: '증여계약서 PDF' }));
+      await waitFor(() => {
+        expect((screen.getByRole('button', { name: '평가명세서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+      });
+      expect(assign).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole('button', { name: '평가명세서 PDF' }));
+
+      await waitFor(() => expect(assign).toHaveBeenCalledWith('/contract/done'), { timeout: 2000 });
+    });
+
+    it('저장이 실패하면 이동하지 않는다', async () => {
+      vi.mocked(savePdfFiles).mockRejectedValueOnce(new Error('저장 실패'));
+      render(<Step3Result values={values} onBack={() => {}} />);
+      await waitFor(() => {
+        expect((screen.getByRole('button', { name: '증여계약서 PDF' }) as HTMLButtonElement).disabled).toBe(false);
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: '증여계약서 PDF' }));
+
+      await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy());
+      expect(assign).not.toHaveBeenCalled();
+    });
   });
 });

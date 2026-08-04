@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isStaticAssetPath, normalizePathname, routeMeta } from './routeMeta.js';
+import { isNoIndexPath, isStaticAssetPath, normalizePathname, routeMeta } from './routeMeta.js';
 
 const expectedMeta = {
   '/about': {
@@ -85,6 +85,12 @@ const expectedMeta = {
       '이코치맘 유기정기금 증여계약서 생성기의 개인정보처리방침 — 모든 입력은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.',
     ogTitle: '개인정보처리방침',
   },
+  '/contract/done': {
+    title: '서류가 만들어졌어요 | 이코치맘',
+    description:
+      '증여계약서와 유기정기금 평가명세서 PDF 저장을 완료했습니다. 다음 단계인 가족관계증명서 발급과 홈택스 증여세 신고를 안내합니다.',
+    ogTitle: '서류가 만들어졌어요',
+  },
 };
 
 describe('normalizePathname', () => {
@@ -141,4 +147,17 @@ describe('isStaticAssetPath', () => {
     expect(isStaticAssetPath('/sitemap.xml?v=2')).toBe(true);
     expect(isStaticAssetPath('/guide?ref=foo')).toBe(false);
   });
+});
+
+describe('isNoIndexPath', () => {
+  it('treats /contract/done as noindex', () => {
+    expect(isNoIndexPath('/contract/done')).toBe(true);
+  });
+
+  it.each(['/', '/guide', '/guide/annuity-gift-report', '/privacy'])(
+    'does not treat %s as noindex',
+    (path) => {
+      expect(isNoIndexPath(path)).toBe(false);
+    },
+  );
 });

@@ -1,4 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+
+/** 이 도구가 만드는 서류. 둘 다 받아야 완료 페이지로 넘어간다. */
+const DOC_KINDS = ['contract', 'schedule'] as const;
+type DocKind = (typeof DOC_KINDS)[number];
 import type { FormValues } from '../schema';
 import { evaluateAnnuity } from '../../domain/annuity';
 import { judgeDeduction } from '../../domain/giftTax';
@@ -17,6 +21,8 @@ const won = (n: number) => `₩${n.toLocaleString('ko-KR')}`;
 export function Step3Result({ values, onBack }: { values: FormValues; onBack: () => void }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  /** 어떤 서류를 받았는지 — 둘 다 받아야 완료로 본다 */
+  const [saved, setSaved] = useState<Set<DocKind>>(new Set());
   const result = useMemo(() => evaluateAnnuity(values.terms), [values.terms]);
   const doneeInfo = parseRrn(values.donee.rrn);
   const doneeBirth = doneeInfo?.birthDate ?? '';
@@ -60,25 +66,50 @@ export function Step3Result({ values, onBack }: { values: FormValues; onBack: ()
   const contractName = pdfFileName('증여계약서', values.donee.name, today);
   const scheduleName = pdfFileName('유기정기금평가명세서', values.donee.name, today);
 
-  const save = (items: { blob: Blob; filename: string }[]) => async () => {
+  const save = (items: { blob: Blob; filename: string }[], kinds: DocKind[]) => async () => {
     if (busy) return;
     setError('');
     setBusy(true);
     try {
       await savePdfFiles(items);
+      // 서류가 둘(계약서·명세서)이라 버튼도 셋이다. 한 장만 받고 나머지를 받으려는 사용자를
+      // 완료 페이지로 끌고 가면 남은 서류를 못 받는다. 둘 다 확보한 뒤에만 이동한다.
+      const got = new Set([...saved, ...kinds]);
+      setSaved(got);
+      if (got.size < DOC_KINDS.length) {
+        setBusy(false);
+        return;
+      }
+      // Cloudflare Web Analytics는 실제 문서 로드만 페이지뷰로 집계한다(history.pushState는
+      // 비콘을 발생시키지 않는다) — 그래서 저장 완료를 측정하려면 진짜 페이지 이동이 필요하다.
+      // 데스크톱에서는 앵커 클릭 직후 페이지를 떠나면 브라우저가 진행 중인 다운로드를
+      // 취소할 수 있어, 다운로드가 확실히 시작될 시간을 준 뒤(800ms) 이동한다.
+      // 저장이 실패한 경우(catch)는 이동하지 않는다.
+      // 알려진 한계: 모바일 navigator.share는 사용자가 공유 시트를 취소해도 savePdfFiles가
+      // AbortError를 정상 종료로 처리하므로, 완료 페이지 도달 수가 실제 저장 수보다
+      // 다소 과대 집계될 수 있다.
+      setTimeout(() => {
+        window.location.assign('/contract/done');
+      }, 800);
     } catch {
       setError('저장에 실패했습니다. 다시 시도해 주세요.');
-    } finally {
       setBusy(false);
     }
   };
-  const dlContract = blobs ? save([{ blob: blobs.contract, filename: contractName }]) : undefined;
-  const dlSchedule = blobs ? save([{ blob: blobs.schedule, filename: scheduleName }]) : undefined;
+  const dlContract = blobs
+    ? save([{ blob: blobs.contract, filename: contractName }], ['contract'])
+    : undefined;
+  const dlSchedule = blobs
+    ? save([{ blob: blobs.schedule, filename: scheduleName }], ['schedule'])
+    : undefined;
   const dlBoth = blobs
-    ? save([
-        { blob: blobs.contract, filename: contractName },
-        { blob: blobs.schedule, filename: scheduleName },
-      ])
+    ? save(
+        [
+          { blob: blobs.contract, filename: contractName },
+          { blob: blobs.schedule, filename: scheduleName },
+        ],
+        ['contract', 'schedule'],
+      )
     : undefined;
 
   return (

@@ -81,7 +81,22 @@ export const routeMeta = {
       '이코치맘 유기정기금 증여계약서 생성기의 개인정보처리방침 — 모든 입력은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.',
     ogTitle: '개인정보처리방침',
   },
+  '/contract/done': {
+    title: '서류가 만들어졌어요 | 이코치맘',
+    description:
+      '증여계약서와 유기정기금 평가명세서 PDF 저장을 완료했습니다. 다음 단계인 가족관계증명서 발급과 홈택스 증여세 신고를 안내합니다.',
+    ogTitle: '서류가 만들어졌어요',
+  },
 };
+
+// 검색 노출 대상이 아닌 경로 (예: 저장 완료 후 도달하는 안내 화면). sitemap.xml에도 넣지 않는다.
+const NOINDEX_PATHS = new Set(['/contract/done']);
+
+// noindex 헤더(X-Robots-Tag)를 붙여야 하는 경로인지 판정한다. 미들웨어는 vitest에서 못 돌리므로
+// 판정 로직만 순수 함수로 분리해 여기서 테스트한다 (isStaticAssetPath와 같은 패턴).
+export function isNoIndexPath(pathname) {
+  return NOINDEX_PATHS.has(pathname);
+}
 
 export function normalizePathname(pathname) {
   const normalized = pathname.replace(/\/+$/, '');
