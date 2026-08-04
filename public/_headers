@@ -1,0 +1,6 @@
+# /assets/* 파일명은 빌드마다 콘텐츠 해시가 붙는다(예: index-abc123.js).
+# 내용이 바뀌면 파일명(URL)도 바뀌므로 브라우저가 1년간 캐시해도 안전하다.
+# 없는 에셋 요청(구버전 캐시가 참조하는 옛 해시 등)은 functions/_middleware.js가
+# no-store 404로 별도 처리한다 — 여기서는 실제로 존재하는 에셋만 다룬다.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

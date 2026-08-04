@@ -24,3 +24,4 @@ dist-ssr
 *.sln
 *.sw?
 deploy/oci-a1.env
+.wrangler/
